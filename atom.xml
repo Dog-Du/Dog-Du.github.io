@@ -3,11 +3,11 @@
   <title>DogDu&#39;s blog</title>
   
   
-  <link href="https://dog-du.github.io/project/atom.xml" rel="self"/>
+  <link href="https://dog-du.github.io/atom.xml" rel="self"/>
   
-  <link href="https://dog-du.github.io/project/"/>
+  <link href="https://dog-du.github.io/"/>
   <updated>2025-03-01T15:15:17.231Z</updated>
-  <id>https://dog-du.github.io/project/</id>
+  <id>https://dog-du.github.io/</id>
   
   <author>
     <name>DogDu</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>第一个blog</title>
-    <link href="https://dog-du.github.io/project/2025/03/01/first-blog/"/>
-    <id>https://dog-du.github.io/project/2025/03/01/first-blog/</id>
+    <link href="https://dog-du.github.io/2025/03/01/first-blog/"/>
+    <id>https://dog-du.github.io/2025/03/01/first-blog/</id>
     <published>2025-03-01T15:14:00.000Z</published>
     <updated>2025-03-01T15:15:17.231Z</updated>
     
