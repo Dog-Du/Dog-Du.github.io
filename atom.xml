@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Hexo</title>
+  <title>DogDu&#39;s blog</title>
   
   
-  <link href="http://example.com/atom.xml" rel="self"/>
+  <link href="https://dog-du.github.io/project/atom.xml" rel="self"/>
   
-  <link href="http://example.com/"/>
+  <link href="https://dog-du.github.io/project/"/>
   <updated>2025-03-01T15:15:17.231Z</updated>
-  <id>http://example.com/</id>
+  <id>https://dog-du.github.io/project/</id>
   
   <author>
-    <name>John Doe</name>
+    <name>DogDu</name>
     
   </author>
   
@@ -18,8 +18,8 @@
   
   <entry>
     <title>第一个blog</title>
-    <link href="http://example.com/2025/03/01/first-blog/"/>
-    <id>http://example.com/2025/03/01/first-blog/</id>
+    <link href="https://dog-du.github.io/project/2025/03/01/first-blog/"/>
+    <id>https://dog-du.github.io/project/2025/03/01/first-blog/</id>
     <published>2025-03-01T15:14:00.000Z</published>
     <updated>2025-03-01T15:15:17.231Z</updated>
     
