@@ -1,0 +1,475 @@
+<!DOCTYPE html><html lang="cn-ZH" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>CSAPP学习记录 | DogDu's blog</title><meta name="author" content="DogDu"><meta name="copyright" content="DogDu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="CSAPP学习记录CSAPP是一门挺有趣的计算机体系课，包含了很多东西，可以更好的了解整个计算机系统。 下面是无答案的学习记录。 代码会放在 GitHub 上， 请按需自取，不建议直接抄：Dog-Du&#x2F;CSAPP-CMU15213 LAB 1 DATALAB (第二章之后)2024.10.2-2024.10.3​	比起代码，更像是脑筋急转弯或者益智小游戏，比较简单，也没有什么很好说的。。。 LAB">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSAPP学习记录">
+<meta property="og:url" content="https://dog-du.github.io/2025/03/03/CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="DogDu&#39;s blog">
+<meta property="og:description" content="CSAPP学习记录CSAPP是一门挺有趣的计算机体系课，包含了很多东西，可以更好的了解整个计算机系统。 下面是无答案的学习记录。 代码会放在 GitHub 上， 请按需自取，不建议直接抄：Dog-Du&#x2F;CSAPP-CMU15213 LAB 1 DATALAB (第二章之后)2024.10.2-2024.10.3​	比起代码，更像是脑筋急转弯或者益智小游戏，比较简单，也没有什么很好说的。。。 LAB">
+<meta property="og:locale" content="cn_ZH">
+<meta property="og:image" content="https://dog-du.github.io/img/head.jpg">
+<meta property="article:published_time" content="2025-03-03T12:44:15.000Z">
+<meta property="article:modified_time" content="2025-03-03T14:17:25.478Z">
+<meta property="article:author" content="DogDu">
+<meta property="article:tag" content="CSAPP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dog-du.github.io/img/head.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CSAPP学习记录",
+  "url": "https://dog-du.github.io/2025/03/03/CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/",
+  "image": "https://dog-du.github.io/img/head.jpg",
+  "datePublished": "2025-03-03T12:44:15.000Z",
+  "dateModified": "2025-03-03T14:17:25.478Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "DogDu",
+      "url": "https://dog-du.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/head.jpg"><link rel="canonical" href="https://dog-du.github.io/2025/03/03/CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CSAPP学习记录',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="DogDu's blog" type="application/atom+xml">
+</head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/head.jpg" alt="Logo"><span class="site-name">DogDu's blog</span></a><a class="nav-page-title" href="/"><span class="site-name">CSAPP学习记录</span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">CSAPP学习记录</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-03-03T12:44:15.000Z" title="Created 2025-03-03 20:44:15">2025-03-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-03-03T14:17:25.478Z" title="Updated 2025-03-03 22:17:25">2025-03-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="CSAPP学习记录"><a href="#CSAPP学习记录" class="headerlink" title="CSAPP学习记录"></a>CSAPP学习记录</h1><p>CSAPP是一门挺有趣的计算机体系课，包含了很多东西，可以更好的了解整个计算机系统。</p>
+<p>下面是无答案的学习记录。</p>
+<p>代码会放在 GitHub 上， 请按需自取，不建议直接抄：<a target="_blank" rel="noopener" href="https://github.com/Dog-Du/CSAPP-CMU15213">Dog-Du/CSAPP-CMU15213</a></p>
+<h2 id="LAB-1-DATALAB-第二章之后"><a href="#LAB-1-DATALAB-第二章之后" class="headerlink" title="LAB 1 DATALAB (第二章之后)"></a>LAB 1 DATALAB (第二章之后)</h2><h3 id="2024-10-2-2024-10-3"><a href="#2024-10-2-2024-10-3" class="headerlink" title="2024.10.2-2024.10.3"></a>2024.10.2-2024.10.3</h3><p>​	比起代码，更像是脑筋急转弯或者益智小游戏，比较简单，也没有什么很好说的。。。</p>
+<h2 id="LAB-2-BOMBLAB-第三章之后"><a href="#LAB-2-BOMBLAB-第三章之后" class="headerlink" title="LAB 2 BOMBLAB (第三章之后)"></a>LAB 2 BOMBLAB (第三章之后)</h2><h3 id="2024-10-20-2024-10-21"><a href="#2024-10-20-2024-10-21" class="headerlink" title="2024.10.20-2024.10.21"></a>2024.10.20-2024.10.21</h3><p>​	有一说一，第三章非常像汇编语言和编译原理的简单杂交版，并另附了一些其他知识。</p>
+<p>​	非常有趣的实验，分为六个阶段，在看代码的时候发现了隐藏阶段，但是没看明白怎么进入，所以放弃了隐藏关卡。</p>
+<p>​	主要思路：</p>
+<p>​		1.首先要知道寄存器的作用，函数的控制转移的过程，指针的引用和解引用，GDB的基本使用等等</p>
+<p>​		2.分段看汇编，因为肯定包含了循环，分支，函数调用的部分，把代码分成一段一段看，比如一个循环做了什么给它抽象出来。哪里会引爆炸弹，去看去猜原因是什么。</p>
+<h4 id="phase-1"><a href="#phase-1" class="headerlink" title="phase_1:"></a>phase_1:</h4><p>​		很简单，就是得到 string_length 和 string_not_equal 两个函数，因为会使用rdi和rsi寄存器传递参数，然后根据地址获取他想要的字符串即可，用ASCII码转换即可。</p>
+<h4 id="phase-2"><a href="#phase-2" class="headerlink" title="phase_2:"></a>phase_2:</h4><p>​		打断点，先读read_six_numbers函数，看看他是怎么实现的，然后再去看phase_2函数，然后尽量还原出来源代码，因为C语言的代码和汇编语言的代码一一对应关系还是比较好找的。</p>
+<p><img src="./CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/image-20250203200443015.png" alt="image-20250203200443015"></p>
+<p>​		这样会更加方便理解，最后猜到phase_2到底想干什么，就可以比较流畅的得到荅案。</p>
+<h4 id="phase-3"><a href="#phase-3" class="headerlink" title="phase_3:"></a>phase_3:</h4><p>​		phase_3也是如法炮制，比较简单，唯一需要注意的是 jmp *() 表示间接跳转，然后猜到后面那么多 jmp 的指令到底从何而来之后就能轻松解决。</p>
+<h4 id="phase-4"><a href="#phase-4" class="headerlink" title="phase_4:"></a>phase_4:</h4><p>​		先看phase_4函数再去看func4函数，phase_4先是读取整数，然后进行一些判断处理，调用了func4，如果func4返回的结果和预期不符则爆炸，最后是一个检查，检查不过则爆炸。</p>
+<p>​		再看func4，可以看到用rdx,rsi,rdi传递了三个整数，之后进行了一些运算，然后在func4中又调用了func4，是递归，这里我们只需要关注递归的退出条件即可，就可以轻松解决。</p>
+<h4 id="phase-5"><a href="#phase-5" class="headerlink" title="phase_5:"></a>phase_5:</h4><p>​		注：汇编中 mov   %fs:0x28,%rax 的作用： 栈保护功能，将一个特殊值（fs:0x28）存在栈的底部， 函数运行结束后再取出这个值和fs:0x28做比较，如果有改变就说明栈被破坏，调用__stack_chk_fail@plt。fs寄存器的值本身指向当前线程结构</p>
+<p>​		这个题目最重要的是要看懂 AND edx, 15 的作用是什么即可。</p>
+<h4 id="phase-6"><a href="#phase-6" class="headerlink" title="phase_6:"></a>phase_6:</h4><p>​		这六个题目中最难的一个，在我还原的C语言代码中，包含了两层循环，多个循环过程，一大堆跳转看得人头晕眼花，但是还是只要进行分段，把代码分成一段一段看懂某一段是干什么用的，进行抽象即可。但是这里可能需要一点想象力，猜测作用是什么。</p>
+<h3 id="lab2总结："><a href="#lab2总结：" class="headerlink" title="lab2总结："></a>lab2总结：</h3><p>​			总的来说，比起难，更是有趣，需要一点想象力和代码结合，然后进行猜测。隐藏阶段没有写~</p>
+<h2 id="LAB-3-ATTACK-LAB（第三章之后）"><a href="#LAB-3-ATTACK-LAB（第三章之后）" class="headerlink" title="LAB 3 ATTACK LAB（第三章之后）"></a>LAB 3 ATTACK LAB（第三章之后）</h2><h3 id="2025-2-2-2025-2-3"><a href="#2025-2-2-2025-2-3" class="headerlink" title="2025.2.2-2025.2.3"></a>2025.2.2-2025.2.3</h3><p>​	之所以隔了好几个月才写lab3，是因为2024.10.21之后就去参加oceanbase赛和天池杯了，之后2024.12.23比赛结束之后，又磨磨唧唧搞期末考试，2025.1.16放了假。该过年了，玩了几天，初四提前回家，初五2025.2.2开始才写lab3。</p>
+<p>​	lab3也是一个比较有趣的实验，根据汇编语言，输入字符串，利用缓存区溢出进行ROP和缓冲区溢出hack。</p>
+<h4 id="需要注意的点："><a href="#需要注意的点：" class="headerlink" title="需要注意的点："></a>需要注意的点：</h4><p>​	<strong>1.关于栈的指针</strong></p>
+<pre><code>	返回栈指针在当前栈底的上面。
+	
+	因为栈是从上向下拓展，并且栈底在最上面。
+	
+	比如：当前函数帧是 [1000'000, 1000'010]。则返回栈指针为 [1000'011, 1000'018]
+	
+	在当前函数帧最高位的上面，小端读取，所以反写。
+</code></pre>
+<p><img src="./CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/image-20250203205426036.png" alt="image-20250203205426036"></p>
+<p>​					<em>在这个图中，栈是倒过来的，栈底是最大的，栈顶是最小的。</em></p>
+<pre><code>	**2.关于caller save调用者保存, callee save被调用者保存 (x86-64 Linux Register Usage)**
+	
+		书上说：
+</code></pre>
+<p>​    		所有其它的寄存器，除了栈指针%rsp，都分类为调用者保存(caller save)寄存器。</p>
+<p>​    		%rbx,%r12,%r13,%r14是被调用者保存(callee save)</p>
+<pre><code>		%rsp是一个特殊的被调用者保存(callee save), 被保存到原值用于退出函数
+	
+	 	%rbp是被调用者保存，被调用者必须保存并存储，也许会被用作函数帧指针，可以混用和比较。
+	
+	**3.x86-64, 64位，所以8字节，地址也是64位，指令也是64位。**
+	
+	**4.pushq, popq，会将数据压入栈**
+	
+		call是先把pushq rsp，再jump。
+	
+	 	 ret 是先popq rsp，再jump。
+	
+		所以，只要利用这一点就可以进行jump。
+	
+	**5.rtarget没有金丝雀**
+	
+	**6.rtarget 栈随机化，但是可执行代码部分没有随机化。**
+</code></pre>
+<p>​		也就是可执行代码的地址是固定的，只是执行期间的栈是随机的</p>
+<pre><code>	**7.rtarget 没有栈越界检测，不然没法写**
+</code></pre>
+<p>​	  <strong>8.ctarget没有任何保护</strong></p>
+<h4 id="ctarget-level1："><a href="#ctarget-level1：" class="headerlink" title="ctarget-level1："></a>ctarget-level1：</h4><p>​	只需要简单的利用缓冲区溢出覆盖掉栈帧顶内存所存的栈指针即可。</p>
+<p>​	在GDB中利用 disassemble &lt;函数名&gt; 指令可以很容易的得到函数的地址，得到touch1函数的地址之后，覆写上即可，注意需要倒写。</p>
+<h4 id="ctarget-level2"><a href="#ctarget-level2" class="headerlink" title="ctarget-level2:"></a>ctarget-level2:</h4><p>​	开始需要注入代码。</p>
+<p>​	注入代码的原理：先将代码注入缓冲区，之后利用函数返回时的ret指令并通过覆盖栈指针的方式，让机器跳转，并去执行我们所希望的指令的地址。</p>
+<p>​	需要注意的是，ret指令在add $…, rsp之后，也就是说，栈空间已经被回收，之后在执行函数的时候这部分栈空间很可能被占用，所以不能用来存取变量。</p>
+<p>​	注入代码的步骤：</p>
+<p>​	1.首先获取缓冲区的地址。</p>
+<p>​	2.写出注入的代码的汇编语言，利用gcc -c 和 objdump -d得到机器指令。（因为不使用jump，为了实现函数跳转，可以参考上面的第四点）</p>
+<p>​	3.将得到的机器指令写在缓冲区的头部（不在头部也行，只要保证有足够空间容纳机器指令并且明确好机器指令的地址即可）</p>
+<p>​	4.用缓冲区的地址覆盖掉栈指针</p>
+<p>​	之后只需要参考touch2函数，然后把cookie存入%rdi即可。</p>
+<h4 id="ctarget-level3"><a href="#ctarget-level3" class="headerlink" title="ctarget-level3:"></a>ctarget-level3:</h4><p>​	同样是注入代码。有两种方法。</p>
+<p>​	方法一：</p>
+<p>​		hex2match中，random函数为伪随机，每次运行得到的随机数一样。</p>
+<p>​		hex2match用于判断给出的字符串是否和想要的字符串一样。</p>
+<p>​		那么，只需要让给出的字符串的地址和想要的字符串的地址一致即可，也就是让同一个字符串进行比较。</p>
+<p>​		这样就基本和ctarget-level2基本一样，只是把参数换成了地址而已。只需要先gdb跟踪，得到在比较的时候给出的cookie的字符串的地址，然后作为函数参数传递即可。</p>
+<p>​		PS：这样的做法不太符合CSAPP希望做的方法。</p>
+<p>​	方法二：</p>
+<p>​		考虑怎么传递一个字符串，我们需要把字符串在代码注入的时候就写入内存，然后把这个地址传递给hex2match，同时保证内存不被破坏。</p>
+<p>​		把字符串在注入时就写入内存不难，得到字符串的地址也不难，难点在怎么保证内存不被破坏。</p>
+<p>​		考虑把字符串存在某个位置，比如：全局变量，或者栈空间。</p>
+<p>​		考虑全局变量，查看汇编语言，很容易发现vlevel是一个全局变量，同时我们也知道cookie也是一个全局变量，我们可以考虑把字符串存放在这个地方。但是我没有做到，原因是空间无法使用，他会提醒我不可达内存。</p>
+<p>​		考虑栈空间，从getbuf的栈空间考虑，栈是从上向下拓展的。而在hex2match以及random中，会开辟并使用到很多栈空间，也就是栈会向下拓展，并被使用到，而getbuf在ret之前会回收栈空间，因此存放在getbuf的栈空间及其下方，不合适。考虑存放在getbuf上方，查看汇编语言，发现test函数有一片栈空间，可以把字符串存放在test函数的栈空间中，具体方法为，getbuf函数的栈空间上方的栈指针的上方。</p>
+<p>​		这时我们考虑好了字符串存放位置，注意要倒写，可以思考一下为什么需要倒写。</p>
+<p>​		最后把字符串放在对应位置，然后把这个字符串的地址当做函数参数传递即可。</p>
+<h4 id="rtarget-level4"><a href="#rtarget-level4" class="headerlink" title="rtarget-level4"></a>rtarget-level4</h4><p>​	这是我唯一一个一次过的，前面几个都抠抠索索反复看了好几遍书花了好几个小时才搞明白怎么弄，只有这个弄得比较快。</p>
+<p>​	rtarget开启了限制可执行区域和栈随机化，但没有开启栈破坏检测，也就是我们仍然可以覆盖栈指针，让程序跳转到我们希望的地方，这得以让rtarget可以破解。</p>
+<p>​	方法依旧是通过缓冲区溢出，控制ret时的转移方向，但是注意，由于限制了可执行区域，也就是栈空间的字节不会被执行。因此不能进行注入，而是利用叫ROP的方法。</p>
+<p>​	思路分析：</p>
+<p>​		因为注入不了代码，所以缓冲区的部分实际上压根就没有意义，也就是这40字节不管是什么都无所谓。需要考虑的是这40字节之后的。回想ctarget-level2所注入的汇编代码，所做的事情为把%rdi赋值为cookie，在这里也是一样。只是因为无法注入代码，因此写的别扭一些。</p>
+<p>​		利用movq, popq, 以及栈空间，栈指针的之间的配合实现一样的事情。至于怎么存放cookie，可以考虑放在栈空间中，然后利用上面 “需要注意的点” 中的第四点，实现赋值。最后将值传递给%rdi，再跳转到touch2。</p>
+<p>​		然后盯着3A表和3B表中movq, popq这两个机器指令，去一个一个找farm.c中的函数的后几位对应的字节。拼凑出指令。</p>
+<p>​		最后写出字节码即可。</p>
+<h3 id="lab3总结："><a href="#lab3总结：" class="headerlink" title="lab3总结："></a>lab3总结：</h3><p>​	attacklab比bomblab更进一步，bomb只需要读懂汇编语言即可，而attack需要深入理解栈，函数调用以及中间内存分配的过程，同时运行在64位的平台，也是很贴近实际的实验。虽然以后不会做hacker，但是也能深刻的理解计算机运行的过程。最后，rtarget-level5没有写~</p>
+<h2 id="LAB-4-BUFBOMB-LAB（第三章之后）"><a href="#LAB-4-BUFBOMB-LAB（第三章之后）" class="headerlink" title="LAB 4 BUFBOMB LAB（第三章之后）"></a>LAB 4 BUFBOMB LAB（第三章之后）</h2><h3 id="2025-2-4-2025-2-4"><a href="#2025-2-4-2025-2-4" class="headerlink" title="2025.2.4-2025.2.4"></a>2025.2.4-2025.2.4</h3><p>​	这个LAB4 BUFBOMB LAB基本和LAB3 ATTACK LAB一致，只有level3和level4略微超出LAB3范围。还有就是LAB4使用的是x86-32，LAB3使用的是x86-64，这导致汇编语言有些许不同，以及其他方面在标准上不同。</p>
+<h4 id="需要注意的点：-1"><a href="#需要注意的点：-1" class="headerlink" title="需要注意的点："></a>需要注意的点：</h4><p>​	1.关于函数传递</p>
+<p>​		 bufbomb lab是x86-32，而不是x86-64，与attack lab不同</p>
+<p>​	 	x86-32参数传递的方法是倒序压入栈</p>
+<p>​	 	x86-64参数传递的方式是使用%rdi等寄存器，不够用了再用栈</p>
+<p>​	2.关于返回栈指针在内存地址的存放位置。</p>
+<p>​	 	x86-64是直接放在栈帧之上。</p>
+<p>​		 x86-32存在一个保存原来%ebp的操作</p>
+<p>​		因此栈帧再加4字节（因为x86-32是32为地址，所以加4字节）</p>
+<p>​		  所以返回栈指针在内存地址的存放位置为栈帧+4字节之上</p>
+<p>​	3.关于push</p>
+<p>​		 因为是x86-32系统，push不可能一次性压入8个字节</p>
+<p>​		 因此可以考虑把八位立即数分成高低各4个字节，分两次压入栈中，或者进行字节对齐</p>
+<p>​		 这样就可以在使用的时候使用 mov 0x8(%ebp), %eax 的形式直接把立即数送给 eax</p>
+<p>​	4.关于在不修复时为什么段错误</p>
+<p>​		 在进行level3的时候，要求修复栈，而且要求在完成getbuf返回时，local值不变。</p>
+<p>​		 必须要知道的是，只修改栈底的返回栈指针并不会破坏local值。</p>
+<p>​		 这点可以通过尝试得知，可以先注入代码，不做特别的事情，只是返回getbuf函数下方。</p>
+<p>​		 记住调用getbuf前的%esp, %ebp，然后gdb的x指令查看local值所在内存</p>
+<p>​		 可以发现，local值没有发生变化</p>
+<p>​		 那么为什么会在之后出现段错误，其实是因为esp和ebp被破坏导致的</p>
+<p>​		 在gdb下使用info frame 1，可以看到返回了错误的信息，这是导致段错误的原因。</p>
+<p>​	5.关于%esp和%ebp之间的关系</p>
+<p>​		 x86-32中，在一个栈空间中，完成栈空间的拓展之后，leave之前，存在如下关系：</p>
+<p>​		  %ebp = %esp + 拓展的栈空间</p>
+<p>​	6.关于项目的一个说明</p>
+<p>​	 buflab32.pdf的level4说：</p>
+<p>​	  从一次运行到另一次运行，尤其是不同用户之间，给定过程使用的精确栈位置会有所不同。</p>
+<p>​	  这种差异的一个原因是，当程序开始执行时，所有环境变量的值都放置在栈的底部附近。</p>
+<p>​	  环境变量作为字符串存储，根据其值需要不同的存储量。因此，为给定用户分配的栈空间取决于其环境变量的设	置。</p>
+<p>​	 其实就是传入的参数 -u &lt;用户名&gt; 中用户名字符串长度不同导致的</p>
+<p>​	C语言的main函数声明为 int main(int argc, char *args[])</p>
+<p>​	 这和 char *args[] 有一定关系</p>
+<h4 id="level-0-level-1"><a href="#level-0-level-1" class="headerlink" title="level 0 &amp; level 1 :"></a>level 0 &amp; level 1 :</h4><p>​	level0与level1几乎和LAB3的ctarget-level1和ctarget-level2一模一样，除了一个是x86-32一个是x86-64，但是需要注意的点已经在上面标注了。</p>
+<p>​	但是CSAPP所希望的level1的解法可能不是代码注入，通过覆盖栈底内存，保证跳转之后pop出来的内容正好是cookie，这是因为x86-32使用的是push和pop来访问参数的，所以可以这么做。这样的方法更加简单。</p>
+<p>​	PS：有一个坑是buflab32.pdf中说缓冲区大小是32字节，但是实际上应该以汇编语言的为准。。。。</p>
+<h4 id="level-2"><a href="#level-2" class="headerlink" title="level 2 :"></a>level 2 :</h4><p>​	这个就和ctarget-level2更像，需要注入代码，但是他希望修改global_value的值，让他等于cookie，同时bang函数的参数根本没有用到。</p>
+<p><code>int global_value = 0;</code><br><code>void bang(int val)</code><br><code>{</code><br>	<code>	if (global_value == cookie) {</code><br>		<code>printf("Bang!: You set global_value to 0x%x\n", global_value);</code><br>		<code>validate(2);</code><br>	<code>} else</code><br>		<code>printf("Misfire: global_value = 0x%x\n", global_value);</code><br>	<code>exit(0);</code><br><code>}</code></p>
+<p>​	所以我们不需要管这个参数的问题，只需要在注入的代码修改global_value即可，方法很简单，先gdb通过info variables找到global_value的地址，然后修改这个地址，修改为cookie，之后再跳转到bang函数即可。</p>
+<h4 id="level-3"><a href="#level-3" class="headerlink" title="level 3 :"></a>level 3 :</h4><p>​	level3有一些超出ctarget的范围了，要求我们复原栈空间其实上面注意的点中第四条其实说了，local值不会因为返回栈底指针那部分内存被破坏而被破坏，只要记录好ebp，esp的值，然后把返回地址记录好就可以完美还原栈空间的状态，就像是正常的调用了getbuf一样。之后就是把getbuf的返回值也就是%eax修改为cookie即可。</p>
+<p>​	至于为什么只需要修复ebp，esp寄存器的值就可以完成栈的复原，其实也跟函数的调用过程有关，在x86-32中，ebp会记录返回位置，esp则在栈。可以看一眼书这里。</p>
+<p>​	在level3这里我走了一个弯路，我以为在破坏getbuf函数的栈底的时候local值也会被破坏，然后想着在注入的代码中call一次uniqueval函数，但是一直不成功，后来才想起来，栈底的返回地址是通过金丝雀来保护的，而不是像local这种保护方式。</p>
+<h4 id="level4"><a href="#level4" class="headerlink" title="level4:"></a>level4:</h4><p>​	level4其实差不多和level3一样，但是更进一步，同时有一个和level0一样的坑。</p>
+<p>​	方法其实还是注入代码还原现场，然后把%eax改为cookie，最后返回testn中getbufn之后的位置。</p>
+<p>​	但是存在栈的随机，好在变动幅度在buflab32.pdf中给出了，是+-240字节，所以只需要480字节的nop雪橇，就可以让注入的代码总是顺利执行。</p>
+<p>​	不过有两个问题：</p>
+<p>​		一是怎么还原现场，因为存在随机，esp和ebp的值不固定。</p>
+<p>​		二是雪橇应该从哪里开始滑</p>
+<p>​	对于问题一上面需要注意的点第五条已经差不多指出了，因为我们需要把现场还原成testn调用getbufn之后的样子，也就是testn函数本来的样子。所以只需要去研究testn函数中esp和ebp之间的关系即可，最后发现，esp和ebp的关系后。分析怎么写，因为在getbufn结尾的ret之前有一个leave，leave会pop %ebp，所以ebp的值会被污染，而esp的值不为所动，所以只需要用esp的值推导出ebp的值即可。</p>
+<p>​	对于问题二，由于不清楚这个栈的变动范围，预期读代码去判定到底是怎么个变动范围，不如直接尝试。先gdb去查看第一个测试样例中 getbufn 中缓冲区的位置，然后设置雪橇；之后通过第一个测试样例之后，再去查看第二个测试样例缓冲区的位置，依次类推。最后根据五个样例所推导出雪橇即可。</p>
+<h3 id="lab4总结"><a href="#lab4总结" class="headerlink" title="lab4总结:"></a>lab4总结:</h3><p>​	总的来说，LAB4 BUFBOMB LAB和ATTACK LAB差不多，都是根据缓冲区漏洞去输入特定的字符串。只不过一个是x86-32，一个是x86-64，写完lab3之后写lab4很快，一天就写完了。这可能也是CSAPP的教学目的，让学生既熟悉x86-64也了解x86-32。</p>
+<h2 id="LAB-5-LAB-6-Architecture-Lab-放弃（第四章之后）"><a href="#LAB-5-LAB-6-Architecture-Lab-放弃（第四章之后）" class="headerlink" title="LAB 5 &amp; LAB 6 Architecture Lab 放弃（第四章之后）"></a>LAB 5 &amp; LAB 6 Architecture Lab 放弃（第四章之后）</h2><p>​	因为一些个人原因，我放弃了 Architecture Lab 。</p>
+<p>​	<em>其实是我实在是不想写汇编，读汇编姑且可以，但是真的不想写汇编了。正好 2015 年  cmu15213 没这章课程。</em></p>
+<p>​	如果以后有机会的话，会回来补坑。</p>
+<h2 id="LAB-7-CACHE-LAB（第五章之后）"><a href="#LAB-7-CACHE-LAB（第五章之后）" class="headerlink" title="LAB 7 CACHE LAB（第五章之后）"></a>LAB 7 CACHE LAB（第五章之后）</h2><h3 id="2025-2-6-2025-2-8"><a href="#2025-2-6-2025-2-8" class="headerlink" title="2025.2.6-2025.2.8"></a>2025.2.6-2025.2.8</h3><h4 id="PART-A："><a href="#PART-A：" class="headerlink" title="PART A："></a>PART A：</h4><p>​	PART A其实还是很简单的，只需要照猫画虎写出一个 lru 算法即可。而且不考虑越界的情况，因此比较简单。</p>
+<p>​	需要注意的是地址的结构： 六十四位地址， 2^s组，每组 E 块，每块 2^b 字节。</p>
+<p>​	所以地址构成为：Tag(64 - s -b 位) | Index(s 位) | Offset(b 位)</p>
+<p>​	至于为什么这么设置，其实更多可以在第四章或者计算机组成原理中找到答案。</p>
+<p>​	 hit 则是，通过中间的 Index 的 s 位，也就是 (address &gt;&gt; b) &amp; ((1 &lt;&lt; s) -1) 获得组号，然后在组内先检查Tag，如果有某一块 Tag 相等，则 hit。</p>
+<p>​	这是因为 cache.pdf 中指明了，不会出现块越界的情况。比如：块为[0x0001000, 0x0001111]，有一个访问为 0x0001110 开始的 2 个字节，那么就需要读取 [0x0001110, 0x001000] 这两个字节，就出现了越块的情况。</p>
+<p>​	需要注意的是，给出地址虽然没有前缀的 0x , 但是是 16 进制的。</p>
+<p>​	在 PART A 写 lru 的时候，我想到了我在复习计算机组成原理的时候看的课程中另类的适合于较小数据量的写法，但是后来发现，不行，原因在于可能同时存在两个及以上可以驱逐的块。但是通过队列实现的有且仅有一个块应该被驱逐。所以后来没有采用。</p>
+<p>​	别忘了指令需要跳过，以及 LOAD 和 STORE 其实是一样的都相当于访问一次内存块，对于 lru 算法来说没有区别。</p>
+<p>​	我建议在写 PART A 的时候实现 -v 选项，方便调试和发现错误。</p>
+<h4 id="PART-B"><a href="#PART-B" class="headerlink" title="PART B:"></a>PART B:</h4><p>​	PART B 比较难了。有一说一，我第一时间没想到要分块来着，后来参考了别人的思路才想到的。</p>
+<h5 id="为什么分块可以减少miss？"><a href="#为什么分块可以减少miss？" class="headerlink" title="为什么分块可以减少miss？"></a>为什么分块可以减少miss？</h5><figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i++) {</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; M; j++) {</span><br><span class="line">        tmp = A[i][j];</span><br><span class="line">        B[j][i] = tmp;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>上面代码是原版代码。</p>
+<p>miss的主要原因在于 B， 因为 A 是按行读，其读取是连续的，符合 cache 的工作原理。</p>
+<p>但是 B 是按列写，其地址不连续，会频繁的导致缓冲需要重新读取内存，频繁地 evict 导致miss。</p>
+<p>那么分块之后呢？</p>
+<p>miss主要原因在 B 按列写，导致每次写的时候只写了一个地址，缓冲块内其他内存废弃了。</p>
+<p>比如：写 [0x000102, 0x000105]，那么缓冲很可能会读入 [0x000100, 0x000111] ，也就是 [0x000100, 0x000101] 和 [0x000106, 0x000111] 这部分都没有用到，而且读取的列越多，之前读取的内存就越可能被驱逐，导致下次用到的时候反而不在缓冲中，而且miss。</p>
+<p>分块的意义就在于利用好这原本会被废弃的内存。</p>
+<p>例如： 8 * 8 分块，因为会直接利用这 8 * 8 的区域，利用好了缓冲会一次性读取一片内存，并且充分利用这部分内存。之后再也不需要这片内存，就减少了miss。</p>
+<h5 id="对于-32-32"><a href="#对于-32-32" class="headerlink" title="对于 32 * 32"></a>对于 32 * 32</h5><p>​	首先，cache的参数为 s=5 E=1 b=5，一块可以存8个int，一共有32块，最多256个int。每次读入int会一次性填满整个块，也就是每次都会一次性读入8个int。</p>
+<p>​	对于一个地址 Tag(64 - 5 -5) | Index(5) | Offset(5)，让我们考虑什么时候一块会被驱逐：</p>
+<p>​		首先Index会相等，其次根据PART A所说，Tag不相等。至于Offset，它与匹配无关。</p>
+<p>​		也就是Index相等，而Tag不等，会导致一块被驱逐。显然，那就是每过 2 ^ 10 字节，就会导致一块被驱逐。</p>
+<p>​	那么对于 32 * 32 每行 32 个int，128字节， 2 ^ 10 / 128 = 8，所以当访问 A[8][0] 的时候, A[0][0] 会被驱逐，反之一样。因为他们的低 10 位相等，而Tag位不等。</p>
+<p>​	考虑到分块方法，既然每次都会读入8个int又考虑到 A[8][0] 和 A[0][0] 不能同时出现，那么自然会想到 8 * 8 分块。</p>
+<p>​	循环中每次利用8个临时变量按行一次性读取 8 个A数组的数字，然后写入对应的 B 数组中 ，然后重复 8 次。</p>
+<p>​	考虑怎么写入 B 数组，既然 A 数组有按行读，那么 B 数组能否按行写？</p>
+<p>​	答案是可以的。</p>
+<p>​	我们先把每一行 8 个的 A 数组直接先按行写入 B 数组中，然后在 8 * 8 写入 B 数组之后，对 B 进行转置即可。</p>
+<p>​	为什么可以直接转置？ 因为这个时候 B 数组的这 8 * 8 位全部都在缓冲中。</p>
+<h5 id="对于-64-64"><a href="#对于-64-64" class="headerlink" title="对于 64 * 64"></a>对于 64 * 64</h5><p>​	可以参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/387662272">CSAPP - Cache Lab的更(最)优秀的解法 - 知乎</a></p>
+<p>​	我的解法说是在这篇文章中抄来的也不为过。</p>
+<p>​	首先，直接把 32 * 32 的代码放上去会有很高的miss。</p>
+<p>​	 分析：</p>
+<p>​         cache 是 32 组， 每组一块， 一块内 32 字节</p>
+<p>​         地址组成： Tag(64 - 5 - 5) | Index(5位) | Offset(5位)</p>
+<p>​        所以对于 A[4][0] 和 A[0][0], 因为一行为 64 个int，共 256 字节。</p>
+<p>​        256 * 4 = 1024 字节，这个时候 正好 A[4][0] 和 A[0][0] 的地址的低 10 位相同。</p>
+<p>​       所以会发生分到同一组的情况，并且导致 A[0][0] 被驱逐。因此 miss 率超高。</p>
+<p>​       一次最多处理 4 行，考虑 4 * 8, 也不行，因为这样解决不了写入 B 的时候同样情况。</p>
+<p>​       必须以 4 * 4 为单位进行处理，可是这样会导致每一行同时读入的 8 个 int 中后面会有 4 个int 用不到。</p>
+<p>​      下次再使用的时候会导致重新读入。</p>
+<p>​    -——</p>
+<p>​    | A| B|</p>
+<p>​    -——</p>
+<p>​    | C| D|</p>
+<p>​    -——</p>
+<p>​        上面 ABCD 四个区域均为 4 * 4，用 AA 表示 A 的左上，BC表示 B 的左下，由此类推。</p>
+<p>​        先复制， AA -&gt; BA,  AB -&gt; BB， 注意这个地方复制的时候，利用 32 * 32 的临时变量一次读取会更优。</p>
+<p>​        转置， 转置 BA， 转置 BB</p>
+<p>​        再复制， AC -&gt; BC, AD -&gt; BD</p>
+<p>​        转置， 转置 BC, 转置 BD</p>
+<p>​        这个时候 BA， BD 已经完成，不需要管。</p>
+<p>​        只需要按行交换 BC 即可。</p>
+<p>​	需要注意的是，按行交换 BC 的时候注意方法。具体可以看上面的知乎文章。</p>
+<h5 id="对于-61-67"><a href="#对于-61-67" class="headerlink" title="对于 61 * 67"></a>对于 61 * 67</h5><p>​	其实 61 * 67 才是我第一个通过的一个测试点。因为最开始的时候我希望一份代码过三个测试。但是后来发现不太行，在这期间发现61 * 67很容易通过。</p>
+<p>​	只需要分块大小为 16 即可。</p>
+<p>​	这个简单，就不遮遮掩掩了：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; N; i += <span class="number">16</span>) {</span><br><span class="line">          <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; M; j += <span class="number">16</span>) {</span><br><span class="line">              <span class="keyword">for</span> (k = i; k &lt; i + <span class="number">16</span> &amp;&amp; k &lt; N; ++k) {</span><br><span class="line">                  <span class="keyword">for</span> (l = j; l &lt; j + <span class="number">16</span> &amp;&amp; l &lt; M; ++l) {</span><br><span class="line">                      B[l][k] = A[k][l];</span><br><span class="line">                  }</span><br><span class="line">              }</span><br><span class="line">          }</span><br><span class="line">      }</span><br></pre></td></tr></tbody></table></figure>
+
+<p>​	但是这样成绩不优，如果想要更好的成绩可以这样考虑：</p>
+<p>​		1024 / 67 / 4 = 3.82 向下取整为  3</p>
+<p>​	可以考虑使用 6 * 6 分块，同时运用 64 * 64 的方法。</p>
+<p>​	而且 61 -  7 = 54, 67 - 7 = 60. 都可被 6 整除，对最后一部分运用 7 * 7 即可</p>
+<h4 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h4><p>​	最后成绩：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Cache Lab summary:</span><br><span class="line">                        Points   Max pts      Misses</span><br><span class="line">Csim correctness          27.0        27</span><br><span class="line">Trans perf 32x32           8.0         8         260</span><br><span class="line">Trans perf 64x64           8.0         8        1196</span><br><span class="line">Trans perf 61x67          10.0        10        1993</span><br><span class="line">          Total points    53.0        53</span><br></pre></td></tr></tbody></table></figure>
+<p>哎呀，这个 LAB 真是头大，优化之优化，只能说写到最后头疼，不得已第一次看了别人分享的思路题解。</p>
+<h2 id="LAB-8-Perference-LAB（第五章之后）"><a href="#LAB-8-Perference-LAB（第五章之后）" class="headerlink" title="LAB 8 Perference LAB（第五章之后）"></a>LAB 8 Perference LAB（第五章之后）</h2><p>​	LAB 8可以说是LAB 7 的全面劣化版了，首先评分没有确定的标准，没有满分线，性能测试却没有进行环境隔离排除环境因素，甚至每次测试的结果都不一样，而且测试出来的结果依赖于机器。如果时间比较紧的话，这个 LAB 完全可以跳过，认真完成 LAB 7 CACHE LAB即可。</p>
+<h3 id="2025-2-9-2025-2-11"><a href="#2025-2-9-2025-2-11" class="headerlink" title="2025.2.9-2025.2.11"></a>2025.2.9-2025.2.11</h3><p>​	首先回顾基本的优化方法：</p>
+<p>​	1.循环展开</p>
+<p>​	2.减少内存引用</p>
+<p>​	3.减少循环低效率</p>
+<p>​	4.提高机器级并行度</p>
+<p>因为 Perf LAB 没有像 CACHE LAB 限制临时变量和数组等条件，为了提高代码的通用性和锻炼自己，我将在 Perf LAB 中遵守 CACHE LAB 所提出的 code rule。</p>
+<h4 id="ROTATE"><a href="#ROTATE" class="headerlink" title="ROTATE :"></a>ROTATE :</h4><figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> naive_rotate_descr[] = <span class="string">"naive_rotate: Naive baseline implementation"</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">naive_rotate</span><span class="params">(<span class="type">int</span> dim, pixel *src, pixel *dst)</span></span><br><span class="line">{</span><br><span class="line">    <span class="type">int</span> i, j;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; dim; i++)</span><br><span class="line">	<span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; dim; j++)</span><br><span class="line">	    dst[RIDX(dim<span class="number">-1</span>-j, i, dim)] = src[RIDX(i, j, dim)];</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>​	看到这个naive_rotate很难不让人想起 CACHE LAB 的 PART B 优化 Transpose 函数，不说是一模一样，也可以说是长得很像。很容易想到进行分块即可。</p>
+<p>​	那么分块，8 * 8， 16 * 16， 32 * 32。 在我的电脑上最佳的是 16 * 16。</p>
+<p>​	之后我尝试把 CACHE LAB 的其他优化点也加入，发现没啥用，提升的速度还没有误差来的大。于是放弃。</p>
+<h4 id="SMOOTH"><a href="#SMOOTH" class="headerlink" title="SMOOTH :"></a>SMOOTH :</h4><figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> pixel <span class="title function_">avg</span><span class="params">(<span class="type">int</span> dim, <span class="type">int</span> i, <span class="type">int</span> j, pixel *src)</span></span><br><span class="line">{</span><br><span class="line">    <span class="type">int</span> ii, jj;</span><br><span class="line">    pixel_sum sum;</span><br><span class="line">    pixel current_pixel;</span><br><span class="line"></span><br><span class="line">    initialize_pixel_sum(&amp;sum);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(ii = max(i<span class="number">-1</span>, <span class="number">0</span>); ii &lt;= min(i+<span class="number">1</span>, dim<span class="number">-1</span>); ii++)</span><br><span class="line">	<span class="keyword">for</span>(jj = max(j<span class="number">-1</span>, <span class="number">0</span>); jj &lt;= min(j+<span class="number">1</span>, dim<span class="number">-1</span>); jj++)</span><br><span class="line">	    accumulate_sum(&amp;sum, src[RIDX(ii, jj, dim)]);</span><br><span class="line"></span><br><span class="line">    assign_sum_to_pixel(&amp;current_pixel, sum);</span><br><span class="line">    <span class="keyword">return</span> current_pixel;</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="type">char</span> naive_smooth_descr[] = <span class="string">"naive_smooth: Naive baseline implementation"</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">naive_smooth</span><span class="params">(<span class="type">int</span> dim, pixel *src, pixel *dst)</span></span><br><span class="line">{</span><br><span class="line">    <span class="type">int</span> i, j;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; dim; i++)</span><br><span class="line">	<span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; dim; j++)</span><br><span class="line">	    dst[RIDX(i, j, dim)] = avg(dim, i, j, src);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>分析：</p>
+<p>​	1.大量函数调用开销                               -&gt; 只需要把函数调用换成宏即可。</p>
+<p>​	2.大量重复计算导致的高计算开销。  -&gt;  需要换成更优的算法。</p>
+<p>重复计算在哪？</p>
+<p>​	比如计算 dst[1][1]，需要计算 src[0][0] -&gt; src[2][0] src[0][1] - &gt; src[2][1]  src[0][2] - &gt; src[2][2] 九个点。</p>
+<p>​	接着计算 dst[1][2]，需要计算  src[0][1] -&gt; src[2][1] src[0][2] - &gt; src[2][2]  src[0][3] - &gt; src[2][3] 九个点。</p>
+<p>​	很容易发现，这中间有六个点重复。</p>
+<p>记 a =  src[0][0] -&gt; src[2][0], b = src[0][1] - &gt; src[2][1], c = src[0][2] - &gt; src[2][2], d = a + b;</p>
+<p>那么计算 dst[1][2] 的时候只需要计算 e = src[0][3] - &gt; src[2][3] 然后 e + d 即是dst[1][2]答案。</p>
+<p>接着，令 d = e + b 即可，a，c只需要在计算边界的时候需要，之后循环中，只需要 d，e，b即可。</p>
+<p>这么做之后，计算一个点只需要 src[i +1][j - 1] - &gt; src[i +1][j + 1] 两次加法，加上 e + d 一次加法和 d = e + b 一次赋值。</p>
+<p>大大减少了计算量。</p>
+<p>注意处理好边界条件即可。</p>
+<p>另一种方法：</p>
+<p>​	可以考虑前缀和，那么一个点就是 sum[i + 1][j + 1] - sum[i - 2][j + 1] - sum[i + 1][j - 2] + sum[i - 2][j - 2]。</p>
+<p>​	但是这么做其实并不会快多少，因为每次的计算量没少太多。而且考虑到尽量减少数组的设立，利用分块 + 前缀和的方法的话，边界条件处理很麻烦，而且也不通用，最后我没有实现，</p>
+<h4 id="总结：-1"><a href="#总结：-1" class="headerlink" title="总结："></a>总结：</h4><p>​	perf lab是很简单的一个实验，因为没有一个具体的评分标准，其含金量不如 CACHE lab。而且因为误差导致的波动比优化带来的提升大的多。</p>
+<p>我的最终结果：</p>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Teamname: DogDu</span><br><span class="line">Member 1: DogDu</span><br><span class="line">Email 1: dog_du@foxmail.com</span><br><span class="line"></span><br><span class="line">Rotate: Version = naive_rotate: Naive baseline implementation:</span><br><span class="line">Dim             64      128     256     512     1024    Mean</span><br><span class="line">Your CPEs       2.3     2.5     2.7     2.9     6.7</span><br><span class="line">Baseline CPEs   14.7    40.1    46.4    65.9    94.5</span><br><span class="line">Speedup         6.3     16.3    17.5    22.7    14.2    14.2</span><br><span class="line"></span><br><span class="line">Rotate: Version = rotate 16 * 16分块:</span><br><span class="line">Dim             64      128     256     512     1024    Mean</span><br><span class="line">Your CPEs       2.6     2.6     2.7     2.6     2.8</span><br><span class="line">Baseline CPEs   14.7    40.1    46.4    65.9    94.5</span><br><span class="line">Speedup         5.7     15.5    17.4    24.9    34.3    16.8</span><br><span class="line"></span><br><span class="line">Smooth: Version = smooth -- 重复使用计算结果，可适用于 dim &gt;= 2:</span><br><span class="line">Dim             32      64      128     256     512     Mean</span><br><span class="line">Your CPEs       14.0    14.1    14.3    14.7    15.1</span><br><span class="line">Baseline CPEs   695.0   698.0   702.0   717.0   722.0</span><br><span class="line">Speedup         49.7    49.4    49.0    48.7    47.7    48.9</span><br><span class="line"></span><br><span class="line">Smooth: Version = smooth -- 分块使用前缀和，仅可用于 dim % 16 == 0, 因为边界条件比较复杂而且不通用，懒得实现了。:</span><br><span class="line">Dim             32      64      128     256     512     Mean</span><br><span class="line">Your CPEs       88.2    89.2    89.2    92.1    92.2</span><br><span class="line">Baseline CPEs   695.0   698.0   702.0   717.0   722.0</span><br><span class="line">Speedup         7.9     7.8     7.9     7.8     7.8     7.8</span><br><span class="line"></span><br><span class="line">Smooth: Version = naive_smooth: Naive baseline implementation:</span><br><span class="line">Dim             32      64      128     256     512     Mean</span><br><span class="line">Your CPEs       87.7    88.7    89.2    89.5    90.1</span><br><span class="line">Baseline CPEs   695.0   698.0   702.0   717.0   722.0</span><br><span class="line">Speedup         7.9     7.9     7.9     8.0     8.0     7.9</span><br><span class="line"></span><br><span class="line">Summary of Your Best Scores:</span><br><span class="line">  Rotate: 16.8 (rotate 16 * 16分块)</span><br><span class="line">  Smooth: 48.9 (smooth -- 重复使用计算结果，可适用于 dim &gt;= 2)</span><br></pre></td></tr></tbody></table></figure>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://Dog-Du.github.io">DogDu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://dog-du.github.io/2025/03/03/CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">https://dog-du.github.io/2025/03/03/CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/CSAPP/">CSAPP</a></div><div class="post-share"><div class="social-share" data-image="/img/head.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comments</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">DogDu</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">1</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Dog-Du"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is DogDu's Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95"><span class="toc-number">1.</span> <span class="toc-text">CSAPP学习记录</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#LAB-1-DATALAB-%E7%AC%AC%E4%BA%8C%E7%AB%A0%E4%B9%8B%E5%90%8E"><span class="toc-number">1.1.</span> <span class="toc-text">LAB 1 DATALAB (第二章之后)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2024-10-2-2024-10-3"><span class="toc-number">1.1.1.</span> <span class="toc-text">2024.10.2-2024.10.3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LAB-2-BOMBLAB-%E7%AC%AC%E4%B8%89%E7%AB%A0%E4%B9%8B%E5%90%8E"><span class="toc-number">1.2.</span> <span class="toc-text">LAB 2 BOMBLAB (第三章之后)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2024-10-20-2024-10-21"><span class="toc-number">1.2.1.</span> <span class="toc-text">2024.10.20-2024.10.21</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#phase-1"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">phase_1:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#phase-2"><span class="toc-number">1.2.1.2.</span> <span class="toc-text">phase_2:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#phase-3"><span class="toc-number">1.2.1.3.</span> <span class="toc-text">phase_3:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#phase-4"><span class="toc-number">1.2.1.4.</span> <span class="toc-text">phase_4:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#phase-5"><span class="toc-number">1.2.1.5.</span> <span class="toc-text">phase_5:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#phase-6"><span class="toc-number">1.2.1.6.</span> <span class="toc-text">phase_6:</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lab2%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-number">1.2.2.</span> <span class="toc-text">lab2总结：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LAB-3-ATTACK-LAB%EF%BC%88%E7%AC%AC%E4%B8%89%E7%AB%A0%E4%B9%8B%E5%90%8E%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">LAB 3 ATTACK LAB（第三章之后）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2025-2-2-2025-2-3"><span class="toc-number">1.3.1.</span> <span class="toc-text">2025.2.2-2025.2.3</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E7%9A%84%E7%82%B9%EF%BC%9A"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">需要注意的点：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ctarget-level1%EF%BC%9A"><span class="toc-number">1.3.1.2.</span> <span class="toc-text">ctarget-level1：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ctarget-level2"><span class="toc-number">1.3.1.3.</span> <span class="toc-text">ctarget-level2:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ctarget-level3"><span class="toc-number">1.3.1.4.</span> <span class="toc-text">ctarget-level3:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rtarget-level4"><span class="toc-number">1.3.1.5.</span> <span class="toc-text">rtarget-level4</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lab3%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-number">1.3.2.</span> <span class="toc-text">lab3总结：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LAB-4-BUFBOMB-LAB%EF%BC%88%E7%AC%AC%E4%B8%89%E7%AB%A0%E4%B9%8B%E5%90%8E%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">LAB 4 BUFBOMB LAB（第三章之后）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2025-2-4-2025-2-4"><span class="toc-number">1.4.1.</span> <span class="toc-text">2025.2.4-2025.2.4</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E7%9A%84%E7%82%B9%EF%BC%9A-1"><span class="toc-number">1.4.1.1.</span> <span class="toc-text">需要注意的点：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#level-0-level-1"><span class="toc-number">1.4.1.2.</span> <span class="toc-text">level 0 &amp; level 1 :</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#level-2"><span class="toc-number">1.4.1.3.</span> <span class="toc-text">level 2 :</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#level-3"><span class="toc-number">1.4.1.4.</span> <span class="toc-text">level 3 :</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#level4"><span class="toc-number">1.4.1.5.</span> <span class="toc-text">level4:</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lab4%E6%80%BB%E7%BB%93"><span class="toc-number">1.4.2.</span> <span class="toc-text">lab4总结:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LAB-5-LAB-6-Architecture-Lab-%E6%94%BE%E5%BC%83%EF%BC%88%E7%AC%AC%E5%9B%9B%E7%AB%A0%E4%B9%8B%E5%90%8E%EF%BC%89"><span class="toc-number">1.5.</span> <span class="toc-text">LAB 5 &amp; LAB 6 Architecture Lab 放弃（第四章之后）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LAB-7-CACHE-LAB%EF%BC%88%E7%AC%AC%E4%BA%94%E7%AB%A0%E4%B9%8B%E5%90%8E%EF%BC%89"><span class="toc-number">1.6.</span> <span class="toc-text">LAB 7 CACHE LAB（第五章之后）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2025-2-6-2025-2-8"><span class="toc-number">1.6.1.</span> <span class="toc-text">2025.2.6-2025.2.8</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#PART-A%EF%BC%9A"><span class="toc-number">1.6.1.1.</span> <span class="toc-text">PART A：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PART-B"><span class="toc-number">1.6.1.2.</span> <span class="toc-text">PART B:</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%88%86%E5%9D%97%E5%8F%AF%E4%BB%A5%E5%87%8F%E5%B0%91miss%EF%BC%9F"><span class="toc-number">1.6.1.2.1.</span> <span class="toc-text">为什么分块可以减少miss？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E-32-32"><span class="toc-number">1.6.1.2.2.</span> <span class="toc-text">对于 32 * 32</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E-64-64"><span class="toc-number">1.6.1.2.3.</span> <span class="toc-text">对于 64 * 64</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E-61-67"><span class="toc-number">1.6.1.2.4.</span> <span class="toc-text">对于 61 * 67</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-number">1.6.1.3.</span> <span class="toc-text">总结：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LAB-8-Perference-LAB%EF%BC%88%E7%AC%AC%E4%BA%94%E7%AB%A0%E4%B9%8B%E5%90%8E%EF%BC%89"><span class="toc-number">1.7.</span> <span class="toc-text">LAB 8 Perference LAB（第五章之后）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2025-2-9-2025-2-11"><span class="toc-number">1.7.1.</span> <span class="toc-text">2025.2.9-2025.2.11</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ROTATE"><span class="toc-number">1.7.1.1.</span> <span class="toc-text">ROTATE :</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SMOOTH"><span class="toc-number">1.7.1.2.</span> <span class="toc-text">SMOOTH :</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-1"><span class="toc-number">1.7.1.3.</span> <span class="toc-text">总结：</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/03/03/CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/" title="CSAPP学习记录">CSAPP学习记录</a><time datetime="2025-03-03T12:44:15.000Z" title="Created 2025-03-03 20:44:15">2025-03-03</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By DogDu</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll to Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23lip70wbjDSj3yXVa',
+      clientSecret: '229af146a5a288cca20082b54bcaf2ea896347af',
+      repo: 'Dog-Du.github.io',
+      owner: 'Dog-Du',
+      admin: ['Dog-Du'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: md5(window.location.pathname)
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
