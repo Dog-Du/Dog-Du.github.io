@@ -191,7 +191,7 @@
       admin: ['Dog-Du'],
       updateCountCallback: commentCount,
       ...option,
-      id: isShuoshuo ? path : (option && option.id) || '7388bf33883dbd6f7762cb2f7df795e5'
+      id: md5(window.location.pathname)
     })
 
     gitalk.render('gitalk-container')
