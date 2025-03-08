@@ -6,7 +6,7 @@
   <link href="https://dog-du.github.io/atom.xml" rel="self"/>
   
   <link href="https://dog-du.github.io/"/>
-  <updated>2025-03-08T08:02:44.878Z</updated>
+  <updated>2025-03-08T08:53:53.469Z</updated>
   <id>https://dog-du.github.io/</id>
   
   <author>
@@ -17,11 +17,11 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>CSAPP学习记录</title>
+    <title>CSAPP学习记录（已完结）</title>
     <link href="https://dog-du.github.io/2025/03/03/CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"/>
     <id>https://dog-du.github.io/2025/03/03/CSAPP%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/</id>
     <published>2025-03-03T12:44:15.000Z</published>
-    <updated>2025-03-08T08:02:44.878Z</updated>
+    <updated>2025-03-08T08:53:53.469Z</updated>
     
     
     <summary type="html">CSAPP的LAB完成记录，本体不含代码，但包括读书笔记和代码仓库</summary>
@@ -31,7 +31,222 @@
     <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
     
     
-    <category term="CSAPP LAB" scheme="https://dog-du.github.io/tags/CSAPP-LAB/"/>
+    <category term="CSAPP" scheme="https://dog-du.github.io/tags/CSAPP/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CMU15445学习笔记（已完结）</title>
+    <link href="https://dog-du.github.io/2024/02/05/CMU15445%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
+    <id>https://dog-du.github.io/2024/02/05/CMU15445%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</id>
+    <published>2024-02-05T14:36:15.000Z</published>
+    <updated>2025-03-08T08:44:54.412Z</updated>
+    
+    
+    <summary type="html">CMU15445的LAB完成记录，本体不含代码，但包括代码仓库</summary>
+    
+    
+    
+    <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
+    
+    
+    <category term="CMU15445" scheme="https://dog-du.github.io/tags/CMU15445/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>跳表（skip list）的简单实现</title>
+    <link href="https://dog-du.github.io/2024/01/22/%E8%B7%B3%E8%A1%A8%E7%9A%84%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/"/>
+    <id>https://dog-du.github.io/2024/01/22/%E8%B7%B3%E8%A1%A8%E7%9A%84%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/</id>
+    <published>2024-01-22T11:18:53.000Z</published>
+    <updated>2025-03-08T09:00:39.542Z</updated>
+    
+    
+    <summary type="html">跳表（skip list）的简单实现</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>树的剖分</title>
+    <link href="https://dog-du.github.io/2024/01/22/%E6%A0%91%E7%9A%84%E5%89%96%E5%88%86/"/>
+    <id>https://dog-du.github.io/2024/01/22/%E6%A0%91%E7%9A%84%E5%89%96%E5%88%86/</id>
+    <published>2024-01-22T10:52:53.000Z</published>
+    <updated>2025-03-08T09:00:08.832Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;前排感谢AgOH大佬 orz orz :&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>树上启发式合并（dsu on tree）</title>
+    <link href="https://dog-du.github.io/2024/01/22/%E6%A0%91%E4%B8%8A%E5%90%AF%E5%8F%91%E5%BC%8F%E5%90%88%E5%B9%B6/"/>
+    <id>https://dog-du.github.io/2024/01/22/%E6%A0%91%E4%B8%8A%E5%90%AF%E5%8F%91%E5%BC%8F%E5%90%88%E5%B9%B6/</id>
+    <published>2024-01-22T10:44:53.000Z</published>
+    <updated>2025-03-08T09:00:26.728Z</updated>
+    
+    
+    <summary type="html">学一下树上启发式合并</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>std::sort的底层实现</title>
+    <link href="https://dog-du.github.io/2024/01/14/stl-sort%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0/"/>
+    <id>https://dog-du.github.io/2024/01/14/stl-sort%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0/</id>
+    <published>2024-01-14T08:18:53.000Z</published>
+    <updated>2025-03-08T08:58:31.769Z</updated>
+    
+    
+    <summary type="html">stl的sort实现</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>二叉树广义表表示和二叉树的转换</title>
+    <link href="https://dog-du.github.io/2023/11/23/%E4%BA%8C%E5%8F%89%E6%A0%91%E5%B9%BF%E4%B9%89%E8%A1%A8%E8%A1%A8%E7%A4%BA%E5%92%8C%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E8%BD%AC%E6%8D%A2/"/>
+    <id>https://dog-du.github.io/2023/11/23/%E4%BA%8C%E5%8F%89%E6%A0%91%E5%B9%BF%E4%B9%89%E8%A1%A8%E8%A1%A8%E7%A4%BA%E5%92%8C%E4%BA%8C%E5%8F%89%E6%A0%91%E7%9A%84%E8%BD%AC%E6%8D%A2/</id>
+    <published>2023-11-23T10:48:54.000Z</published>
+    <updated>2025-03-08T08:58:47.560Z</updated>
+    
+    
+    <summary type="html">突发奇想</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>蓝桥杯2019国B-第八大奇迹</title>
+    <link href="https://dog-du.github.io/2023/10/23/%E8%93%9D%E6%A1%A5%E6%9D%AF-%E7%AC%AC%E5%85%AB%E5%A4%A7%E5%A5%87%E8%BF%B9/"/>
+    <id>https://dog-du.github.io/2023/10/23/%E8%93%9D%E6%A1%A5%E6%9D%AF-%E7%AC%AC%E5%85%AB%E5%A4%A7%E5%A5%87%E8%BF%B9/</id>
+    <published>2023-10-23T11:28:08.000Z</published>
+    <updated>2025-03-08T08:59:06.214Z</updated>
+    
+    
+    <summary type="html">主席树不行就还其他方法</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>LeetCode接雨水i 两种思想四种解法</title>
+    <link href="https://dog-du.github.io/2023/10/23/LeetCode%E6%8E%A5%E9%9B%A8%E6%B0%B4/"/>
+    <id>https://dog-du.github.io/2023/10/23/LeetCode%E6%8E%A5%E9%9B%A8%E6%B0%B4/</id>
+    <published>2023-10-23T11:18:53.000Z</published>
+    <updated>2025-03-08T08:58:13.851Z</updated>
+    
+    
+    <summary type="html">用两种方法解接雨水</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>链表/单链表 O(nlogn)排序</title>
+    <link href="https://dog-du.github.io/2023/10/19/%E9%93%BE%E8%A1%A8%E6%88%96%E5%8D%95%E9%93%BE%E8%A1%A8%E6%8E%92%E5%BA%8F/"/>
+    <id>https://dog-du.github.io/2023/10/19/%E9%93%BE%E8%A1%A8%E6%88%96%E5%8D%95%E9%93%BE%E8%A1%A8%E6%8E%92%E5%BA%8F/</id>
+    <published>2023-10-19T11:40:45.000Z</published>
+    <updated>2025-03-08T08:59:33.444Z</updated>
+    
+    
+    <summary type="html">链表排序方法</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>洛谷 U264950 3D打印 一道折磨我很久的题目</title>
+    <link href="https://dog-du.github.io/2023/10/19/%E6%B4%9B%E8%B0%B7-3D%E6%89%93%E5%8D%B0/"/>
+    <id>https://dog-du.github.io/2023/10/19/%E6%B4%9B%E8%B0%B7-3D%E6%89%93%E5%8D%B0/</id>
+    <published>2023-10-19T11:20:53.000Z</published>
+    <updated>2025-03-08T08:59:49.463Z</updated>
+    
+    
+    <summary type="html">一个头大的题目</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>蓝桥杯2023-网络稳定性</title>
+    <link href="https://dog-du.github.io/2023/10/13/%E8%93%9D%E6%A1%A5%E6%9D%AF-%E7%BD%91%E7%BB%9C%E7%A8%B3%E5%AE%9A%E6%80%A7/"/>
+    <id>https://dog-du.github.io/2023/10/13/%E8%93%9D%E6%A1%A5%E6%9D%AF-%E7%BD%91%E7%BB%9C%E7%A8%B3%E5%AE%9A%E6%80%A7/</id>
+    <published>2023-10-13T11:23:37.000Z</published>
+    <updated>2025-03-08T08:59:22.235Z</updated>
+    
+    
+    <summary type="html">最大生成树+lca解</summary>
+    
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
+    
+    
+    <category term="数据结构与算法" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/"/>
     
   </entry>
   
