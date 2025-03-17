@@ -6,7 +6,7 @@
   <link href="https://dog-du.github.io/atom.xml" rel="self"/>
   
   <link href="https://dog-du.github.io/"/>
-  <updated>2025-03-13T09:01:45.090Z</updated>
+  <updated>2025-03-17T13:27:21.468Z</updated>
   <id>https://dog-du.github.io/</id>
   
   <author>
@@ -17,44 +17,67 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>计网八股</title>
-    <link href="https://dog-du.github.io/2025/03/10/%E8%AE%A1%E7%BD%91%E5%85%AB%E8%82%A1/"/>
-    <id>https://dog-du.github.io/2025/03/10/%E8%AE%A1%E7%BD%91%E5%85%AB%E8%82%A1/</id>
-    <published>2025-03-10T00:54:15.000Z</published>
-    <updated>2025-03-13T09:01:45.090Z</updated>
+    <title>复习操作系统</title>
+    <link href="https://dog-du.github.io/2025/03/14/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8E%9F%E7%90%86/"/>
+    <id>https://dog-du.github.io/2025/03/14/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8E%9F%E7%90%86/</id>
+    <published>2025-03-14T02:43:15.000Z</published>
+    <updated>2025-03-17T13:27:21.468Z</updated>
     
     
-    <summary type="html">看小林coding，嗯背计网八股</summary>
+    <summary type="html">看中山大学OS，学操作系统</summary>
     
     
     
     <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
     
     
-    <category term="计算机网络" scheme="https://dog-du.github.io/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"/>
+    <category term="操作系统" scheme="https://dog-du.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"/>
     
-    <category term="八股" scheme="https://dog-du.github.io/tags/%E5%85%AB%E8%82%A1/"/>
+    <category term="复习" scheme="https://dog-du.github.io/tags/%E5%A4%8D%E4%B9%A0/"/>
     
     <category term="未完成" scheme="https://dog-du.github.io/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/"/>
     
   </entry>
   
   <entry>
-    <title>听课，速通effective-modern-cpp</title>
-    <link href="https://dog-du.github.io/2025/03/09/%E9%80%9F%E9%80%9Aeffective-modern-cpp/"/>
-    <id>https://dog-du.github.io/2025/03/09/%E9%80%9F%E9%80%9Aeffective-modern-cpp/</id>
-    <published>2025-03-09T13:54:15.000Z</published>
-    <updated>2025-03-13T08:49:59.895Z</updated>
+    <title>计网复习</title>
+    <link href="https://dog-du.github.io/2025/03/10/%E8%AE%A1%E7%BD%91%E5%A4%8D%E4%B9%A0/"/>
+    <id>https://dog-du.github.io/2025/03/10/%E8%AE%A1%E7%BD%91%E5%A4%8D%E4%B9%A0/</id>
+    <published>2025-03-10T00:54:15.000Z</published>
+    <updated>2025-03-15T09:20:30.844Z</updated>
     
     
-    <summary type="html">听课，用effective-modern-cpp速通cpp八股</summary>
+    <summary type="html">看小林coding，复习计网</summary>
     
     
     
     <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
     
     
-    <category term="八股" scheme="https://dog-du.github.io/tags/%E5%85%AB%E8%82%A1/"/>
+    <category term="复习" scheme="https://dog-du.github.io/tags/%E5%A4%8D%E4%B9%A0/"/>
+    
+    <category term="未完成" scheme="https://dog-du.github.io/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/"/>
+    
+    <category term="计算机网络" scheme="https://dog-du.github.io/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>听课，学effective-modern-cpp</title>
+    <link href="https://dog-du.github.io/2025/03/09/%E9%80%9F%E9%80%9Aeffective-modern-cpp/"/>
+    <id>https://dog-du.github.io/2025/03/09/%E9%80%9F%E9%80%9Aeffective-modern-cpp/</id>
+    <published>2025-03-09T13:54:15.000Z</published>
+    <updated>2025-03-15T09:21:15.755Z</updated>
+    
+    
+    <summary type="html">听课，学effective-modern-cpp复习C++特性</summary>
+    
+    
+    
+    <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
+    
+    
+    <category term="复习" scheme="https://dog-du.github.io/tags/%E5%A4%8D%E4%B9%A0/"/>
     
     <category term="未完成" scheme="https://dog-du.github.io/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/"/>
     
@@ -77,11 +100,11 @@
     <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
     
     
+    <category term="CSAPP" scheme="https://dog-du.github.io/tags/CSAPP/"/>
+    
     <category term="LAB" scheme="https://dog-du.github.io/tags/LAB/"/>
     
     <category term="已完成" scheme="https://dog-du.github.io/tags/%E5%B7%B2%E5%AE%8C%E6%88%90/"/>
-    
-    <category term="CSAPP" scheme="https://dog-du.github.io/tags/CSAPP/"/>
     
   </entry>
   
@@ -100,13 +123,13 @@
     <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
     
     
-    <category term="CMU15445" scheme="https://dog-du.github.io/tags/CMU15445/"/>
-    
     <category term="LAB" scheme="https://dog-du.github.io/tags/LAB/"/>
     
-    <category term="数据库" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-    
     <category term="已完成" scheme="https://dog-du.github.io/tags/%E5%B7%B2%E5%AE%8C%E6%88%90/"/>
+    
+    <category term="CMU15445" scheme="https://dog-du.github.io/tags/CMU15445/"/>
+    
+    <category term="数据库" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
     
   </entry>
   
