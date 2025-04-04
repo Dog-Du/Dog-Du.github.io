@@ -1,0 +1,421 @@
+<!DOCTYPE html><html lang="cn-ZH" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>读论文-Architecture of a Database System | DogDu's blog</title><meta name="author" content="DogDu"><meta name="copyright" content="DogDu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="英语很差，看论文很费解，但是看了一下作者居然有 Stonebraker，这下耐着性子慢慢读这 119 页了。整体上是一个笔记。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="读论文-Architecture of a Database System">
+<meta property="og:url" content="https://dog-du.github.io/posts/8453.html">
+<meta property="og:site_name" content="DogDu&#39;s blog">
+<meta property="og:description" content="英语很差，看论文很费解，但是看了一下作者居然有 Stonebraker，这下耐着性子慢慢读这 119 页了。整体上是一个笔记。">
+<meta property="og:locale" content="cn_ZH">
+<meta property="og:image" content="https://dog-du.github.io/img/top_img.jpg">
+<meta property="article:published_time" content="2025-03-27T08:37:49.000Z">
+<meta property="article:modified_time" content="2025-04-04T11:32:10.702Z">
+<meta property="article:author" content="DogDu">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="论文">
+<meta property="article:tag" content="未完成">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dog-du.github.io/img/top_img.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "读论文-Architecture of a Database System",
+  "url": "https://dog-du.github.io/posts/8453.html",
+  "image": "https://dog-du.github.io/img/top_img.jpg",
+  "datePublished": "2025-03-27T08:37:49.000Z",
+  "dateModified": "2025-04-04T11:32:10.702Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "DogDu",
+      "url": "https://dog-du.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/head.jpg"><link rel="canonical" href="https://dog-du.github.io/posts/8453.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":300,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '读论文-Architecture of a Database System',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="DogDu's blog" type="application/atom+xml">
+</head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/top_img.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/head.jpg" alt="Logo"><span class="site-name">DogDu's blog</span></a><a class="nav-page-title" href="/"><span class="site-name">读论文-Architecture of a Database System</span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">读论文-Architecture of a Database System</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-03-27T08:37:49.000Z" title="Created 2025-03-27 16:37:49">2025-03-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-04-04T11:32:10.702Z" title="Updated 2025-04-04 19:32:10">2025-04-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="architecture-of-a-database-system"><a class="markdownIt-Anchor" href="#architecture-of-a-database-system"></a> Architecture of a Database System</h1>
+<p>原文：https://dsf.berkeley.edu/papers/fntdb07-architecture.pdf</p>
+<p>论文出于 2007 年，作者是 Joseph M. Hellerstein, Michael Stonebraker, James Hamilton。</p>
+<p>年代较早并且更重视于体系结构，很多新技术没有提及，如：SSI，NoSQL等</p>
+<p>本文总体上是对论文的翻译、阅读。有一些不确定单词语句之处，会给出原文，附加我的翻译。一些地方可能会给上注。</p>
+<h1 id="abstract"><a class="markdownIt-Anchor" href="#abstract"></a> Abstract</h1>
+<p>介绍了 DBMS 的重要性和先进性。由于一些原因，介绍 DBMS 系统设计问题的文献较少。论文介绍了 DBMS 的设计原则的框架讨论。包括进程模型、并行框架、存储系统设计、事务系统实现、查询处理器和优化器架构，以及经典的组件和程序。</p>
+<p><s>嘻，全是我想看的，是不是说明我啥也不会啊（</s></p>
+<h1 id="1-introduction"><a class="markdownIt-Anchor" href="#1-introduction"></a> 1 Introduction</h1>
+<p>再次强调了 DBMS 的复杂性，重要性。提到早期的 DBMSs 在计算机科学领域是具有重要影响力的软件，其思想和实现在各处都被借鉴使用。</p>
+<p>对于 DBMS 的课程没有得到应用的重视。分析了两个原因：</p>
+<ul>
+<li>应用领域的 DBMS 圈子很小。市场只允许少数高端巨头存在。数据库设计圈子很小：许多人处于同一个学校，研究相同的项目，从事于相同的商业产品</li>
+<li>数据库的学术领域常忽略体系结构问题。数据库的教科书专注于算法和理论方面，而很少讨论整个实现时的体系结构。</li>
+</ul>
+<p>总而言之，关于如何构建数据库系统的许多传统智慧是可用的，但很少有人写下来或广泛交流。</p>
+<p>论文试图抓住现代数据库系统的体系结构观念，同时讨论一些先进的话题。有一些问题出于文献，有一些问题处于产品手册或者惯例。</p>
+<p>论文的目标是关注整体系统设计和强调教科书中通常没有讨论的问题，为更广为人知的算法和概念提供有用的上下文。</p>
+<p>论文假定读者熟悉数据库系统教材并且熟悉现代操作系统基本功能。</p>
+<h2 id="11-relational-systems-the-life-of-a-query"><a class="markdownIt-Anchor" href="#11-relational-systems-the-life-of-a-query"></a> 1.1 Relational Systems: The Life of a Query</h2>
+<p><strong>论文强调了关系型数据库在基础领域和先进领域的重要性与地位，表示本文会关注于关系型数据库。</strong></p>
+<p><img src="/img/Architecture%20Of%20a%20Database%20System/image-20250327212057990.png" alt="image-20250327212057990"></p>
+<p>
+    </p><center>一个传统的关系型数据库有五个部件，如图1.1</center>
+<p></p>
+<p>作为对这些部分的简单介绍以及论文后些部分的总结，可以关注一句 SQL 的生命周期。</p>
+<p>考虑机场中一个简单但典型的数据库交互，其中登机口代理单击表单以请求航班的乘客列表。</p>
+<p>当按下查询按钮之后一个单查询事务工作如下：</p>
+<ol>
+<li>个人电脑与服务器建立网络连接、直接与数据库建立网络连接、或者与一个在客户端和数据库之间的中间层建立连接。由于这些不同的选择，一个传统 DBMS 需要适合不同协议。但他们的职责基本相同，为调用者建立并记住连接状态，响应 SQL 命令，需要时返回数据与其他信息。在这个示例中，客户端与中间层建立连接，并将请求转发给 DBMS 中。</li>
+<li>一旦收到 SQL， DBMS 为 SQL 命令分配一个计算线程，这个线程与客户端进行通信与输出，这是 DBMS 中 Process Manager (如图1.1) 的任务。这个阶段，数据库最重要的决定是 admission control （准入控制），系统是应该立即开始处理查询，还是延迟执行，直到有足够的系统资源可以用于此查询。这部分将在第二节讨论。</li>
+<li>准入并分配线程控制后，查询开始进行。这是 Relational Query Processor （关系查询处理器，如图1.1）的任务。这组模块检查用户是否被授权运行查询，并将用户的SQL查询文本编译到内部查询计划中。编译后，执行计划交予计划执行器。计划执行器由一组“operators（算子）”（关系算法实现）组成，用于执行任何查询。算子包括连接、选择、投影、聚合、排序等，同时向该系统的较低层级请求数据记录（也就是在语法树上向孩子请求元组）。在示例中，是一个简单子集。这部分将在第四节讨论。</li>
+<li>在查询计划的基础上，有多个算子向数据库请求数据。这些算子通过调用 DBMS 中管理数据读写操作的 Transctional Storage Manager （事务存储管理器，如图1.1）获得数据。存储系统包括一系列算法和数据结构来组织、管理和读写磁盘上的数据，像基础的结构表和索引等。还包括一个缓冲区管理模块，用来决定何时以及将什么数据从磁盘传输到内存缓冲中。回到示例，在访问数据中，查询必须调用事务管理模块以保证事物的 ACID 属性。（将在 5.1 节有更详细的讨论）。在获取数据之前，必须从锁管理器中先上锁，以确保并发时的正确执行。如果查询包含数据库的更新，他会与日志管理器进行交互，确保事务提交之后的持久性，和中止之后的完全 undo。在 5 节中，会更细节讨论存储和缓冲管理；在 6 节中，会介绍事务性一致性体系结构。</li>
+<li>这时示例中的 SQL 已经开始访问数据记录，并准备用他们为客户端计算结果。调用方法，将控制返回查询执行器的算子，算子从数据库数据中编排元组的计算结果；结果元组生成之后，被放置在客户端通信管理器缓冲区中，并将交过返回给调用者。对于大型结果集，客户机通常会进行额外的调用，以便从查询中增量地获取更多数据，从而导致通过通信管理器、查询执行器和存储管理器进行多次迭代。在我们的简单示例中，在查询结束时，事务完成，连接关闭；这导致事务管理器清理事务的状态，流程管理器为查询释放任何控制结构，通信管理器清理连接的通信状态。</li>
+</ol>
+<p>这个示例，虽然触及 RDBMS 中许多关键部分，但并非全部。图1.1右边部分的共享部分对一个完全功能的 DBMS 非常重要。catalog （目录）目录和内存管理器在任何事务期间（包括我们的示例查询）都作为实用程序调用。查询处理器在身份验证、解析和查询优化期间使用 catalog （目录）。内存管理器贯穿于整个 DBMS ，每当需要动态分配或释放内存时。图1.1最右边框中列出的其余模块是独立于任何特定查询运行的实用程序，使数据库作为一个整体保持良好和可靠。我们将在第7节中讨论这些共享组件和实用程序。</p>
+<h2 id="12-scope-and-overview"><a class="markdownIt-Anchor" href="#12-scope-and-overview"></a> 1.2 Scope and  Overview</h2>
+<p>在论文的大部分内容中，重点是支持核心数据库功能的架构基础。论文不会对文献中广泛记载的数据库算法进行全面的回顾。论文会对现代dbms中出现的许多扩展进行了最少的讨论，其中大多数扩展提供了核心数据管理之外的功能，但不会显著改变系统架构。然而，在论文的各个部分中，论文会记录超出论文范围得有趣的主题，并提供额外阅读的指导。</p>
+<p>论文首先对数据库系统的总体体系结构进行研究。任何服务器系统架构的第一个主题都是它的整体进程结构，论文在这方面探索了各种可行的替代方案，首先是针对单处理器机器，然后是针对当今可用的各种并行架构。对核心服务器系统体系结构的讨论适用于各种系统，但在很大程度上是DBMS设计的先驱。在此之后，讨论 DBMS 中更特定的组件。从系统的单个查询的视角开始，重点关注关系查询处理器。接下来，我们进入存储体系结构和事务性存储管理设计。最后，我们介绍了大多数 DBMSs 中存在的一些共享组件和实用程序，这些组件和实用程序在教科书中很少讨论。</p>
+<h1 id="2-process-models"><a class="markdownIt-Anchor" href="#2-process-models"></a> 2 Process Models</h1>
+<p>在设计任何多用户服务器时，需要对并发用户请求的执行以及如何将这些请求映射到操作系统进程或线程做出早期决策。这些决策对系统的软件架构、性能、可伸缩性和跨操作系统的可移植性都有深远的影响。在本节中，我们将研究 DBMS 进程模型的许多选择，这些模型可作为许多其他高并发服务器系统的模板。我们从一个简化的框架开始，假设对线程有良好的操作系统支持，我们最初的目标只是一个单处理器系统。然后，我们对这个简化的讨论进行扩展，以处理现代 DBMSs 如何实现其流程模型的现实问题。在第 3 节中，我们将讨论尽可能利用计算机集群以及多处理器和多核系统的技术。</p>
+<p>​	下面的讨论依赖于这些定义：</p>
+<ul>
+<li>
+<p>一个 <em><strong>Operating System Process (操作系统进程)</strong></em> 由操作系统（OS）和一个带有私有地址空间进程的程序执行单元（一个控制线程）组成。为进程维护的状态包括操作系统资源句柄和安全上下文。这个程序执行单元由操作系统内核调度，每个进程都有自己唯一的地址空间。</p>
+</li>
+<li>
+<p>一个 <em><strong>Operating System Thread (操作系统线程)</strong></em> 是一个操作系统程序执行单元，没有额外的私有操作系统上下文，也没有私有地址空间。每个操作系统线程都可以完全访问在同一个多线程操作系统进程中执行的其他线程的内存。线程执行由操作系统内核调度器调度，这些线程通常称为“内核线程”或k-线程。</p>
+</li>
+<li>
+<p>一个 <em><strong>Lightweight Thread Package (轻量级线程包)</strong></em> 是一个应用程序级别的结构，它支持单个操作系统进程中有多个线程。与由操作系统调度的操作系统线程不同，轻量级线程由应用程序级别的线程调度程序调度。轻量级线程和内核线程的区别在于，轻量级线程是在用户空间中调度的，不需要内核调度器的参与或了解。用户空间调度器及其所有轻量级线程的组合在单个操作系统进程中运行，并且对操作系统调度器显示为单个执行线程。</p>
+<p>​	与操作系统线程相比，轻量级线程具有更快的线程切换的优点，因为不需要进行操作系统内核模式切换来调度下一个线程。然而，轻量级线程的缺点是，任何阻塞操作（例如任何线程的同步I/O）都会阻塞进程中的所有线程。这会阻止其他线程在一个线程被阻塞等待操作系统资源时执行。轻量级线程包通过只发出异步（非阻塞）I/O请求和不调用任何可能阻塞的操作系统操作来避免这种情况。通常，轻量级线程提供了比基于OS进程或OS线程编写软件更困难的编程模型。</p>
+<p>（注：论文语境中的轻量级线程，可见2.2.1 DBMS Threads。我原本以为其实指的就是协程或者纤程，但实则有一定区别。但总之，它们无法使用多核，见3.5）</p>
+</li>
+<li>
+<p>一些 DBMSs 实现了自己的轻量级线程（LWT）包。当DBMS、一般LWT和操作系统线程之间的区别对讨论不重要时，我们将这些线程称为 DBMS 线程和简单的线程。</p>
+</li>
+<li>
+<p>***DBMS client (DBMS 客户端)***是一个软件组件，它实现了应用程序用来与DBMS通信的API。一些示例数据库访问api有JDBC、ODBC和OLE/DB。此外，还有各种各样的专有数据库访问API集。有些程序是使用嵌入式SQL编写的，这是一种将编程语言语句与数据库访问语句混合在一起的技术。它首先在IBM COBOL和PL/I中发布，后来在SQL/J中发布，SQL/J为Java实现了嵌入式SQL。嵌入式SQL由预处理器处理，预处理器将嵌入式SQL语句转换为对数据访问api的直接调用。无论客户机程序中使用什么语法，最终结果都是对DBMS数据访问api的一系列调用。对这些api的调用由DBMS客户端组件编组，并通过某种通信协议发送给DBMS。这些协议通常是专有的，通常没有文档记录。在过去，已经有一些标准化客户机到数据库通信协议的努力，其中Open Group DRDA可能是最著名的，但没有一个获得广泛采用。</p>
+</li>
+<li>
+<p>一个***DBMS Worker (工作线程)***是DBMS中代表DBMS客户端工作的执行线程。在DBMS Worker 和DBMS客户端之间存在1:1的映射：这个DBMS Worker 处理来自单个DBMS客户机的所有SQL请求。worker 执行每个请求并将结果返回给客户端。在接下来的内容中，我们将研究商业DBMS将DBMS Worker映射到操作系统线程或进程的不同方法。这些差别是明显的，我们将它们称为 worker threads (工作线程) 或 worker process (工作进程)。否则，我们将它们简单地称为工作器或DBMS worker。</p>
+</li>
+</ul>
+<h2 id="21-uniprocessors-and-lightweight-threads"><a class="markdownIt-Anchor" href="#21-uniprocessors-and-lightweight-threads"></a> 2.1 Uniprocessors and Lightweight Threads</h2>
+<p>在本小节中，我们将概述一个简化的DBMS过程模型分类法。很少有领先的 DBMSs 的架构与本节中描述的完全一样，但是这些材料构成了我们将更详细地讨论当前一代生产系统的基础。当今的每一个领先的数据库系统，其核心都是本文所介绍的至少一个模型的扩展或增强。</p>
+<p>​	我们首先做两个简化的假设（我们将在随后的章节中放宽）：</p>
+<ol>
+<li><em><strong>OS thread support (操作系统线程支持)</strong></em>：我们假设操作系统为我们提供了对内核线程的有效支持，并且一个进程可以有非常多的线程。我们还假设每个线程的内存开销很小，上下文切换开销也很小。这在今天的许多现代操作系统上都是正确的，但在大多数 DBMS 最初设计时却不一定不是正确的。由于那时的操作系统线程要么不可用，要么在某些平台上伸缩性差，因此许多 DBMSs 在实现时没有使用底层操作系统线程支持。</li>
+<li><em><strong>Uniprocessor hardware （单处理器硬件）</strong></em>：我们将假设我们正在为具有单个CPU的单个机器进行设计。考虑到多核系统的普遍性，这是一个不现实的假设，即使在低端也是如此。然而，这个假设将简化我们最初的讨论。</li>
+</ol>
+<p>在这个简化的上下文中，DBMS有三个自然的过程模型选项。从最简单的到最复杂的，它们是：(1)the process per DBMS worker，(2)the thread per DBMS worker，(3)process pool。虽然这些模型都是简化的，但这三种模型都在今天的商业DBMS系统中使用。</p>
+<h3 id="211-process-per-dbms-worker"><a class="markdownIt-Anchor" href="#211-process-per-dbms-worker"></a> 2.1.1 Process per DBMS Worker</h3>
+<p><img src="/img/Architecture%20Of%20a%20Database%20System/image-20250329170130698.png" alt="image-20250329170130698"></p>
+<p>一个 DBMS worker 一个进程（图2.1）被早期的DBMS实现并使用，并且今天仍被许多商业系统所使用。这个模型相对容易实现，因为DBMS工作器直接映射到操作系统进程。操作系统调度器管理DBMS工作人员的分时，而DBMS程序员可以依靠操作系统的保护设施来隔离内存溢出等标准错误。此外，各种编程工具（如调试器和内存检查器）都非常适合此进程模型。使这个模型复杂化的是跨DBMS连接共享的内存数据结构，包括锁表和缓冲池（分别在第6.3节和第5.3节中详细讨论）。这些共享数据结构必须显式地分配在操作系统支持的共享内存中，这些内存可以跨所有DBMS进程访问。这需要操作系统支持（这是广泛可用的）和一些特殊的DBMS编码。在实践中，这个模型中需要大量使用共享内存，这降低了地址空间分离的一些优势，因为有很大一部分“interesting（有趣的）”内存是跨进程共享的。</p>
+<p>​	在扩展到非常大量的并发连接方面，*process per DBMS worker （一个 DBMS worker一个进程）*不是最有吸引力的进程模型。伸缩问题的出现是因为进程比线程拥有更多的状态，因此会消耗更多的内存。进程切换需要切换安全上下文、内存管理器状态、文件和网络句柄表以及其他进程上下文。而这对于一个线程的切换来说，是不需要的。尽管如此，一个 DBMS worker一个进程的模型仍然很流行，并在IBM DB2、PostgreSQL和Oracle得到支持。</p>
+<h3 id="212-thread-per-dbms-worker"><a class="markdownIt-Anchor" href="#212-thread-per-dbms-worker"></a> 2.1.2 Thread per DBMS worker</h3>
+<p><img src="/img/Architecture%20Of%20a%20Database%20System/image-20250329171129970.png" alt="image-20250329171129970"></p>
+<p>在每个DBMS工作线程模型（图2.2）中，单个多线程进程承载所有DBMS工作线程活动。一个调度线程 （或一小部分这样的线程）监听新的 DBMS 客户端连接。每个连接分配一个新线程。当每个客户端提交SQL请求时，请求完全由运行DBMS worker的相应线程执行。该线程在DBMS进程中运行，完成后，结果返回给客户端，线程在连接上等待来自同一客户端的下一个请求。</p>
+<p>​	在这种体系结构中出现了常见的多线程编程挑战：操作系统不保护线程免受彼此的内存溢出和偏离指针的影响；调试是棘手的，特别是在竞争条件下；由于线程接口和多线程扩展的差异，软件很难跨操作系统移植。由于共享内存的广泛使用，the thread per DBMS worker的许多多编程挑战也存在于每个the process per DBMS worker中。</p>
+<p>​	尽管近年来不同操作系统之间的线程API差异已经最小化，但平台之间的细微差异仍然会给调试和调优带来麻烦。忽略这些实现困难，每个DBMS工作线程模型可以很好地扩展到大量并发连接，并在一些当前一代的生产DBMS系统中使用，包括IBM DB2、Microsoft SQL Server、MySQL、Informix和Sybase。</p>
+<h3 id="213-process-pool"><a class="markdownIt-Anchor" href="#213-process-pool"></a> 2.1.3 Process Pool</h3>
+<p><img src="/img/Architecture%20Of%20a%20Database%20System/image-20250329182824292.png" alt="image-20250329182824292"></p>
+<p>这个模型是 the process per DBMS worker 的一个变体。回想一下，其优点是实现简单，但是每个连接需要一个完整进程的内存开销是一个明显的缺点。使用进程池（图2.3），而不是为每个DBMS工作人员分配一个完整的进程，它们由进程池托管。中央进程保存所有DBMS客户端连接，并且当每个SQL请求来自客户端时，该请求被传递给进程池中的一个进程。SQL语句执行到完成，结果返回给数据库客户端，进程返回到池中，以分配给下一个请求。进程池的大小是有限的，而且通常是固定的。如果一个请求到达而所有进程都在处理其他请求，那么新请求必须等待一个进程空闲。</p>
+<p>​	进程池具有每个DBMS工作进程的所有优点，但由于所需的进程数量要少得多，因此内存效率要高得多。进程池通常使用动态调整大小的进程池来实现，当大量并发请求到达时，进程池可能会隐式增长到某个最大数量。当请求负载较轻时，可以将进程池减少到更少的等待进程。与the thread per DBMS worker一样，目前使用的几个当前一代DBMS也支持进程池模型。</p>
+<h3 id="214-shared-data-and-process-boundaries"><a class="markdownIt-Anchor" href="#214-shared-data-and-process-boundaries"></a> 2.1.4 Shared Data and Process Boundaries</h3>
+<p>上面描述的所有模型都旨在尽可能独立地执行并发客户机请求。然而，完全的DBMS工作者独立性和隔离性是不可能的，因为它们操作相同的数据库。在 the thread per DBMS worker 模型中，所有线程在相同的地址空间中运行，数据共享很容易。在其他模型中，共享内存用于共享数据结构和状态。在所有这三种模型中，数据必须从DBMS移动到客户端。这意味着所有SQL请求都需要移到服务器进程中，返回到客户机的所有结果都需要移动至客户端。这是如何做到的呢？简短的回答是使用了各种缓冲区。我们在这里描述这些缓冲区，并简要讨论管理它们的策略。</p>
+<p><em>Disk I/O buffers (磁盘I/O缓冲区)</em>：最常见的跨工作数据依赖关系是对共享数据存储的读取和写入。因此，DBMS worker之间的I/O交互是常见的。有两个单独的磁盘I/O场景需要考虑：(1)数据库请求和(2)日志请求。</p>
+<ul>
+<li>
+<p><em>Database I/O Requests: The Buffer Pool (数据库I/O请求：缓冲池)</em>：所有持久化数据库数据都通过DBMS缓冲池进行暂存（第5.3节）。在另外两种模型中，缓冲池分配在所有进程可用的共享内存中。这三种DBMS模型的最终结果都是缓冲池是对所有线程/进程可用的巨大的共享数据结构。当一个线程需要从数据库中读入一个页面时，它会生成一个指定磁盘地址的I/O请求，并生成一个句柄，指向缓冲池中可以放置结果的空闲内存位置（帧）。缓冲池将在4.3节中详细讨论。</p>
+</li>
+<li>
+<p><em>Log I/O Requests: The Log Tail. (日志 I/O 请求：日志追踪）</em>：数据库日志（章节6.4）是存储在一个或多个磁盘上的条目数组。日志条目在事务处理时产生，他们被存储在一个内存队列中，按照 FIFO 的顺序定期刷入日志磁盘中。这个队列通常称为日志追踪。在许多系统中，一个单独的进程或线程负责定期将日志尾刷新到磁盘。</p>
+<p>​	对于the thread per DBMS worker，日志尾只是一个堆驻留数据结构。在另外两个模型中，两种不同的设计选择是常见的。在一种方法中，一个单独的进程管理日志。日志记录通过共享内存或任何其他有效的进程间通信协议传递给日志管理器。在另一种方法中，在共享内存中分配日志尾，其方式与上面处理缓冲池的方式大致相同。关键的一点是，执行数据库客户机请求的所有线程和/或进程都需要能够请求写入日志记录并刷新日志尾。</p>
+<p>​	日志刷新的一种重要类型是提交事务刷新。在提交日志记录刷新到日志设备之前，事务不能报告为成功提交。这意味着客户端代码要等待，直到提交日志记录被刷新，而DBMS服务器代码也必须保持所有资源（例如锁），直到那个时间。日志刷新请求可以延迟一段时间，以允许在单个I/O请求中批量提交记录（“组提交”）。</p>
+</li>
+</ul>
+<p><em>Client communication buffers （客户端通信缓冲区）</em>：SQL通常用于“拉”模型：客户端通过重复发出SQL FETCH请求从查询游标中消费结果元组，每个请求检索一个或多个元组。大多数dbms尝试在FETCH请求流之前工作，以便在客户端请求之前对结果进行排队。</p>
+<p>为了支持这种预取行为，DBMS worker可以使用客户端通信套接字作为它生成的元组的队列。更复杂的方式是实现客户端侧的游标缓存并使用DBMS 客户端存储很可能在之后不久会被拉取的结果，而不是依赖 OS 的通信缓存。</p>
+<p><em>Lock table（锁表）</em>：锁表由所有DBMS worker共享，并由锁管理器（章节6.3）使用来实现数据库锁定语义。共享锁表的技术与缓冲池的技术相同，这些相同的技术可用于支持DBMS实现所需的任何其他共享数据结构。</p>
+<h2 id="22-dbms-threads"><a class="markdownIt-Anchor" href="#22-dbms-threads"></a> 2.2 DBMS Threads</h2>
+<p>前一节提供了对DBMS过程模型的简化描述。我们假设了高性能操作系统线程的可用性，并且DBMS只针对单处理器系统。在本节的其余部分中，我们将放宽第一个假设，并描述对DBMS实现的影响。下一节将讨论多处理和并行性。</p>
+<h3 id="221-dbms-threads"><a class="markdownIt-Anchor" href="#221-dbms-threads"></a> 2.2.1 DBMS Threads</h3>
+<p>今天的大多数 DBMSs 都起源于20世纪70年代的研究系统和20世纪80年代的商业化努力。在构建原始数据库系统时，我们今天认为理所当然的标准操作系统特性通常对当时的DBMS开发人员是不可用的。高效、大规模的操作系统线程支持可能是其中最重要的。直到20世纪90年代，操作系统线程才被广泛实现，即使存在，实现也有很大差异。即使在今天，一些操作系统线程实现也不能很好地扩展到支持所有DBMS工作负载。</p>
+<p>​	因此，出于历史原因、移植性和可伸缩性的原因，许多广泛使用的DBMS在其实现中不依赖于操作系统线程。（注：这句话对于2025年的今天可能并不适用了。）有些则完全避免使用线程，并使用the process per DBMS worker或进程池模型。对于那些没有很好的内核线程实现的操作系统，需要一个解决方案来实现剩余的进程模型选择，即the process per DBMS worker。几个领先的DBMSs采用了一种解决此问题的方法是实现它们自己专用的，轻量级的线程包。这些轻量级线程或DBMS线程取代了前一节中描述的操作系统线程的角色。每个DBMS线程都被编程来管理自己的状态，通过非阻塞的异步接口执行所有潜在的阻塞操作（例如，I/O），并经常将控制权交给调度例程，调度例程在这些任务之间进行调度。</p>
+<p>​	轻量级线程是中以回顾的方式讨论的一个老概念，并且广泛用于用户界面的事件循环编程。在最近的OS文献中，这个概念经常被重新审视。这种架构提供了快速的任务切换和易于移植，但代价是在DBMS中复制大量的操作系统逻辑（任务切换、线程状态管理、调度等）。</p>
+<h2 id="23-standard-practice"><a class="markdownIt-Anchor" href="#23-standard-practice"></a> 2.3 Standard Practice</h2>
+<p>在当今领先的 DBMSs 中，我们可以找到2.1节中介绍的所有三种体系结构的代表，以及它们的一些有趣的变化。在这个维度中，IBM DB2可能是最有趣的例子，因为它支持四种不同的处理模型。在具有良好线程支持的OSs上，DB2默认使用 the thread per DBMS worker 并且可选支持在线程池上多路复用DBMS worker线程。在没有可伸缩支持的OSs上，DB2默认使用 the process per DBMS worker 并且可选支持在一个进程池上多路复用 DBMS worker。</p>
+<p>​	总结IBM DB2、MySQL、Oracle、PostgreSQL和Microsoft SQL Server支持的进程模型：</p>
+<p><em>Process per DBMS worker</em>：</p>
+<p>这是最直接的流程模型，至今仍被大量使用。在不支持高质量、可扩展的操作系统线程的操作系统上，DB2默认the process per DBMS worker，而在支持高质量、可扩展的操作系统线程的操作系统上，DB2默认the thread per DBMS worker。这也是 Oracle 默认的处理模型。Oracle还支持下面描述的进程池作为可选模型。只有PostgreSQL在所有支持的操作系统上都只运行the process per DBMS worker。</p>
+<p>Thread per DBMS worker：</p>
+<p>​	这是一个有效的模型，目前有两个主要的变体。</p>
+<ol>
+<li>OS thread per DBMS worker：在具有良好的操作系统线程支持的系统上运行时，IBM DB2默认使用此模型，MySQL也使用此模型。</li>
+<li>DBMS thread per DBMS worker：在这个模型中，DBMS工作程序由操作系统进程或操作系统线程上的轻量级线程调度器调度。该模型避免了任何潜在的操作系统调度器伸缩或性能问题，但代价是高昂的实现成本、较差的开发工具支持以及DBMS供应商的大量长期软件维护成本。这个模型有两个主要的子类别：
+<ol>
+<li>在操作系统进程上调度的DBMS线程：轻量级线程调度程序由一个或多个操作系统进程托管。Sybase和Informix都支持这个模型。当前所有使用此模型的系统都实现了一个DBMS线程调度器，该调度器在多个操作系统进程上调度DBMS工作程序，以利用多个处理器。然而，并非所有使用此模型的DBMS都实现了线程迁移：将现有DBMS线程重新分配给不同的操作系统进程的能力（例如，为了负载平衡）。</li>
+<li>在OS线程上调度的DBMS线程：Microsoft SQL Server将此模型作为非默认选项支持（默认是DBMS工作线程在下面描述的线程池上多路复用）。这个SQL Server选项，称为Fibers（纤程），在一些高规模的事务处理基准测试中使用，但除此之外，很少使用。</li>
+</ol>
+</li>
+</ol>
+<p><em>Process/thread pool</em>：</p>
+<p>​	在这个模型中，DBMS工作器在一个进程池中进行多路复用。随着操作系统线程支持的改进，这个模型的第二个变体基于线程池而不是进程池出现了。在后一种模型中，DBMS工作线程在操作系统线程池中复用：</p>
+<ol>
+<li><em>DBMS workers multiplexed over a process pool（DBMS workers在一个进程池上多路复用）</em>：这个模型比每个DBMS工作进程的内存效率高得多，很容易移植到没有良好的操作系统线程支持的操作系统上，并且可以很好地扩展到大量用户。这是Oracle支持的可选模型，也是他们为具有大量并发连接用户的系统推荐的模型。Oracle默认的模型是 the process per DBMS worker。Oracle支持的两个选项都很容易在它们所针对的大量不同的操作系统上得到支持（Oracle一度支持超过80个目标操作系统）。</li>
+<li><em>DBMS workers multiplexed over a thread pool（DBMS workers 在线程池上多路复用）</em>：Microsoft SQL Server默认采用这种模式，并且超过99%的SQL Server安装都以这种方式运行。如上所述，为了有效地支持成千上万并发连接的用户，SQL Server可选择支持在操作系统线程上调度的DBMS线程。</li>
+</ol>
+<p>正如我们在下一节中讨论的那样，当前一代的大多数商业 DBMSs 都支持查询内并行性：在多个处理器上并行执行单个查询的全部或部分的能力。就本节讨论的目的而言，查询内并行是多个DBMS worker临时赋给对单个SQL。除了单个客户端连接可能有多个DBMS工作器代表其执行之外，底层处理模型不会受到此特性的任何影响。</p>
+<h2 id="24-admission-control"><a class="markdownIt-Anchor" href="#24-admission-control"></a> 2.4 Admission Control</h2>
+<p>我们以一个与支持多个并发请求相关的剩余问题结束本节。随着任何多用户系统中工作负载的增加，吞吐量将增加到某个最大值。超过这个点，当系统开始颠簸时，它（应该指性能）将开始急剧减少。与操作系统一样，抖动通常是内存压力的结果：DBMS 不能将数据库页面的“工作集”保存在缓冲池中，并且花费大量时间来替换页面。在 DBMSs 中，对于排序和散列连接等查询处理技术来说，这尤其是个问题，因为它们往往会消耗大量的主内存。在某些情况下，DBMS抖动也可能由于锁的争用而发生：事务不断地彼此死锁，需要回滚并重新启动。因此，任何好的多用户系统都有一个准入控制策略，除非有足够的DBMS资源可用，否则不接受新的工作。有了一个好的准入控制器，系统在过载情况下将显示出优雅的降级：事务延迟将与到达率成比例地增加，但吞吐量将保持在峰值。</p>
+<p>​	DBMS的准入控制可以分为两层。首先，可以在调度程序进程中设置一个简单的准入控制策略，以确保客户端连接数保持在阈值以下。这有助于防止过度消耗基本资源，如网络连接。在一些 DBMSs 中，不提供这种控制，假设它是由多层系统的另一层处理的，例如，应用程序服务器、事务处理监视器或web服务器。</p>
+<p>​	第二层准入控制必须直接在核心DBMS关系查询处理器中实现。此执行许可控制器在查询被解析和优化后运行，并确定查询是延迟执行、在资源较少的情况下开始执行，还是在没有额外约束的情况下开始执行。来自查询优化器的信息可以帮助执行许可控制器，这些信息可以估计查询所需的资源和当前系统资源的可用性。特别是,优化器的查询计划可以指明(1)查询将访问的磁盘设备的随机顺序I/O操作,(2)基于查询计划中的算子和处理元组的数量估计CPU负载，最重要的是(3)估计的内存占用查询数据结构,包括空间排序和散列大型期间输入连接和查询执行其他任务。如上所述，最后一个指标通常是准入控制器的关键，因为内存压力通常是导致抖动的主要原因。因此许多DBMS使用内存占用和活动DBMS工作器的数量作为准入控制的主要标准。</p>
+<h2 id="25-discussion-and-additional-material"><a class="markdownIt-Anchor" href="#25-discussion-and-additional-material"></a> 2.5 Discussion and Additional Material</h2>
+<p>处理模型的选择对DBMS的扩展和可移植性有很大的影响。因此，三个更广泛使用的商业系统在其产品线中都支持一个以上的处理模型。从工程的角度来看，在所有操作系统和所有扩展级别上使用单一流程模型显然要简单得多。但是，由于使用模式的巨大多样性和目标操作系统的不一致性，这三个dbms都选择支持多个模型。</p>
+<p>​	展望未来，近年来，由于硬件瓶颈的变化以及Internet上工作负载的规模和可变性，人们对服务器系统的新流程模型产生了浓厚的兴趣。这些设计中出现的一个主题是将服务器系统分解为一组独立调度的“引擎”，并在这些引擎之间异步地批量传递消息。这类似于上面的“进程池”模型，其中工作单元跨多个请求重用。最近这项研究的主要新颖之处在于，它以一种比以前更狭窄的任务特定方式打破了工作的功能颗粒。这导致了worker和SQL请求之间的多对多关系——单个查询通过多个worker中的活动进行处理，每个worker为许多SQL请求执行自己的专用任务。这种架构支持更灵活的调度选择——例如，它允许在允许单个工作者完成许多查询任务（可能提高整体系统吞吐量）或允许查询在多个工作者之间进行进展（以改善该查询的延迟）之间进行动态权衡。在某些情况下，这已被证明在处理器缓存局部性方面具有优势，并且能够在硬件缓存丢失期间保持CPU繁忙而不是空闲。StagedDB研究项目代表了在DBMS上下文中对这一思想的进一步研究，这是进行额外阅读的一个很好的起点。</p>
+<h1 id="3-parallel-architectureprocess-and-memory-coordination"><a class="markdownIt-Anchor" href="#3-parallel-architectureprocess-and-memory-coordination"></a> 3 Parallel Architecture：Process and Memory Coordination</h1>
+<p>并行硬件在现代服务器中是一个事实，并且有各种各样的配置。在本节中，我们总结了标准DBMS术语，并讨论了每个术语中的进程模型和内存协调问题。</p>
+<h2 id="31-shared-memory"><a class="markdownIt-Anchor" href="#31-shared-memory"></a> 3.1 Shared Memory</h2>
+<p><img src="/img/Architecture%20Of%20a%20Database%20System/image-20250330145456416.png" alt="image-20250330145456416"></p>
+<p>在共享内存并行系统（图3.1）中，所有处理器都可以以大致相同的性能访问相同的RAM和磁盘。这种架构在今天是相当标准的——大多数服务器硬件都有 2 到 8 个处理器。（注：现在的服务器CPU能有几十甚至上百个核，而且根据架构不同，核与核之间的性能不一定完全相同。）高端机器可以配备数十个处理器，但相对于所提供的处理资源，它们的售价往往高出很多。高度并行的共享内存机器是硬件行业中仅存的“摇钱树”之一，在高端在线事务处理应用程序中被大量使用。与管理系统的成本相比，服务器硬件的成本通常显得微不足道，所以购买少量的大型、昂贵的系统的代价（以降低管理成本），有时是可接受的折中。</p>
+<p>​	多核处理器支持单个芯片上的多个处理核心，并共享一些基础设施，如缓存和内存总线。这使得它们在编程模型方面与共享内存架构非常相似。如今，几乎所有严肃的数据库部署都涉及多个处理器，每个处理器都有多个CPU。DBMS体系结构需要能够充分利用这种潜在的并行性。幸运的是，第2节中描述的所有三种DBMS体系结构都可以在现代共享内存硬件体系结构上运行良好。</p>
+<p>​	共享内存机器的进程模型非常自然地遵循单处理器方法。事实上，大多数数据库系统都是从最初的单处理器实现发展到共享内存实现的。在共享内存机器上，操作系统通常支持跨处理器透明地分配工作（进程或线程），并且所有人都可以访问共享数据结构。所有三种模型都能在这些系统上运行良好，并支持并行执行多个独立的SQL请求。主要的挑战是修改查询执行层，以利用跨多个cpu并行处理单个查询的能力；我们将此推迟到第5节。</p>
+<h2 id="32-shared-nothing"><a class="markdownIt-Anchor" href="#32-shared-nothing"></a> 3.2 Shared-Nothing</h2>
+<p><img src="/img/Architecture%20Of%20a%20Database%20System/image-20250330151140548.png" alt="image-20250330151140548"></p>
+<p>无共享并行系统（图3.2）由一组独立的机器组成，这些机器通过高速网络互连进行通信，或者更频繁地通过商业网络组件进行通信。给定的系统无法直接访问另一个系统的内存或磁盘。</p>
+<p>​	无共享系统不提供硬件共享抽象，将各种机器的协调完全交给DBMS处理。DBMSs 用来支持这些集群的最常用技术是在集群中的每台机器或节点上运行它们的标准处理模型。每个节点都能够接受客户端SQL请求、访问必要的元数据、编译SQL请求和执行数据访问，就像在上面描述的单个共享内存系统上一样。主要区别在于集群中的每个系统只存储一部分数据。请求被发送到集群的其他成员，而不是仅针对本地数据运行它们接收到的查询，所有涉及的机器都对它们存储的数据并行执行查询。这些表分布在集群中的多个系统上，使用水平数据分区允许每个处理器独立于其他处理器执行。</p>
+<p>​	数据库中的每个元组都被分配给单独的机器，因此每个表都被“水平”切片并分布在机器上。典型的数据分区方案包括基于元组属性的哈希分区、基于元组属性的范围分区、轮循（round-robin）和混合（基于范围和基于哈希的组合）。每台单独的机器负责访问、锁定和记录本地磁盘上的数据。在查询执行期间，查询优化器选择如何跨机器水平地重新划分表和中间结果以满足查询，并为每台机器分配工作的逻辑分区。不同机器上的查询执行器相互传送数据请求和元组，但不需要传输任何线程状态或其他低级信息。由于数据库元组的这种基于值的分区，在这些系统中只需要很少的协调。但是，为了获得良好的性能，需要对数据进行良好的分区。这给数据库管理员（DBA）和查询处理器带来了很大的负担，他们需要智能地布局表，以便更好地对工作负载进行分区。</p>
+<p>​	此外，部分失效（partial failure）是必须在shared-nothing系统中进行管理。在一个shared-memory 系统中，一个处理器的故障通过会导致整个机器的故障，进而导致整个 DBMS 故障。在无共享系统中，单个节点的故障不一定会影响集群中的其他节点。但是它肯定会影响DBMS的整体行为，因为故障节点承载了数据库中的一部分数据。在这种情况下，至少有三种可能的方法。第一种方法是在任何节点发生故障时关闭所有节点；这实际上模拟了共享内存系统中可能发生的情况。第二种方法被IBM Informix称为“数据跳过”，它允许在任何正常运行的节点上执行查询，“跳过”故障节点上的数据。这在数据可用性比结果完整性更重要的场景中很有用。但是，“尽力而为”的结果没有定义良好的语义，并且对于许多工作负载来说，这不是一个有用的选择—特别是因为DBMS经常被用作多层系统中的“记录存储库”，并且可用性与一致性的权衡往往在更高的层中完成（通常在应用程序服务器中）。第三种方法是采用冗余方案，从完全数据库故障转移（需要双倍数量的机器和软件许可证）到细粒度冗余，如链式集群。在后一种技术中，元组副本分布在集群中的多个节点上。链式集群相对于更简单的方案的优势在于（a）与原始方案相比，它需要更少的机器来保证可用性（b）当一个节点发生故障时，系统负载会相当均匀地分布在剩余的节点上：剩下的n−1个节点每个都完成了原始工作的n/(n−1)，并且随着节点故障，这种形式的性能线性下降会继续下去。在实践中，大多数当前一代的商业系统都处于中间位置，既不像完全数据库（full database）冗余那样粗粒度，也不像链式集群那样细粒度。</p>
+<p>​	shared-nothing架构在今天相当普遍，并且具有无与伦比的可伸缩性和成本特征。它主要用于极端高端，通常用于决策支持应用程序和数据仓库。在一个有趣的硬件体系结构组合中，无共享集群通常由许多节点组成，每个节点都是一个共享内存多处理器。</p>
+<h2 id="33-shared-disk"><a class="markdownIt-Anchor" href="#33-shared-disk"></a> 3.3 Shared-Disk</h2>
+<p><img src="/img/Architecture%20Of%20a%20Database%20System/image-20250330154735207.png" alt="image-20250330154735207"></p>
+<p>在shared-disk并行系统（图3.3）中，所有处理器都可以以相同的性能访问磁盘，但不能访问彼此的RAM。这种体系结构非常常见，有两个突出的例子是Oracle RAC和DB2 for zSeries SYSPLEX。近年来，随着存储区域网络（SAN）的日益普及，shared-disk变得越来越普遍。SAN允许一个或多个主机系统挂载一个或多个逻辑磁盘，从而易于创建共享磁盘配置。</p>
+<p>​	与shared-nothing系统相比，shared-disk的一个潜在优势是其更低的管理成本。共享磁盘系统的 DBAs 不必为了实现并行性而考虑跨机器分区表。但是非常大的数据库通常仍然需要分区，因此，在这种规模下，差异变得不那么明显。共享磁盘体系结构的另一个引人注目的特性是，单个DBMS处理节点的故障不会影响其他节点访问整个数据库的能力。这与作为一个整体发生故障的共享内存系统和在节点发生故障时至少失去对某些数据的访问的无共享系统形成对比（除非使用了其他数据冗余方案）。然而，即使有这些优点，共享磁盘系统仍然容易受到一些单点故障的影响。如果数据在到达存储子系统之前由于硬件或软件故障而损坏或损坏，那么系统中的所有节点将只能访问这个损坏的页面。如果存储子系统使用RAID或其他数据冗余技术，损坏的页面将被冗余存储，但在所有副本中仍然损坏。</p>
+<p>​	由于在共享磁盘系统中不需要对数据进行分区，因此可以将数据复制到RAM中并在多台机器上进行修改。与共享内存系统不同，没有自然的内存位置来协调这种数据共享—每台机器都有自己的本地内存用于锁和缓冲池页面。因此，需要在机器之间明确地协调数据共享。共享磁盘系统依赖于分布式锁管理器功能和缓存一致性协议来管理分布式缓冲池。这些都是复杂的软件组件，对于有大量争用的工作负载来说可能是瓶颈。有些系统（如IBM zSeries SYSPLEX）在硬件子系统中实现锁管理器。</p>
+<h2 id="34-numa"><a class="markdownIt-Anchor" href="#34-numa"></a> 3.4 NUMA</h2>
+<p>Non-Uniform Memory Access (NUMA) 非一致内存访问系统在具有独立内存的系统集群上提供共享内存编程模型。集群中的每个系统都可以快速访问自己的本地内存，而跨高速集群互连的远程内存访问有些延迟。架构的名称来自于内存访问时间的不一致性。</p>
+<p>​	NUMA硬件架构是介于shared-nothing和shared-memory系统之间的一个有趣的中间地带。它们比shared-nothing的集群更容易编程，并且通过避免共享争用点（如共享内存总线），可以扩展到比共享内存系统更多的处理器。 	NUMA集群在商业上还没有取得广泛的成功，但NUMA设计概念已被采用的一个领域是共享内存多处理器（第3.1节）。随着共享内存多处理器扩展到更大的处理器数量，它们在内存体系结构中显示出越来越多的不一致性。通常，大型共享内存多处理器的内存被分成几个部分，每个部分与系统中处理器的一个小子集相关联。内存和cpu的每个组合子集通常称为pod。每个处理器访问本地pod内存的速度比远程pod内存略快。这种NUMA设计模式的使用允许共享内存系统扩展到非常多的处理器。因此，NUMA共享内存多处理器现在非常普遍，而NUMA集群从未获得任何重要的市场份额。</p>
+<p>​	DBMSs 可以在NUMA共享内存系统上运行的一种方法是忽略内存访问的非一致性。如果不均匀性很小，这种方法是可以接受的。当近内存访问时间与远内存访问时间之比超过1.5:1到2:1的范围时，DBMS需要进行优化以避免严重的内存访问瓶颈。这些优化有多种形式，但都遵循相同的基本方法：（a）当分配内存供处理器使用时，使用该处理器的本地内存（避免使用远内存）。（b）如果可能的话，确保给定的DBMS工作器总是被调度在它之前所在的同一硬件处理器上。这种组合允许DBMS工作负载在具有内存访问时间不均匀性的高规模共享内存系统上良好运行。</p>
+<p>​	尽管NUMA集群几乎消失了，但是编程模型和优化技术对当前一代DBMS系统仍然很重要，因为许多大规模共享内存系统在内存访问性能上存在显著的不均匀性。</p>
+<h2 id="35-dbms-threads-and-multi-processors"><a class="markdownIt-Anchor" href="#35-dbms-threads-and-multi-processors"></a> 3.5 DBMS Threads and Multi-processors</h2>
+<p>当我们从2.1节中删除最后一个简化假设（单处理器硬件）时，使用DBMS线程实现的the thread per DBMS worker产生的一个潜在问题立即变得明显起来。2.2.1节中描述的轻量级DBMS线程包的自然实现是所有线程在单个操作系统进程中运行。不幸的是，单个进程一次只能在一个处理器上执行。因此，在多处理器系统上，DBMS一次只使用一个处理器，而将系统的其余部分闲置。早期的Sybase SQL Server架构遭受了这种限制。随着共享内存多处理器在90年代早期变得越来越流行，Sybase迅速对体系结构进行了修改，以利用多个操作系统进程。</p>
+<p>​	当在多个进程中运行DBMS线程时，有时一个进程有大量的工作，而其他进程（因此处理器）是空闲的。要使该模型在这些情况下正常工作，DBMSs必须在进程之间实现线程迁移。IBM Informix从6.0版本开始在这方面做得非常出色。</p>
+<p>​	当将DBMS线程映射到多个操作系统进程时，需要决定使用多少操作系统进程，如何将DBMS线程分配给操作系统线程，以及如何跨多个操作系统进程进行分布。一个好的经验法则是每个物理处理器有一个进程。这最大化了硬件中固有的物理并行性，同时最小化了每个进程的内存开销。</p>
+<h2 id="36-standard-practice"><a class="markdownIt-Anchor" href="#36-standard-practice"></a> 3.6 Standard Practice</h2>
+<p>关于对并行性的支持，趋势与上一节类似：大多数主要的 DBMSs 都支持多个并行性模型。由于共享内存系统（SMPs、多核系统以及两者的组合）在商业上的流行，所有主要的DBMS供应商都很好地支持共享内存并行。在多节点集群并行中，我们开始看到支持上的分歧，其中广泛的设计选择是shared-nothing和shared-disk。</p>
+<ul>
+<li>shared-memory：所有主要的商业DBMS提供商都支持共享内存并行性，包括：IBM DB2、Oracle和Microsoft SQL Server。</li>
+<li>shared-nothing：此模型由IBM DB2、Informix、Tandem和NCR Teradata等支持；Green-plum提供了一个自定义版本的PostgreSQL，它支持shared-nothing并行。</li>
+<li>shared-disk：该模型由Oracle RAC、RDB（由Oracle从Digital Equipment Corp.收购）和IBM DB2 for zSeries等支持。</li>
+</ul>
+<p>IBM销售多种不同的DBMS产品，并选择在一些产品中实现shared-disk支持，而在另一些产品中shared-nothing。到目前为止，没有一个领先的商业系统在一个代码库中同时支持shared-nothing和shared-disk；Microsoft SQL Server都没有实现。</p>
+<h2 id="37-discussion-and-additional-material"><a class="markdownIt-Anchor" href="#37-discussion-and-additional-material"></a> 3.7 Discussion and Additional Material</h2>
+<p>上面的设计代表了在各种服务器系统中使用的硬件/软件体系结构模型的选择。虽然它们主要是在dbms中首创的，但这些想法在其他数据密集型领域也越来越流行，包括低层可编程数据处理后端，如Map-Reduce，它正在增加各种自定义数据分析任务的用户。然而，即使这些想法正在更广泛地影响计算，在数据库系统的并行性设计中也出现了新的问题。</p>
+<p>​	在接下来的十年中，并行软件架构面临的一个关键挑战来自于开发新一代“多核”架构的愿望，这些架构来自处理器供应商。这些设备将引入一个新的硬件设计点，在单个芯片上有数十、数百甚至数千个处理单元，通过高速片上网络进行通信，但在访问片外存储器和磁盘方面保留了许多现有的瓶颈。这将导致磁盘和处理器之间的内存路径出现新的不平衡和瓶颈，这几乎肯定需要重新检查DBMS体系结构，以满足硬件的性能潜力。</p>
+<p>​	在面向服务的计算领域，在更“macro(宏观)”的范围内，某种程度上相关的架构转变正在被预见。这里的想法是，拥有数万台计算机的大型数据中心将为用户托管处理（硬件和软件）。在这种规模下，只有高度自动化的应用程序和服务器管理才能负担得起。没有任何管理任务可以随着服务器数量的增加而扩展。而且，由于通常使用不太可靠的商用服务器，并且故障更常见，因此需要完全自动化地从常见故障中恢复。在大规模的服务中，每天都会出现磁盘故障，每周会出现几个服务器故障。在这种环境中，管理数据库备份通常由存储在不同磁盘上的不同服务器上维护的整个数据库的冗余在线副本取代。根据数据的值（value，或者翻译成价值？），冗余副本甚至可以存储在不同的数据中心中。自动脱机备份仍可用于从应用程序、管理或用户错误中恢复。但是，从大多数常见错误和故障中恢复是快速故障转移到冗余在线副本。冗余可以通过多种方式实现：（a）数据存储级的复制（存储区域网络）；（b）数据库存储引擎级别的数据复制（如7.4节所述）；（c）查询处理器对查询的冗余执行（第6节）；（d）冗余的数据库请求在客户端软件级别自动生成（例如，由web服务器或应用服务器）。</p>
+<p>​	在更解耦的级别上，在实践中，将具有DBMS功能的多个服务器分层部署是非常常见的，目的是尽量减少对“DBMS of record”的I/O请求率。这些模式包括用于SQL查询的各种形式的中间层数据库缓存，包括专用的主存数据库，如Oracle TimesTen，以及配置用于此目的的更传统的数据库。在部署堆栈的上层，可以配置许多面向对象的应用程序服务器体系结构，支持诸如Enterprise Java Beans之类的编程模型，以便与DBMS一起对应用程序对象进行事务性缓存。然而，这些不同方案的选择、设置和管理仍然是非标准的和复杂的，而优雅的普遍认可的模型仍然是难以捉摸的。</p>
+<h1 id="4-relational-query-processor"><a class="markdownIt-Anchor" href="#4-relational-query-processor"></a> 4 Relational Query Processor</h1>
+<p>前几节强调了DBMS中的宏观体系结构设计问题。现在我们开始以更精细的方式讨论设计，依次处理每个主要的DBMS组件。根据我们在1.1节中的讨论，我们将从系统的顶部开始，从查询处理器开始，然后在随后的部分中向下讨论存储管理、事务和实用程序。</p>
+<p>​	关系查询处理器接受声明性SQL语句，对其进行验证，将其优化为过程性数据流执行计划，然后（在admission control准入控制下）代表客户机程序执行该数据流程序。然后，客户端程序获取（“提取”）结果元组，通常是一次一个或小批量地获取。关系查询处理器的主要组件如图1.1所示。在本节中，我们将关注查询处理器和存储管理器访问方法的一些非事务性方面。一般来说，关系查询处理可以看作是单用户、单线程的任务。并发控制由系统的较低层透明地管理，如第5节所述。这条规则的唯一例外是，当DBMS在操作缓冲池页面时，必须显式地“固定”和“解固定”缓冲池页面，以便它们在短暂的关键操作期间留在内存中，我们将在4.4.5节中讨论。</p>
+<p>​	在本节中，我们将重点讨论常见的SQL命令：数据操作语言（DML）语句，包括SELECT、INSERT、UPDATE和DELETE。数据定义语言（DDL）语句，如CREATE TABLE和CREATE INDEX，通常不由查询优化器处理。这些语句通常在静态DBMS逻辑中通过显式调用存储引擎和目录管理器（见6.1节）实现。一些产品也开始优化DDL语句的一小部分，我们预计这一趋势将继续下去。</p>
+<h2 id="41-query-parsing-and-authorization"><a class="markdownIt-Anchor" href="#41-query-parsing-and-authorization"></a> 4.1 Query Parsing and Authorization</h2>
+<p>给定一个SQL语句，SQL Parser的主要任务是：(1)检查查询是否被正确指定，(2)解析名称和引用，(3)将查询转换为优化器使用的内部格式，以及(4)验证用户是否被授权执行查询。有些 DBMSs 将部分或全部安全检查推迟到执行时进行，但是，即使在这些系统中，解析器仍然负责收集执行时安全检查所需的数据。</p>
+<p>​	给定一个SQL查询，解析器首先考虑FROM子句中的每个表引用。它将表名规范化为server.database.schema.table格式的完全限定名。这也被称为四部分命名。不支持跨多个服务器查询的系统只需要规范化到database.schema。对于只支持一个数据库的DBMS系统可以规范化为schema.table。这种规范化是必需的，因为用户具有上下文相关的默认值。有些系统支持一个表的多个名称，称为表别名，这些名称也必须用完全限定的表名称替换。</p>
+<p>​	规范化表名之后，查询处理器调用 catalog manager (目录管理器)来检查表是否已在系统编目中注册。在此步骤中，它还可以在内部查询数据结构中缓存关于表的元数据。然后，根据表的信息，它使用编目来确保属性引用是正确的。属性的数据类型用于驱动重载函数表达式、比较运算符和常量表达式的消歧逻辑。例如，考虑表达式(EMP.salary * 1.15) &lt; 75000。乘法函数和比较运算符的代码以及假定的数据类型和字符串“1.15”和“75000”的内部格式将取决于empp .salary属性的数据类型。该数据类型可以是整数、浮点数或“货币”值。还应用了其他标准SQL语法检查，包括元组变量的一致性使用、通过集合操作符（UNION/INTERSECT/EXCEPT）组合的表的兼容性、聚合查询的SELECT列表中属性的使用、子查询的嵌套等等。</p>
+<p>​	如果查询解析成功，下一个阶段是授权检查，以确保用户对查询中引用的表、用户定义函数或其他对象具有适当的权限（SELECT/DELETE/INSERT/UPDATE）。有些系统在语句解析阶段执行完整的授权检查。然而，这并不总是可能的。例如，支持行级安全性的系统在执行之前不能进行完整的安全性检查，因为安全性检查可能依赖于数据值。即使理论上可以在编译时静态验证授权，但将某些工作推迟到查询计划执行时也有好处。将安全检查推迟到执行时间的查询计划可以在用户之间共享，并且在安全性更改时不需要重新编译。因此，安全验证的某些部分通常延迟到查询计划执行。</p>
+<p>​	在编译期间也可以对常量表达式进行约束检查。例如，UPDATE命令可能有一个形式为SET EMP.salary = -1的子句。如果完整性约束为薪金指定了正值，则甚至不需要执行查询。然而，将这项工作推迟到执行时间是很常见的。</p>
+<p>​	如果查询解析并通过验证，则将查询的内部格式传递给查询重写模块以进行进一步处理。</p>
+<h2 id="42-query-rewrite"><a class="markdownIt-Anchor" href="#42-query-rewrite"></a> 4.2 Query Rewrite</h2>
+<p>查询重写模块（或rewriter）负责在不更改其语义的情况下简化和规范化查询。它只能依赖于查询和目录中的元数据，而不能访问表中的数据。虽然我们说“重写”查询，但大多数重写器实际上是在查询的内部表示上操作，而不是在原始SQL语句文本上操作。（注：这是显然的，因为DBMS其实无法理解SQL字符串，直接在内部表达中进行修改）查询重写模块通常以其在输入时接受的相同内部格式输出查询的内部表示形式。</p>
+<p>​	许多商业系统中的重写器是一个逻辑组件，其实际实现要么在查询解析的后期阶段，要么在查询优化的早期阶段。例如，在DB2中，重写器是一个独立的组件，而在SQL Server中，查询重写是作为query Optimizer的早期阶段完成的。尽管如此，单独考虑重写器是有用的，即使显式架构边界并不存在于所有系统中。</p>
+<p>​	重写器的主要责任是：</p>
+<ul>
+<li></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://Dog-Du.github.io">DogDu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://dog-du.github.io/posts/8453.html">https://dog-du.github.io/posts/8453.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="post-meta__tags" href="/tags/%E8%AE%BA%E6%96%87/">论文</a><a class="post-meta__tags" href="/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/">未完成</a></div><div class="post-share"><div class="social-share" data-image="/img/top_img.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/posts/31315.html" title="复习操作系统"><img class="cover" src="/img/top_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">复习操作系统</div></div><div class="info-2"><div class="info-item-1">看中山大学OS，学操作系统</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comments</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">DogDu</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Dog-Du"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is DogDu's Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#architecture-of-a-database-system"><span class="toc-text"> Architecture of a Database System</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#abstract"><span class="toc-text"> Abstract</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-introduction"><span class="toc-text"> 1 Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-relational-systems-the-life-of-a-query"><span class="toc-text"> 1.1 Relational Systems: The Life of a Query</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-scope-and-overview"><span class="toc-text"> 1.2 Scope and  Overview</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-process-models"><span class="toc-text"> 2 Process Models</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#21-uniprocessors-and-lightweight-threads"><span class="toc-text"> 2.1 Uniprocessors and Lightweight Threads</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#211-process-per-dbms-worker"><span class="toc-text"> 2.1.1 Process per DBMS Worker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#212-thread-per-dbms-worker"><span class="toc-text"> 2.1.2 Thread per DBMS worker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#213-process-pool"><span class="toc-text"> 2.1.3 Process Pool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#214-shared-data-and-process-boundaries"><span class="toc-text"> 2.1.4 Shared Data and Process Boundaries</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-dbms-threads"><span class="toc-text"> 2.2 DBMS Threads</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#221-dbms-threads"><span class="toc-text"> 2.2.1 DBMS Threads</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-standard-practice"><span class="toc-text"> 2.3 Standard Practice</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#24-admission-control"><span class="toc-text"> 2.4 Admission Control</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#25-discussion-and-additional-material"><span class="toc-text"> 2.5 Discussion and Additional Material</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-parallel-architectureprocess-and-memory-coordination"><span class="toc-text"> 3 Parallel Architecture：Process and Memory Coordination</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#31-shared-memory"><span class="toc-text"> 3.1 Shared Memory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-shared-nothing"><span class="toc-text"> 3.2 Shared-Nothing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-shared-disk"><span class="toc-text"> 3.3 Shared-Disk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-numa"><span class="toc-text"> 3.4 NUMA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#35-dbms-threads-and-multi-processors"><span class="toc-text"> 3.5 DBMS Threads and Multi-processors</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#36-standard-practice"><span class="toc-text"> 3.6 Standard Practice</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#37-discussion-and-additional-material"><span class="toc-text"> 3.7 Discussion and Additional Material</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-relational-query-processor"><span class="toc-text"> 4 Relational Query Processor</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#41-query-parsing-and-authorization"><span class="toc-text"> 4.1 Query Parsing and Authorization</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-query-rewrite"><span class="toc-text"> 4.2 Query Rewrite</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/posts/8453.html" title="读论文-Architecture of a Database System">读论文-Architecture of a Database System</a><time datetime="2025-03-27T08:37:49.000Z" title="Created 2025-03-27 16:37:49">2025-03-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/posts/31315.html" title="复习操作系统">复习操作系统</a><time datetime="2025-03-14T02:43:15.000Z" title="Created 2025-03-14 10:43:15">2025-03-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/posts/984.html" title="计网复习">计网复习</a><time datetime="2025-03-10T00:54:15.000Z" title="Created 2025-03-10 08:54:15">2025-03-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By DogDu</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll to Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23lip70wbjDSj3yXVa',
+      clientSecret: '229af146a5a288cca20082b54bcaf2ea896347af',
+      repo: 'Dog-Du.github.io',
+      owner: 'Dog-Du',
+      admin: ['Dog-Du'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: (decodeURIComponent(location.pathname)).substring(0, 48),
+      distractionFreeMode: false
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
