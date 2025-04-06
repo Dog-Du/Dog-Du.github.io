@@ -6,7 +6,7 @@
   <link href="https://dog-du.github.io/atom.xml" rel="self"/>
   
   <link href="https://dog-du.github.io/"/>
-  <updated>2025-04-05T14:01:12.042Z</updated>
+  <updated>2025-04-06T09:47:14.111Z</updated>
   <id>https://dog-du.github.io/</id>
   
   <author>
@@ -21,10 +21,10 @@
     <link href="https://dog-du.github.io/posts/8453.html"/>
     <id>https://dog-du.github.io/posts/8453.html</id>
     <published>2025-03-27T08:37:49.000Z</published>
-    <updated>2025-04-05T14:01:12.042Z</updated>
+    <updated>2025-04-06T09:47:14.111Z</updated>
     
     
-    <summary type="html">英语很差，看论文很费解，但是看了一下作者居然有 Stonebraker，这下耐着性子慢慢读这 119 页了。整体上是一个笔记。</summary>
+    <summary type="html">英语很差，看论文很费解，但是看了一下作者居然有 Stonebraker，这下耐着性子慢慢读这 119 页了。整体上是一个翻译。</summary>
     
     
     
@@ -34,6 +34,8 @@
     <category term="数据库" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
     
     <category term="论文" scheme="https://dog-du.github.io/tags/%E8%AE%BA%E6%96%87/"/>
+    
+    <category term="综述性" scheme="https://dog-du.github.io/tags/%E7%BB%BC%E8%BF%B0%E6%80%A7/"/>
     
     <category term="未完成" scheme="https://dog-du.github.io/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/"/>
     
