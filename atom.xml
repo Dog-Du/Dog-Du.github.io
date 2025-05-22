@@ -6,7 +6,7 @@
   <link href="https://dog-du.github.io/atom.xml" rel="self"/>
   
   <link href="https://dog-du.github.io/"/>
-  <updated>2025-04-06T09:47:14.111Z</updated>
+  <updated>2025-05-22T01:54:11.959Z</updated>
   <id>https://dog-du.github.io/</id>
   
   <author>
@@ -17,11 +17,82 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Rust学习</title>
+    <link href="https://dog-du.github.io/posts/38177.html"/>
+    <id>https://dog-du.github.io/posts/38177.html</id>
+    <published>2025-05-18T10:44:22.000Z</published>
+    <updated>2025-05-22T01:54:11.959Z</updated>
+    
+    
+    <summary type="html">学习Rust基本语法</summary>
+    
+    
+    
+    <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
+    
+    
+    <category term="Rust" scheme="https://dog-du.github.io/tags/Rust/"/>
+    
+    <category term="学习" scheme="https://dog-du.github.io/tags/%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="未完成" scheme="https://dog-du.github.io/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning</title>
+    <link href="https://dog-du.github.io/posts/8921.html"/>
+    <id>https://dog-du.github.io/posts/8921.html</id>
+    <published>2025-05-16T02:17:35.000Z</published>
+    <updated>2025-05-22T01:54:11.949Z</updated>
+    
+    
+    <summary type="html">读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning</summary>
+    
+    
+    
+    <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
+    
+    
+    <category term="数据库" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+    <category term="已完成" scheme="https://dog-du.github.io/tags/%E5%B7%B2%E5%AE%8C%E6%88%90/"/>
+    
+    <category term="论文" scheme="https://dog-du.github.io/tags/%E8%AE%BA%E6%96%87/"/>
+    
+    <category term="连接优化" scheme="https://dog-du.github.io/tags/%E8%BF%9E%E6%8E%A5%E4%BC%98%E5%8C%96/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Go学习</title>
+    <link href="https://dog-du.github.io/posts/27248.html"/>
+    <id>https://dog-du.github.io/posts/27248.html</id>
+    <published>2025-05-11T03:36:44.000Z</published>
+    <updated>2025-05-22T01:54:11.961Z</updated>
+    
+    
+    <summary type="html">学习Go基本语法</summary>
+    
+    
+    
+    <category term="学习类" scheme="https://dog-du.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/"/>
+    
+    
+    <category term="学习" scheme="https://dog-du.github.io/tags/%E5%AD%A6%E4%B9%A0/"/>
+    
+    <category term="未完成" scheme="https://dog-du.github.io/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/"/>
+    
+    <category term="Go" scheme="https://dog-du.github.io/tags/Go/"/>
+    
+  </entry>
+  
+  <entry>
     <title>读论文-Architecture of a Database System</title>
     <link href="https://dog-du.github.io/posts/8453.html"/>
     <id>https://dog-du.github.io/posts/8453.html</id>
     <published>2025-03-27T08:37:49.000Z</published>
-    <updated>2025-04-06T09:47:14.111Z</updated>
+    <updated>2025-04-15T09:31:04.680Z</updated>
     
     
     <summary type="html">英语很差，看论文很费解，但是看了一下作者居然有 Stonebraker，这下耐着性子慢慢读这 119 页了。整体上是一个翻译。</summary>
@@ -33,11 +104,11 @@
     
     <category term="数据库" scheme="https://dog-du.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
     
+    <category term="已完成" scheme="https://dog-du.github.io/tags/%E5%B7%B2%E5%AE%8C%E6%88%90/"/>
+    
     <category term="论文" scheme="https://dog-du.github.io/tags/%E8%AE%BA%E6%96%87/"/>
     
     <category term="综述性" scheme="https://dog-du.github.io/tags/%E7%BB%BC%E8%BF%B0%E6%80%A7/"/>
-    
-    <category term="未完成" scheme="https://dog-du.github.io/tags/%E6%9C%AA%E5%AE%8C%E6%88%90/"/>
     
   </entry>
   

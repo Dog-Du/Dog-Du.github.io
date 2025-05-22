@@ -1,0 +1,247 @@
+<!DOCTYPE html><html lang="cn-ZH" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning | DogDu's blog</title><meta name="author" content="DogDu"><meta name="copyright" content="DogDu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning">
+<meta property="og:url" content="https://dog-du.github.io/posts/8921.html">
+<meta property="og:site_name" content="DogDu&#39;s blog">
+<meta property="og:description" content="读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning">
+<meta property="og:locale" content="cn_ZH">
+<meta property="og:image" content="https://dog-du.github.io/img/top_img.jpg">
+<meta property="article:published_time" content="2025-05-16T02:17:35.000Z">
+<meta property="article:modified_time" content="2025-05-22T01:54:11.949Z">
+<meta property="article:author" content="DogDu">
+<meta property="article:tag" content="数据库">
+<meta property="article:tag" content="已完成">
+<meta property="article:tag" content="论文">
+<meta property="article:tag" content="连接优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dog-du.github.io/img/top_img.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning",
+  "url": "https://dog-du.github.io/posts/8921.html",
+  "image": "https://dog-du.github.io/img/top_img.jpg",
+  "datePublished": "2025-05-16T02:17:35.000Z",
+  "dateModified": "2025-05-22T01:54:11.949Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "DogDu",
+      "url": "https://dog-du.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/head.jpg"><link rel="canonical" href="https://dog-du.github.io/posts/8921.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":300,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="DogDu's blog" type="application/atom+xml">
+</head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/top_img.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><img class="site-icon" src="/img/head.jpg" alt="Logo"><span class="site-name">DogDu's blog</span></a><a class="nav-page-title" href="/"><span class="site-name">读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning</span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-05-16T02:17:35.000Z" title="Created 2025-05-16 10:17:35">2025-05-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2025-05-22T01:54:11.949Z" title="Updated 2025-05-22 09:54:11">2025-05-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%B1%BB/">学习类</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>一些问题：</p>
+<ul>
+<li>把学习的优化器塞进数据库，不难。</li>
+<li>训练开销大，要求推理必须快一些。</li>
+<li>如果数据库信息在短时间内发生较大变化？</li>
+<li>否则只在某种边界情况使用学习的优化器，而不是单纯的只用某一方。</li>
+<li>MDP？QP？RL？强化学习？监督学习？成本模型？</li>
+<li>我觉得主要优势在于可以利用GPU</li>
+<li>在监督学习中，人们将训练示例与基本事实标签（例如，带有标记对象的图像）配对。对于连接优化，这意味着一个数据集，其中示例是当前连接图，标签是预言机的下一个最佳连接决策。在顺序规划的背景下，这个问题设置被称为模仿学习；其中一个人尽可能最好地模仿预言机。</li>
+<li>强化学习一词指的是马尔可夫决策过程问题的一类经验解决方案，在这些问题中，我们没有基本的事实，最优的下一步；相反，学习是由下一步的数字“奖励”指导的。在连接优化的上下文中，这些奖励是子计划成本。</li>
+<li>仍然基于代价模型。</li>
+<li>用图的方式？做出连接两个子计划的决定对应于选择由边连接的两个顶点并将它们合并成一个顶点。</li>
+<li>查询图G是一个无向图，其中每个关系R是一个顶点，每个连接谓词ρ定义顶点之间的边。让κG表示G的连通分支的数量。</li>
+<li>做出连接两个子计划的决定对应于选择由边连接的两个顶点并将它们合并成一个顶点。LetG=（V， E）是一个查询图。将连接c=（vi，vj）应用于图G定义了一个具有以下属性的新图：（1）vi和vj从V中移除，（2）一个新的顶点（vi+vj）被添加到V中，（3）（vi+vj）的边是入射到vi和vj的边的并集。每次连接都会减少1个顶点的数量。 每个计划都可以被描述为一个这样的连接序列，直到|V|=κG。上面的描述包含了另一个系统R启发式：“避免笛卡尔积”。我们可以通过在算法开始时简单地向G添加边来放松这种启发式，以确保它是完全连接的。</li>
+<li>把计划抽象成图，</li>
+</ul>
+<p><img src="/img/Learning%20to%20Optimize%20Join%20Queries%20With%20Deep%20Reinforcement%20Learning/image-20250516105456876.png" alt="image-20250516105456876"></p>
+<ul>
+<li>用Q函数推导长期收益，而不是像贪心一样只看短期收益。</li>
+<li>DQ微调。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://Dog-Du.github.io">DogDu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://dog-du.github.io/posts/8921.html">https://dog-du.github.io/posts/8921.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="post-meta__tags" href="/tags/%E5%B7%B2%E5%AE%8C%E6%88%90/">已完成</a><a class="post-meta__tags" href="/tags/%E8%AE%BA%E6%96%87/">论文</a><a class="post-meta__tags" href="/tags/%E8%BF%9E%E6%8E%A5%E4%BC%98%E5%8C%96/">连接优化</a></div><div class="post-share"><div class="social-share" data-image="/img/top_img.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/27248.html" title="Go学习"><img class="cover" src="/img/top_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">Go学习</div></div><div class="info-2"><div class="info-item-1">学习Go基本语法</div></div></div></a><a class="pagination-related" href="/posts/38177.html" title="Rust学习"><img class="cover" src="/img/top_img.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">Rust学习</div></div><div class="info-2"><div class="info-item-1">学习Rust基本语法</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comments</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">DogDu</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">19</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Dog-Du"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is DogDu's Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/posts/38177.html" title="Rust学习">Rust学习</a><time datetime="2025-05-18T10:44:22.000Z" title="Created 2025-05-18 18:44:22">2025-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/posts/8921.html" title="读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning">读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning</a><time datetime="2025-05-16T02:17:35.000Z" title="Created 2025-05-16 10:17:35">2025-05-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/posts/27248.html" title="Go学习">Go学习</a><time datetime="2025-05-11T03:36:44.000Z" title="Created 2025-05-11 11:36:44">2025-05-11</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By DogDu</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="Scroll to Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  const initGitalk = (el, path) => {
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGitalk = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+
+    const gitalk = new Gitalk({
+      clientID: 'Ov23lip70wbjDSj3yXVa',
+      clientSecret: '229af146a5a288cca20082b54bcaf2ea896347af',
+      repo: 'Dog-Du.github.io',
+      owner: 'Dog-Du',
+      admin: ['Dog-Du'],
+      updateCountCallback: commentCount,
+      ...option,
+      id: (decodeURIComponent(location.pathname)).substring(0, 48),
+      distractionFreeMode: false
+    })
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async(el, path) => {
+    if (typeof Gitalk === 'function') initGitalk(el, path)
+    else {
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
+      initGitalk(el, path)
+    }
+  }
+
+  if (isShuoshuo) {
+    'Gitalk' === 'Gitalk'
+      ? window.shuoshuoComment = { loadComment: loadGitalk }
+      : window.loadOtherComment = loadGitalk
+    return
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
