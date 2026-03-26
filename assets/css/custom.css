@@ -1,0 +1,335 @@
+/* ==========================================================================
+   DogDu's Blog - Custom Styles
+   基于 Blowfish 主题的优雅定制
+   目标：提升阅读舒适度、视觉层次和品牌一致性
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. 排版优化 Typography
+   -------------------------------------------------------------------------- */
+
+/* 正文基础 - 提升中文阅读体验 */
+.prose {
+  /* 更宽松的中文字间距 */
+  letter-spacing: 0.01em;
+  /* 优化的行高 */
+  line-height: 1.8;
+}
+
+/* 文章标题层次优化 */
+.prose h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.prose h2 {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin-top: 2.25rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(var(--color-neutral-300), 0.5);
+}
+
+.prose h3 {
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.875rem;
+}
+
+.prose h4 {
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* 代码块优化 */
+.prose pre,
+pre {
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.prose pre {
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+.prose pre code,
+.chroma,
+.chroma code,
+.chroma .line {
+  white-space: inherit;
+}
+
+.prose code {
+  font-family: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
+  font-size: 0.875em;
+}
+
+/* 行内代码 */
+.prose :not(pre) > code {
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  background-color: rgba(var(--color-primary-500), 0.1);
+  color: var(--color-primary-600);
+}
+
+.dark .prose :not(pre) > code {
+  background-color: rgba(var(--color-primary-400), 0.15);
+  color: var(--color-primary-300);
+}
+
+/* 引用块样式 */
+.prose blockquote {
+  border-left: 3px solid var(--color-primary-500);
+  background-color: rgba(var(--color-neutral-100), 0.5);
+  padding: 1rem 1.25rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: normal;
+}
+
+.dark .prose blockquote {
+  background-color: rgba(var(--color-neutral-800), 0.5);
+}
+
+.prose blockquote p {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   2. 链接和交互 Link & Interactive
+   -------------------------------------------------------------------------- */
+
+/* 文章内链接 */
+.prose a {
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--color-primary-500), 0.3);
+  transition: all 0.2s ease;
+}
+
+.prose a:hover {
+  border-bottom-color: var(--color-primary-500);
+  color: var(--color-primary-600);
+}
+
+.dark .prose a:hover {
+  color: var(--color-primary-300);
+}
+
+/* 文章列表链接 */
+.article-link {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.article-link:hover {
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   3. 列表和归档 List & Archives
+   -------------------------------------------------------------------------- */
+
+/* 归档年份标题 */
+.archive-year {
+  position: relative;
+  padding-left: 1rem;
+}
+
+.archive-year::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--color-primary-500), var(--color-primary-300));
+  border-radius: 2px;
+}
+
+/* 归档文章条目 */
+.archive-item {
+  position: relative;
+  padding-left: 1.5rem;
+  border-left: 1px solid rgba(var(--color-neutral-300), 0.5);
+}
+
+.archive-item::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 0.75rem;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-neutral-400);
+  transition: background-color 0.2s ease;
+}
+
+.archive-item:hover::before {
+  background-color: var(--color-primary-500);
+}
+
+.dark .archive-item {
+  border-left-color: rgba(var(--color-neutral-700), 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   4. 主页 Profile 页面优化
+   -------------------------------------------------------------------------- */
+
+/* 个人资料区域 */
+.author-profile {
+  text-align: center;
+}
+
+.author-profile .author-image {
+  border-radius: 50%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.author-profile .author-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* 主页介绍文字 */
+.home-intro {
+  max-width: 65ch;
+  margin: 0 auto;
+}
+
+.home-intro p {
+  line-height: 1.8;
+  color: var(--color-neutral-600);
+}
+
+.dark .home-intro p {
+  color: var(--color-neutral-400);
+}
+
+/* 主页列表样式 */
+.home-list {
+  list-style: none;
+  padding: 0;
+}
+
+.home-list li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.home-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-primary-500);
+  font-weight: bold;
+}
+
+/* --------------------------------------------------------------------------
+   5. 导航和页眉 Header & Navigation
+   -------------------------------------------------------------------------- */
+
+/* 固定头部优化 */
+.header-fixed {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(var(--color-neutral-50), 0.85);
+}
+
+.dark .header-fixed {
+  background-color: rgba(var(--color-neutral-900), 0.85);
+}
+
+/* 导航链接 */
+.nav-link {
+  position: relative;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(var(--color-primary-500), 0.1);
+}
+
+/* 当前页面指示器 */
+.nav-link.active {
+  color: var(--color-primary-600);
+  font-weight: 500;
+}
+
+.dark .nav-link.active {
+  color: var(--color-primary-400);
+}
+
+/* --------------------------------------------------------------------------
+   6. 页脚 Footer
+   -------------------------------------------------------------------------- */
+
+.footer {
+  border-top: 1px solid rgba(var(--color-neutral-200), 0.5);
+}
+
+.dark .footer {
+  border-top-color: rgba(var(--color-neutral-800), 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   7. 响应式优化
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .prose {
+    line-height: 1.75;
+  }
+  
+  .prose h1 {
+    font-size: 1.875rem;
+    margin-top: 2rem;
+  }
+  
+  .prose h2 {
+    font-size: 1.5rem;
+    margin-top: 1.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. 暗色模式微调
+   -------------------------------------------------------------------------- */
+
+.dark .prose {
+  color: var(--color-neutral-300);
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4 {
+  color: var(--color-neutral-100);
+}
+
+.dark .prose strong {
+  color: var(--color-neutral-200);
+}
+
+/* --------------------------------------------------------------------------
+   9. 打印优化
+   -------------------------------------------------------------------------- */
+
+@media print {
+  .prose {
+    line-height: 1.6;
+  }
+  
+  .prose a {
+    border-bottom: none;
+    text-decoration: underline;
+  }
+}

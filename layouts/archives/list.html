@@ -1,0 +1,56 @@
+{{ define "main" }}
+  <header class="mb-10">
+    {{ if .Params.showBreadcrumbs | default true }}
+      {{ partial "breadcrumbs.html" . }}
+    {{ end }}
+    <h1 class="mt-6 text-4xl font-bold text-neutral-900 dark:text-neutral tracking-tight">
+      {{ .Title }}
+    </h1>
+    <div class="mt-2 text-base text-neutral-500 dark:text-neutral-400">
+      按时间倒序整理全部文章。
+    </div>
+  </header>
+
+  {{ $posts := where site.RegularPages "Section" "posts" }}
+  {{ if gt (len $posts) 0 }}
+    <section class="space-y-12 w-full">
+      {{ range ($posts.GroupByDate "2006") }}
+        <section class="archive-year-group">
+          <h2 class="archive-year text-2xl font-semibold text-neutral-700 dark:text-neutral-300 mb-6 pb-2 border-b border-neutral-200 dark:border-neutral-700">
+            {{ .Key }}
+            <span class="text-sm font-normal text-neutral-500 dark:text-neutral-500 ml-2">
+              ({{ len .Pages }} 篇)
+            </span>
+          </h2>
+          <div class="space-y-4">
+            {{ range .Pages.ByDate.Reverse }}
+              <article class="archive-item py-2">
+                <a href="{{ .RelPermalink }}" class="group flex items-start gap-4 hover:no-underline">
+                  <time class="flex-shrink-0 text-sm font-medium text-neutral-500 dark:text-neutral-500 w-20 pt-0.5">
+                    {{ .Date.Format "01-02" }}
+                  </time>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-base font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
+                      {{ .Title }}
+                    </h3>
+                    {{ with .Summary }}
+                      <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-500 line-clamp-1">
+                        {{ . | plainify | truncate 80 }}
+                      </p>
+                    {{ end }}
+                  </div>
+                </a>
+              </article>
+            {{ end }}
+          </div>
+        </section>
+      {{ end }}
+    </section>
+  {{ else }}
+    <section class="mt-10 py-12 text-center border-t border-neutral-200 dark:border-neutral-700">
+      <p class="text-neutral-500 dark:text-neutral-400">
+        <em>这里还没有任何文章可以列出。</em>
+      </p>
+    </section>
+  {{ end }}
+{{ end }}

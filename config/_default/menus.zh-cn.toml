@@ -1,0 +1,44 @@
+# -- Main Menu --
+# Chinese navigation menu
+
+[[main]]
+  name = "首页"
+  pageRef = "/"
+  weight = 10
+
+[[main]]
+  name = "文章"
+  pageRef = "posts"
+  weight = 20
+
+[[main]]
+  name = "归档"
+  pageRef = "archives"
+  weight = 30
+
+[[main]]
+  name = "分类"
+  pageRef = "categories"
+  weight = 40
+
+[[main]]
+  name = "标签"
+  pageRef = "tags"
+  weight = 50
+
+[[main]]
+  identifier = "github"
+  pre = "github"
+  url = "https://github.com/Dog-Du"
+  weight = 100
+
+# -- Footer Menu --
+[[footer]]
+  name = "分类"
+  pageRef = "categories"
+  weight = 10
+
+[[footer]]
+  name = "标签"
+  pageRef = "tags"
+  weight = 20

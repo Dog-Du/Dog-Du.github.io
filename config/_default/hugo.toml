@@ -1,0 +1,63 @@
+# -- Site Configuration --
+# Blowfish Theme - Chinese Personal Tech Blog
+# https://blowfish.page/docs/getting-started/
+
+theme = "blowfish"
+baseURL = "https://dog-du.github.io/"
+defaultContentLanguage = "zh-cn"
+
+# For Chinese content
+hasCJKLanguage = true
+
+enableRobotsTXT = true
+summaryLength = 40
+
+buildDrafts = false
+buildFuture = false
+buildExpired = false
+
+enableEmoji = true
+
+# Disable RSS as per original config
+[outputs]
+  home = ["HTML", "JSON"]
+  page = ["HTML"]
+  section = ["HTML"]
+  taxonomy = ["HTML"]
+  term = ["HTML"]
+
+[pagination]
+  pagerSize = 10
+
+[imaging]
+  anchor = 'Center'
+
+# Permalinks preserved from original
+[permalinks]
+  posts = "/posts/:slug/"
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  author = "authors"
+
+[sitemap]
+  changefreq = 'daily'
+  filename = 'sitemap.xml'
+  priority = 0.5
+
+[related]
+  threshold = 0
+  toLower = false
+
+    [[related.indices]]
+        name = "tags"
+        weight = 100
+
+    [[related.indices]]
+        name = "categories"
+        weight = 100
+
+    [[related.indices]]
+        name = "date"
+        weight = 10

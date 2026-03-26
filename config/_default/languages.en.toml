@@ -1,0 +1,11 @@
+# 禁用英文语言配置，使用中文作为默认语言
+disabled = true
+
+languageCode = "en"
+languageName = "English"
+weight = 2
+
+[params]
+  displayName = "EN"
+  isoCode = "en"
+  rtl = false

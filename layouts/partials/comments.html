@@ -1,0 +1,31 @@
+{{ $repo := "Dog-Du/Dog-Du.github.io" }}
+{{ $repoID := "R_kgDOOBhnIA" }}
+{{ $category := "Comments" }}
+{{ $categoryID := "DIC_kwDOOBhnIM4C5TJS" }}
+{{ $theme := "preferred_color_scheme" }}
+{{ $commentNumber := .Params.commentDiscussionNumber }}
+{{ $commentTerm := .Params.commentTerm | default (printf "%s | %s" .Title .Site.Title) }}
+<script
+  src="https://giscus.app/client.js"
+  data-repo="{{ $repo }}"
+  data-repo-id="{{ $repoID }}"
+  {{ if $commentNumber }}
+  data-mapping="number"
+  data-term="{{ $commentNumber }}"
+  data-number="{{ $commentNumber }}"
+  {{ else }}
+  data-category="{{ $category }}"
+  data-category-id="{{ $categoryID }}"
+  data-mapping="specific"
+  data-term="{{ $commentTerm }}"
+  {{ end }}
+  data-strict="1"
+  data-reactions-enabled="1"
+  data-emit-metadata="1"
+  data-input-position="top"
+  data-theme="{{ $theme }}"
+  data-lang="zh-CN"
+  data-loading="lazy"
+  crossorigin="anonymous"
+  async>
+</script>
