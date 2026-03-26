@@ -741,13 +741,13 @@ body.max-w-7xl {
 .article-content.max-w-prose,
 #single_header.max-w-prose,
 footer.max-w-prose {
-  max-width: 96ch !important;
+  max-width: 100ch !important;
 }
 
 @media (min-width: 1024px) {
   .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
-    padding-left: 0 !important;
-    margin-left: 4rem !important;
+    padding-left: 0.5rem !important;
+    margin-left: 5rem !important;
     max-width: 16rem !important;
   }
 
@@ -764,4 +764,61 @@ footer.max-w-prose {
 .dark .codeblock-fold__header {
   background: rgba(var(--color-neutral-900), 0.96) !important;
   border-bottom-color: rgba(var(--color-neutral-600), 0.95) !important;
+}
+
+.codeblock-fold__content,
+.highlight-wrapper,
+.highlight,
+pre.chroma,
+.chroma {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+.prose pre,
+.prose pre code,
+.chroma,
+.chroma code,
+.chroma .line {
+  white-space: pre !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+.chroma .line {
+  display: block !important;
+}
+
+.codeblock-fold__content > .highlight-wrapper,
+.codeblock-fold__content > .highlight-wrapper pre,
+.codeblock-fold__content > .highlight-wrapper .chroma {
+  min-width: max-content;
+}
+
+html:not(.dark) .prose pre,
+html:not(.dark) pre,
+html:is(.dark *) .prose pre,
+html:is(.dark *) pre {
+  white-space: pre-wrap !important;
+  overflow-x: auto !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+html:not(.dark) .prose pre code,
+html:not(.dark) .chroma,
+html:not(.dark) .chroma code,
+html:not(.dark) .chroma .line,
+html:is(.dark *) .prose pre code,
+html:is(.dark *) .chroma,
+html:is(.dark *) .chroma code,
+html:is(.dark *) .chroma .line {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+html:not(.dark) .chroma .line,
+html:is(.dark *) .chroma .line {
+  display: block !important;
 }
