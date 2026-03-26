@@ -741,13 +741,13 @@ body.max-w-7xl {
 .article-content.max-w-prose,
 #single_header.max-w-prose,
 footer.max-w-prose {
-  max-width: 100ch !important;
+  max-width: 108ch !important;
 }
 
 @media (min-width: 1024px) {
   .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
-    padding-left: 0.5rem !important;
-    margin-left: 5rem !important;
+    padding-left: 0.75rem !important;
+    margin-left: 6rem !important;
     max-width: 16rem !important;
   }
 
