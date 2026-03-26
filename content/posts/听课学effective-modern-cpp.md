@@ -292,8 +292,10 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">vector v0 = {1,2,3}, v1 = {2,3,4}, v2 = {3,4,5};
-   auto v3 = v0 + v1 + v2; // 中间有临时变量的存在，导致非常低效</code></pre> |
+   | ```cpp
+vector v0 = {1,2,3}, v1 = {2,3,4}, v2 = {3,4,5};
+   auto v3 = v0 + v1 + v2; // 中间有临时变量的存在，导致非常低效
+``` |
 
  延时计算：推迟计算，直到需要结果。
 
@@ -453,10 +455,12 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">enum Color {
+   | ```cpp
+enum Color {
    	block = 0;
    	white = 0; // 这是允许的
-   };</code></pre> |
+   };
+``` |
 2. 未限域的 enum
 
    * 默认是**全局的**，可能会导致污染。
@@ -474,16 +478,19 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">enum class Color {
+   | ```cpp
+enum class Color {
    	
-   }; // 即可，就是限域的 enum</code></pre> |
+   }; // 即可，就是限域的 enum
+``` |
 4. enum 类型**不能直接支持成员函数。**
 
    但是可以：
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">class Color {
+   | ```cpp
+class Color {
    public:
    	enum Value : int {
    		Block = 0,
@@ -491,7 +498,8 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
    	}; // 下略
    private:
    	Value value_;
-   }</code></pre> |
+   }
+``` |
 
    来同时支持限域枚举和成员方法。
 5. 可以用列表初始化有定义整形的枚举类型。
@@ -518,9 +526,11 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">isLuck(int x); // 可能会出现 char -> int
+   | ```cpp
+isLuck(int x); // 可能会出现 char -> int
    // 为了避免：
-   isLuck(char) = delete;</code></pre> |
+   isLuck(char) = delete;
+``` |
 4. **delete可以删除一个模板的示例化。**
 5. delete 可以在类中删除一个指定的成员模板函数。避免传入不想要的类型。
 
@@ -544,11 +554,13 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">class A {
+   | ```cpp
+class A {
    public:
    	get() &;  // 会被左值调用
    	get() &&; // 会被右值调用
-   };</code></pre> |
+   };
+``` |
 
 ## 条款十三：优先使用 const\_iterator 而非 iterator
 
@@ -572,14 +584,16 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">// new 等价于：
+   | ```cpp
+// new 等价于：
    void *ptr = operator new(sizeof(T));
    T *t = (T *)ptr;
    t->t();
    
    // delete 等价于：
    t->~t();
-   operator delete(t);</code></pre> |
+   operator delete(t);
+``` |
 3. `placement new` 给定地址原地构造。本身不会额外申请内存。
 4. 修改类内的 `operator new/delete` 可以完全控制类的创建。
 
@@ -625,11 +639,13 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">int *p = new int(10);
+   | ```cpp
+int *p = new int(10);
    {
    	std::shared_ptr<int> sp1(p);
    	std::shared_ptr<int> sp2(p);
-   } // 这个时候 sp1, sp2 释放，p 被释放两次</code></pre> |
+   } // 这个时候 sp1, sp2 释放，p 被释放两次
+``` |
 4. 解决方法：RAII
 5. 使用 this 指针作为 `std::shared_ptr` 构造函数实参的例子：
 
@@ -639,8 +655,10 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">class T : public std::enable_shared_from_this<T>;
-   // 使用 shared_from_this() 就可以得到一个指向自己的指针。</code></pre> |
+   | ```cpp
+class T : public std::enable_shared_from_this<T>;
+   // 使用 shared_from_this() 就可以得到一个指向自己的指针。
+``` |
 6. shared\_ptr 不支持数组，但是可以自定义删除器。
 
 ## 条款二十：当 std::shared\_ptr 可以悬空时使用 std::weak\_ptr
@@ -686,7 +704,8 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">// 使用Pimpl
+   | ```cpp
+// 使用Pimpl
    // 在头文件person.hpp中
    #include <memory>
    class Person {
@@ -709,7 +728,8 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
      std::string id;
      BasicInfo basic_info;
    };
-   Person::Person() : pimpl_(std::make_unique<Impl>()) {}</code></pre> |
+   Person::Person() : pimpl_(std::make_unique<Impl>()) {}
+``` |
 2. **如果不在实现文件中实现特殊成员函数，生成的默认函数会导致编译不通过** 这是因为默认生成的代码已经在使用类型了实际上。
 
 # 第五章：右值引用 移动语义 完美转发
@@ -809,7 +829,8 @@ std::vector<int> GetVector2() {   std::vector<int> result(1'000'000, 1);   retur
 
    |  |
    | --- |
-   | <pre><code class="language-cpp">T fun() {
+   | ```cpp
+   T fun() {
    	T t(10);
    	return std::move(t);
    }
@@ -820,7 +841,8 @@ std::vector<int> GetVector2() {   std::vector<int> result(1'000'000, 1);   retur
    
    // 因为编译器不能改变行为，有move就必须move
    // 而且因为编译器不能轻易猜测函数的行为（move的行为）
-   // 这就导致了编译器的无法优化</code></pre> |
+   // 这就导致了编译器的无法优化
+   ``` |
 
 ## 条款二十五：对右值引用使用std::move，对通用（万能）引用使用std::forward
 

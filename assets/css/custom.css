@@ -71,9 +71,11 @@ pre {
 }
 
 .codeblock-fold__checkbox {
-  position: absolute;
+  position: fixed;
   opacity: 0;
   pointer-events: none;
+  left: -9999px;
+  top: -9999px;
 }
 
 .codeblock-fold__header {
@@ -172,7 +174,7 @@ pre {
 .codeblock-fold__content {
   position: relative;
   overflow: hidden;
-  max-height: calc(var(--code-fold-lines, 30) * 1.5rem + 4rem);
+  max-height: calc(var(--code-fold-lines, 30) * 1.6em);
 }
 
 .codeblock-fold__content::after {
