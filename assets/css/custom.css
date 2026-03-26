@@ -450,6 +450,17 @@ footer.max-w-prose {
   border-bottom-color: rgba(var(--color-neutral-600), 0.95) !important;
 }
 
+body.max-w-7xl {
+  max-width: 100rem !important;
+}
+
+@media (min-width: 1024px) {
+  body.max-w-7xl {
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+  }
+}
+
 .codeblock-fold__content {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
