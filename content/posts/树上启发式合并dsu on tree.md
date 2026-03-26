@@ -2,6 +2,8 @@
 date: '2024-01-22T10:44:53.000Z'
 tags:
 - 数据结构与算法
+categories:
+- 算法与数据结构
 title: 树上启发式合并（dsu on tree）
 slug: algo-dsu-on-tree
 summary: 以颜色平衡树题为例讲解 dsu on tree 的保重儿子、删轻留重与统计维护思路。

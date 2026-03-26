@@ -15,29 +15,25 @@
 {{- end -}}
 {{- $shouldFold := gt $lineCount $threshold -}}
 {{- $previewLines := first $threshold $lines -}}
-{{- $remainingLines := after $threshold $lines -}}
-{{- $previewCode := delimit $previewLines "\n" -}}
-{{- $remainingCount := len $remainingLines -}}
-{{- $remainingCode := delimit $remainingLines "\n" -}}
+{{- $remainingCount := sub $lineCount (len $previewLines) -}}
+{{- $foldID := printf "%s-%s-%d" $label $lang $lineCount | md5 -}}
 
 {{- if $shouldFold -}}
-  <div class="codeblock-fold">
-    <details class="codeblock-fold__toggle" {{ if $expandByDefault }}open{{ end }}>
-      <summary class="codeblock-fold__summary">
-        <span class="codeblock-fold__meta">{{ $label }} · 已显示前 {{ $threshold }} 行</span>
-        <span class="codeblock-fold__hint" data-open-label="收起剩余 {{ $remainingCount }} 行" data-closed-label="展开剩余 {{ $remainingCount }} 行">展开剩余 {{ $remainingCount }} 行</span>
-      </summary>
-    </details>
-    <div class="highlight-wrapper codeblock-fold__preview">
-      {{- with $title -}}
-        <div class="codeblock-title">
-          {{- . -}}
-        </div>
-      {{- end -}}
-      {{- transform.Highlight $previewCode $lang .Options -}}
-    </div>
-    <div class="highlight-wrapper codeblock-fold__overflow">
-      {{- transform.Highlight $remainingCode $lang .Options -}}
+  <div class="codeblock-fold" style="--code-fold-lines: {{ $threshold }};">
+    <input id="codeblock-{{ $foldID }}" class="codeblock-fold__checkbox" type="checkbox" {{ if $expandByDefault }}checked{{ end }}>
+    <label for="codeblock-{{ $foldID }}" class="codeblock-fold__summary">
+      <span class="codeblock-fold__meta">{{ $label }} · 共 {{ $lineCount }} 行</span>
+      <span class="codeblock-fold__hint" data-open-label="收起代码" data-closed-label="展开剩余 {{ $remainingCount }} 行">展开剩余 {{ $remainingCount }} 行</span>
+    </label>
+    <div class="codeblock-fold__content">
+      <div class="highlight-wrapper">
+        {{- with $title -}}
+          <div class="codeblock-title">
+            {{- . -}}
+          </div>
+        {{- end -}}
+        {{- transform.Highlight $code $lang .Options -}}
+      </div>
     </div>
   </div>
 {{- else -}}

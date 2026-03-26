@@ -2,6 +2,8 @@
 date: '2024-01-22T11:18:53.000Z'
 tags:
 - 数据结构与算法
+categories:
+- 算法与数据结构
 title: 跳表（skip list）的简单实现
 slug: algo-skiplist-impl
 summary: 给出一份基础跳表实现，说明随机层高、跨度维护以及排名、前驱后继等常见操作。

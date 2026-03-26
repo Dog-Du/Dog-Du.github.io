@@ -4,6 +4,8 @@ tags:
 - 数据结构与算法
 - AVL
 - 平衡树
+categories:
+- 算法与数据结构
 title: AVL树全代码实现与验证
 slug: algo-avl-tree-full-impl
 summary: 按定义、旋转、插入删除三个层次整理 AVL 树手写过程，并通过洛谷 P3369 与 P1177 的代码记录验证实现正确性。

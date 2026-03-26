@@ -4,6 +4,8 @@ tags:
 - 数据结构与算法
 - Treap
 - 平衡树
+categories:
+- 算法与数据结构
 title: Treap树堆带旋版本实现
 slug: algo-treap-rotating
 summary: 介绍带旋 Treap 的定义、插入删除策略与旋转维护方式，并用洛谷 P3369 的完整实现说明这类随机平衡树为何写起来足够直接。

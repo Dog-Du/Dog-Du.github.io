@@ -2,6 +2,8 @@
 date: '2023-10-19T11:40:45.000Z'
 tags:
 - 数据结构与算法
+categories:
+- 算法与数据结构
 title: 链表/单链表 O(nlogn)排序
 slug: algo-list-sort
 summary: 从 STL `list::sort()` 出发讨论为什么链表适合归并排序，并给出单链表 `O(n log n)` 排序实现。

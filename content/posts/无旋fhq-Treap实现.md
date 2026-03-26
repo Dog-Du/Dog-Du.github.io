@@ -4,6 +4,8 @@ tags:
 - 数据结构与算法
 - Treap
 - 平衡树
+categories:
+- 算法与数据结构
 title: 无旋fhq-Treap实现
 slug: algo-fhq-treap
 summary: 用 split / merge 视角整理无旋 fhq-Treap 的代码实现，展示它为何在模板竞赛题里兼具简洁度与扩展性。

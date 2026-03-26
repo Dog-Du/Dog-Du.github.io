@@ -2,6 +2,8 @@
 date: '2023-10-23T11:18:53.000Z'
 tags:
 - 数据结构与算法
+categories:
+- 算法与数据结构
 title: LeetCode接雨水i 两种思想四种解法
 slug: algo-trapping-rain
 summary: 围绕 LeetCode 接雨水题，总结单调栈、区间查询、动态规划与双指针四种经典解法及其思路差异。

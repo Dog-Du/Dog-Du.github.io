@@ -2,6 +2,8 @@
 date: '2024-01-14T08:18:53.000Z'
 tags:
 - 数据结构与算法
+categories:
+- 算法与数据结构
 title: std::sort的底层实现
 slug: algo-std-sort
 summary: 从 libstdc++ 源码切入分析 std::sort 的 introsort 策略，理解快排、堆排与插排如何组合工作。

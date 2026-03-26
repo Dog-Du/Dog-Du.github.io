@@ -4,6 +4,8 @@ tags:
 - 已完成
 - Go
 - 学习
+categories:
+- 编程语言
 title: Go学习
 slug: lang-go-learn
 summary: 从环境配置、模块管理到基础语法整理 Go 入门笔记，适合作为后续写后端前的速查清单。

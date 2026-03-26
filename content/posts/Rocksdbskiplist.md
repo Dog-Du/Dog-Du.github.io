@@ -3,6 +3,8 @@ date: '2025-10-05T11:14:11.000Z'
 tags:
 - C++
 - Rocksdb
+categories:
+- 数据库系统
 title: Rocksdb：skiplist
 slug: db-rocksdb-skiplist
 summary: 结合 RocksDB 源码梳理 SkipList 的节点结构、迭代器设计与多读单写并发控制方式。

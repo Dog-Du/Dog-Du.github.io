@@ -4,6 +4,8 @@ tags:
 - 数据结构与算法
 - Splay
 - 平衡树
+categories:
+- 算法与数据结构
 title: Splay树伸展树入门与实现
 slug: algo-splay-tree
 summary: 围绕伸展操作的直觉、旋转策略与删除流程，整理 Splay 树的核心实现，并结合洛谷 P3369 给出完整代码与实战记录。

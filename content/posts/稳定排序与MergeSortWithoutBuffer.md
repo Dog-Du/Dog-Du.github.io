@@ -3,6 +3,8 @@ date: '2024-01-14T20:09:54'
 tags:
 - 数据结构与算法
 - 排序
+categories:
+- 算法与数据结构
 title: 稳定排序与MergeSortWithoutBuffer
 slug: algo-stable-sort-without-buffer
 summary: 围绕稳定排序需求，介绍 MergeSortWithoutBuffer 的核心思想、rotate 技巧以及小 buffer 优化，讨论如何在更低额外空间下完成归并。

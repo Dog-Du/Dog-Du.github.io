@@ -4,6 +4,8 @@ tags:
 - 已完成
 - 学习
 - Rust
+categories:
+- 编程语言
 title: Rust学习
 slug: lang-rust-learn
 summary: 按照《Rust 程序设计语言》的脉络整理 Rust 基础语法、所有权、结构体、枚举与常用语言特性。

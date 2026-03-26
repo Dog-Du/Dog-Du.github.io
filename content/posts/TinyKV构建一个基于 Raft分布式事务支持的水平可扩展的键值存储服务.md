@@ -7,6 +7,8 @@ tags:
 - TinyKV
 - Raft
 - 分布式
+categories:
+- 数据库系统
 title: TinyKV：构建一个基于 Raft、分布式事务支持的、水平可扩展的键值存储服务
 slug: dist-tinykv-raft
 summary: 记录 TinyKV 项目各阶段的实现与踩坑，聚焦 Raft、Region、事务层和分布式存储核心机制。

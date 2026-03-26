@@ -4,6 +4,8 @@ tags:
 - 数据结构与算法
 - Trie
 - 平衡树
+categories:
+- 算法与数据结构
 title: 01Trie树与m进制Trie解决平衡树问题
 slug: algo-trie-balanced-tree
 summary: 从 01Trie 与 m 进制 Trie 两种建模方式出发，讨论它们如何模拟平衡树题目的有序集合操作，并给出基于洛谷 P3369 与 P1177 的实现与验证。

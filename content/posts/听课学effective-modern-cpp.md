@@ -4,6 +4,8 @@ tags:
 - 已完成
 - C++
 - 复习
+categories:
+- 编程语言
 title: 听课，学effective-modern-cpp
 slug: lang-cpp-effective
 summary: 结合视频与条款笔记整理 Effective Modern C++ 的核心知识点，侧重类型推导、右值、模板与现代实践。
