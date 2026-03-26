@@ -1,56 +1,56 @@
 # Dog-Du.github.io
 
-Personal Hugo blog repository for `https://dog-du.github.io/`.
+这是 `https://dog-du.github.io/` 的 Hugo 博客仓库。
 
-This repository contains:
-- Hugo content and configuration
-- GitHub Actions deployment workflow for GitHub Pages
-- Giscus discussion mapping for comments
-- A local Rust CLI tool for converting post images to WebP
+仓库包含：
+- Hugo 站点内容与配置
+- 用于部署 GitHub Pages 的 GitHub Actions 工作流
+- 基于 Giscus 的评论映射配置
+- 一个将文章图片转换为 WebP 的本地 Rust CLI 工具
 
 ---
 
-## Repository Structure
+## 仓库结构
 
 ```text
 .
-├── .github/workflows/hugo.yaml      # GitHub Pages deployment workflow
-├── config/                          # Hugo configuration
-├── content/posts/                   # Blog posts (Markdown)
-├── layouts/partials/comments.html   # Giscus comment integration
-├── static/img/                      # Local post images
-├── themes/blowfish/                 # Hugo theme
-└── tools/postimg/                   # Rust CLI for post image WebP conversion
+├── .github/workflows/hugo.yaml      # GitHub Pages 部署工作流
+├── config/                          # Hugo 配置
+├── content/posts/                   # 博客文章（Markdown）
+├── layouts/partials/comments.html   # Giscus 评论集成
+├── static/img/                      # 本地文章图片
+├── themes/blowfish/                 # Hugo 主题
+└── tools/postimg/                   # 将文章图片转为 WebP 的 Rust CLI
 ```
 
 ---
 
-## Source of Truth
+## 事实来源
 
-- **Site generator**: Hugo
-- **Deployment path**: GitHub Actions (`Deploy Hugo site`)
-- **Comments system**: Giscus
-- **Preferred stable comment binding**: `commentDiscussionNumber`
+- **站点生成器**：Hugo
+- **部署路径**：GitHub Actions（`Deploy Hugo site`）
+- **评论系统**：Giscus
+- **推荐的稳定评论绑定方式**：`commentDiscussionNumber`
 
-Do not rely on GitHub Pages legacy Jekyll behavior.
-The intended deployment path is the Hugo workflow in `.github/workflows/hugo.yaml`.
+不要依赖 GitHub Pages 旧版的 Jekyll 行为。  
+本仓库的预期部署方式是 `.github/workflows/hugo.yaml` 中定义的 Hugo 工作流。
 
 ---
 
-## Local Development
+## 本地开发
 
-### Requirements
+### 环境要求
 
 - Hugo `0.145.0` extended
-- Rust + Cargo (only needed if using `tools/postimg`)
+- Rust + Cargo（仅在使用 `tools/postimg` 时需要）
 
-### Local build
+### 本地构建
 
 ```bash
 hugo --gc --minify
 ```
 
-### Local preview
+### 本地预览
 
 ```bash
 hugo server
@@ -58,170 +58,170 @@ hugo server
 
 ---
 
-## Writing a New Post
+## 新建文章
 
-### Minimal workflow
+### 最小流程
 
-1. Create a Markdown file under `content/posts/`
-2. Add front matter
-3. Put local images under `static/img/<post-related-folder>/`
-4. Reference local images from the post
-5. Run the WebP conversion tool
-6. Build locally with Hugo
-7. Commit and push
+1. 在 `content/posts/` 下创建 Markdown 文件
+2. 添加 front matter
+3. 将本地图片放到 `static/img/<文章相关目录>/`
+4. 在文章中引用本地图片
+5. 运行 WebP 转换工具
+6. 本地用 Hugo 构建验证
+7. 提交并推送
 
-### Recommended front matter fields
+### 推荐的 front matter 字段
 
-Example:
+示例：
 
 ```yaml
 ---
-title: "My New Post"
+title: "我的新文章"
 date: 2026-03-26T12:00:00+08:00
 lastmod: 2026-03-26T12:00:00+08:00
 draft: false
 slug: my-new-post
-summary: Short summary here
+summary: 这里写一段简短摘要
 ---
 ```
 
-### Comment binding recommendation
+### 评论绑定建议
 
-If you care about comment stability, add:
+如果你希望评论绑定稳定，建议额外加上：
 
 ```yaml
 commentDiscussionNumber: <discussion-number>
 ```
 
-Why:
-- `commentDiscussionNumber` is stable
-- title-based / term-based discussion lookup is fragile
-- renaming a post can otherwise split comments across multiple discussions
+原因：
+- `commentDiscussionNumber` 是稳定的
+- 基于标题或 term 的讨论映射比较脆弱
+- 改文章标题时，可能导致评论被拆到不同 discussion
 
-### Practical recommendation
+### 实用建议
 
-- If the post is temporary and you do not care about long-term comment history, fallback mapping is acceptable
-- If the post matters, create the GitHub discussion and set `commentDiscussionNumber`
+- 如果文章是临时内容，不在意长期评论历史，可以接受 fallback 映射
+- 如果文章较重要，建议提前创建 GitHub discussion 并写入 `commentDiscussionNumber`
 
 ---
 
-## Image Workflow
+## 图片处理流程
 
-### Goal
+### 目标
 
-Convert local post images to `.webp` and rewrite Markdown references, while keeping source images until manually confirmed safe to delete.
+将文章中的本地图片转换为 `.webp`，并重写 Markdown 引用；源图片在人工确认安全前不自动删除。
 
-### Tool
+### 工具位置
 
-Rust CLI:
+Rust CLI：
 
 ```text
 tools/postimg/
 ```
 
-### Build / run
+### 构建 / 运行
 
-From repo root:
+在仓库根目录执行：
 
 ```bash
 cargo run --manifest-path tools/postimg/Cargo.toml -- --dry-run content/posts/your-post.md
 ```
 
-### Convert one post and rewrite references
+### 转换单篇文章并重写引用
 
 ```bash
 cargo run --manifest-path tools/postimg/Cargo.toml -- --rewrite content/posts/your-post.md
 ```
 
-### Convert, rewrite, and delete originals
+### 转换、重写并删除原图
 
-Use only after verifying generated WebP output:
+只在你确认生成的 WebP 没问题后再使用：
 
 ```bash
 cargo run --manifest-path tools/postimg/Cargo.toml -- --rewrite --delete-original content/posts/your-post.md
 ```
 
-### Safety behavior
+### 安全行为
 
-The tool:
-- scans one Markdown file at a time
-- supports Markdown image syntax and `<img src="...">`
-- handles local `/img/...` paths and relative paths
-- skips remote URLs
-- skips already-valid existing `.webp` files
-- uses content-based image format guessing instead of trusting only file extensions
-- writes WebP files atomically to avoid leaving poisoned empty outputs on failed encode
-- skips unsupported images safely without rewriting those references
-- requires `--rewrite` when `--delete-original` is used
+这个工具会：
+- 一次只扫描一篇 Markdown 文件
+- 支持 Markdown 图片语法和 `<img src="...">`
+- 处理本地 `/img/...` 路径和相对路径
+- 跳过远程 URL
+- 跳过已经存在且有效的 `.webp` 文件
+- 通过文件内容判断图片格式，而不只依赖扩展名
+- 以原子方式写入 WebP，避免编码失败时留下空文件
+- 对不支持的图片安全跳过，不重写相关引用
+- 使用 `--delete-original` 时，必须同时加 `--rewrite`
 
-### Current known limitation
+### 当前已知限制
 
-Some very large or unusual images may be unsupported by the current Rust WebP encoder.
-In that case the tool will:
-- keep the original image file
-- keep the original Markdown reference
-- continue processing the rest of the post
+某些特别大的图片或特殊格式图片，当前 Rust WebP 编码器可能不支持。  
+遇到这种情况时，工具会：
+- 保留原图
+- 保留原始 Markdown 引用
+- 继续处理文章中其他图片
 
-This is intentional.
-Do not force-rewrite unsupported images by hand unless you also confirm the generated file is valid.
-
----
-
-## Existing Blog Bulk Migration Status
-
-The repository has already been bulk-migrated for most locally referenced images.
-Remaining non-WebP references are expected only when:
-- the image is remote
-- or the image is unsupported by the current encoder
+这是故意设计的保护行为。  
+不要手动强行重写这些不支持的图片，除非你已经确认生成结果有效。
 
 ---
 
-## Deployment
+## 现有博客批量迁移状态
 
-### Normal deployment flow
+仓库中大多数本地引用图片已经完成批量迁移。  
+剩余的非 WebP 引用一般只会出现在以下情况：
+- 图片是远程链接
+- 当前编码器不支持该图片
 
-1. Make changes
-2. Build locally:
+---
+
+## 部署
+
+### 正常部署流程
+
+1. 修改内容
+2. 本地构建：
 
 ```bash
 hugo --gc --minify
 ```
 
-3. Push to `main`
-4. GitHub Actions runs `.github/workflows/hugo.yaml`
-5. Site is deployed to GitHub Pages
+3. 推送到 `main`
+4. GitHub Actions 执行 `.github/workflows/hugo.yaml`
+5. 站点部署到 GitHub Pages
 
-### Deployment workflow file
+### 部署工作流文件
 
 ```text
 .github/workflows/hugo.yaml
 ```
 
-### Important Pages setting
+### 重要的 Pages 设置
 
-GitHub repository Pages settings should use:
+GitHub 仓库 Pages 设置应使用：
 - **Source: GitHub Actions**
 
-Do not switch back to legacy source modes.
-That can reintroduce Jekyll-based failures and deployment conflicts.
+不要切回旧版 source 模式。  
+那样可能重新引入基于 Jekyll 的失败和部署冲突。
 
 ---
 
-## Comments / Giscus
+## 评论 / Giscus
 
-Comment integration lives in:
+评论集成位置：
 
 ```text
 layouts/partials/comments.html
 ```
 
-Behavior:
-- if `commentDiscussionNumber` exists, comments bind by discussion number
-- otherwise fallback mapping is used
+行为：
+- 如果存在 `commentDiscussionNumber`，则按 discussion number 绑定评论
+- 否则使用 fallback 映射
 
-### Preferred approach
+### 推荐做法
 
-For stable historical comments, use:
+如果希望历史评论稳定，优先使用：
 
 ```yaml
 commentDiscussionNumber: <number>
@@ -229,78 +229,60 @@ commentDiscussionNumber: <number>
 
 ---
 
-## AI Agent Notes
+## AI Agent 说明
 
-This section is intentionally written for agents.
+这一节是给代理或自动化工具看的。
 
-### What the repo is
+### 仓库性质
 
-- Hugo static blog
-- deployed through GitHub Actions
-- uses Giscus for comments
-- local images usually live under `static/img/`
-- post files live under `content/posts/`
+- Hugo 静态博客
+- 通过 GitHub Actions 部署
+- 使用 Giscus 作为评论系统
+- 本地图片通常放在 `static/img/`
+- 文章文件放在 `content/posts/`
 
-### What an agent should prefer
+### 代理应优先遵守的规则
 
-1. **Do not introduce Jekyll-based deployment logic**
-2. **Do not remove source images automatically unless explicitly asked**
-3. **Prefer `commentDiscussionNumber` over title-based mapping**
-4. **Use `tools/postimg` for post image conversion instead of ad-hoc scripts**
-5. **Validate with `cargo test` and `hugo --gc --minify` before shipping image-tool or content-flow changes**
+1. **不要引入基于 Jekyll 的部署逻辑**
+2. **除非明确要求，否则不要自动删除源图片**
+3. **优先使用 `commentDiscussionNumber`，不要依赖标题映射**
+4. **文章图片转换优先使用 `tools/postimg`，不要随手写临时脚本替代**
+5. **涉及图片工具或内容流程改动时，提交前先验证 `cargo test` 和 `hugo --gc --minify`**
 
-### If adding a new post
+### 如果要新增文章
 
-Agent checklist:
+代理检查清单：
 
-1. Create or edit Markdown under `content/posts/`
-2. Place local images under `static/img/<folder>/`
-3. Run:
+1. 在 `content/posts/` 下创建或编辑 Markdown
+2. 将本地图片放到 `static/img/<folder>/`
+3. 执行：
 
 ```bash
 cargo run --manifest-path tools/postimg/Cargo.toml -- --rewrite content/posts/<post>.md
 ```
 
-4. Build with:
+4. 本地验证：
 
 ```bash
 hugo --gc --minify
 ```
 
-5. If comments matter, add `commentDiscussionNumber`
-6. Push and verify the GitHub Actions deployment
+5. 如果评论需要长期稳定，补充：
 
-### If converting existing images
-
-Use the tool per post, not blind filesystem rewrites.
-That keeps scope auditable and avoids damaging unrelated files.
-
----
-
-## Verification Checklist
-
-Before pushing substantial changes:
-
-### Content / image changes
-
-```bash
-cargo test --manifest-path tools/postimg/Cargo.toml
-hugo --gc --minify
+```yaml
+commentDiscussionNumber: <number>
 ```
 
-### Deployment changes
+### 如果要处理图片
 
-After push, verify:
-- latest `Deploy Hugo site` workflow succeeded
-- target pages load online
-- comments still load when relevant
+不要直接假设扩展名是可信的。  
+优先使用已有工具，而不是自己写一个一次性的替代版本。
 
 ---
 
-## Do Not Do These
+## 维护建议
 
-- Do not delete original images before validating generated `.webp`
-- Do not assume file extensions reflect real image format
-- Do not assume every image can be encoded to WebP by the current Rust encoder
-- Do not bind important Giscus comments only by title/term if the post may be renamed
-- Do not rely on GitHub Pages legacy Jekyll builds
+- 内容改动后优先跑 `hugo --gc --minify`
+- 图片相关改动后优先跑 `cargo test`（如果涉及工具逻辑）
+- 评论稳定性优先靠 `commentDiscussionNumber`
+- GitHub Pages 的正确部署入口是 GitHub Actions，而不是旧式 Pages Source

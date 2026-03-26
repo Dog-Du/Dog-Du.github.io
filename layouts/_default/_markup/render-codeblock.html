@@ -22,6 +22,12 @@
 
 {{- if $shouldFold -}}
   <div class="codeblock-fold">
+    <details class="codeblock-fold__toggle" {{ if $expandByDefault }}open{{ end }}>
+      <summary class="codeblock-fold__summary">
+        <span class="codeblock-fold__meta">{{ $label }} · 已显示前 {{ $threshold }} 行</span>
+        <span class="codeblock-fold__hint" data-open-label="收起剩余 {{ $remainingCount }} 行" data-closed-label="展开剩余 {{ $remainingCount }} 行">展开剩余 {{ $remainingCount }} 行</span>
+      </summary>
+    </details>
     <div class="highlight-wrapper codeblock-fold__preview">
       {{- with $title -}}
         <div class="codeblock-title">
@@ -30,15 +36,9 @@
       {{- end -}}
       {{- transform.Highlight $previewCode $lang .Options -}}
     </div>
-    <details class="codeblock-fold__rest" {{ if $expandByDefault }}open{{ end }}>
-      <summary class="codeblock-fold__summary">
-        <span class="codeblock-fold__meta">{{ $label }} · 已显示前 {{ $threshold }} 行</span>
-        <span class="codeblock-fold__hint" data-open-label="收起剩余 {{ $remainingCount }} 行" data-closed-label="展开剩余 {{ $remainingCount }} 行">展开剩余 {{ $remainingCount }} 行</span>
-      </summary>
-      <div class="highlight-wrapper codeblock-fold__overflow">
-        {{- transform.Highlight $remainingCode $lang .Options -}}
-      </div>
-    </details>
+    <div class="highlight-wrapper codeblock-fold__overflow">
+      {{- transform.Highlight $remainingCode $lang .Options -}}
+    </div>
   </div>
 {{- else -}}
   <div class="highlight-wrapper">
