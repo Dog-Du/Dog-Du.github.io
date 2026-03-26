@@ -121,9 +121,8 @@ public:
     }
 };
 ```
-
-### 动态规划
-
+###
+动态规划
 ```cpp
 class Solution {
 public:

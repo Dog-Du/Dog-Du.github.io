@@ -31,9 +31,7 @@ struct AVLNode{
     int height;//因为bf可以由height算出，所以存height
 };
 ```
-
 这里我用AVL树做桶排，用洛谷的P1177排序做简单的验证，所以有一个value表示key的个数。而且不要把bf直接存进AVL树节点中，不然会变的不幸！！！（也可以自己尝尝试试）
-
 ```cpp
 class AVLTree{
 private:
@@ -495,9 +493,8 @@ int main()
 }
 
 ```
-
-![](/img/CSDN/algo-avl-tree-full-impl/86809b085806610a958bece8466c6b83.webp)
-
+![]
+(/img/CSDN/algo-avl-tree-full-impl/86809b085806610a958bece8466c6b83.webp)
 ```cpp
 #include <iostream>
 

@@ -521,7 +521,39 @@ for (i = 0; i < N; i += 16) {
  最后成绩：
 
 ```
-Cache Lab summary:                         Points   Max pts      Misses Csim correctness          27.0        27 Trans perf 32x32           8.0         8         260 Trans perf 64x64           8.0         8        1196 Trans perf 61x67          10.0        10        1993           Total points    53.0        53
+Cache
+Lab
+summary:
+Points
+Max
+pts
+Misses
+Csim
+correctness
+27.0
+27
+Trans
+perf
+32x32
+8.0
+8
+260
+Trans
+perf
+64x64
+8.0
+8
+1196
+Trans
+perf
+61x67
+10.0
+10
+1993
+Total
+points
+53.0
+53
 ```
 
 
@@ -631,7 +663,207 @@ void naive_smooth(int dim, pixel *src, pixel *dst) {
 我的最终结果：
 
 ```
-Teamname: DogDu Member 1: DogDu Email 1: [邮箱已移除]  Rotate: Version = naive_rotate: Naive baseline implementation: Dim             64      128     256     512     1024    Mean Your CPEs       2.3     2.5     2.7     2.9     6.7 Baseline CPEs   14.7    40.1    46.4    65.9    94.5 Speedup         6.3     16.3    17.5    22.7    14.2    14.2  Rotate: Version = rotate 16 * 16分块: Dim             64      128     256     512     1024    Mean Your CPEs       2.6     2.6     2.7     2.6     2.8 Baseline CPEs   14.7    40.1    46.4    65.9    94.5 Speedup         5.7     15.5    17.4    24.9    34.3    16.8  Smooth: Version = smooth -- 重复使用计算结果，可适用于 dim >= 2: Dim             32      64      128     256     512     Mean Your CPEs       14.0    14.1    14.3    14.7    15.1 Baseline CPEs   695.0   698.0   702.0   717.0   722.0 Speedup         49.7    49.4    49.0    48.7    47.7    48.9  Smooth: Version = smooth -- 分块使用前缀和，仅可用于 dim % 16 == 0, 因为边界条件比较复杂而且不通用，懒得实现了。: Dim             32      64      128     256     512     Mean Your CPEs       88.2    89.2    89.2    92.1    92.2 Baseline CPEs   695.0   698.0   702.0   717.0   722.0 Speedup         7.9     7.8     7.9     7.8     7.8     7.8  Smooth: Version = naive_smooth: Naive baseline implementation: Dim             32      64      128     256     512     Mean Your CPEs       87.7    88.7    89.2    89.5    90.1 Baseline CPEs   695.0   698.0   702.0   717.0   722.0 Speedup         7.9     7.9     7.9     8.0     8.0     7.9  Summary of Your Best Scores:   Rotate: 16.8 (rotate 16 * 16分块)   Smooth: 48.9 (smooth -- 重复使用计算结果，可适用于 dim >= 2)
+Teamname:
+DogDu
+Member
+1:
+DogDu
+Email
+1:
+[邮箱已移除]
+Rotate:
+Version
+=
+naive_rotate:
+Naive
+baseline
+implementation:
+Dim
+64
+128
+256
+512
+1024
+Mean
+Your
+CPEs
+2.3
+2.5
+2.7
+2.9
+6.7
+Baseline
+CPEs
+14.7
+40.1
+46.4
+65.9
+94.5
+Speedup
+6.3
+16.3
+17.5
+22.7
+14.2
+14.2
+Rotate:
+Version
+=
+rotate
+16
+*
+16分块:
+Dim
+64
+128
+256
+512
+1024
+Mean
+Your
+CPEs
+2.6
+2.6
+2.7
+2.6
+2.8
+Baseline
+CPEs
+14.7
+40.1
+46.4
+65.9
+94.5
+Speedup
+5.7
+15.5
+17.4
+24.9
+34.3
+16.8
+Smooth:
+Version
+=
+smooth
+--
+重复使用计算结果，可适用于
+dim
+>=
+2:
+Dim
+32
+64
+128
+256
+512
+Mean
+Your
+CPEs
+14.0
+14.1
+14.3
+14.7
+15.1
+Baseline
+CPEs
+695.0
+698.0
+702.0
+717.0
+722.0
+Speedup
+49.7
+49.4
+49.0
+48.7
+47.7
+48.9
+Smooth:
+Version
+=
+smooth
+--
+分块使用前缀和，仅可用于
+dim
+%
+16
+==
+0,
+因为边界条件比较复杂而且不通用，懒得实现了。:
+Dim
+32
+64
+128
+256
+512
+Mean
+Your
+CPEs
+88.2
+89.2
+89.2
+92.1
+92.2
+Baseline
+CPEs
+695.0
+698.0
+702.0
+717.0
+722.0
+Speedup
+7.9
+7.8
+7.9
+7.8
+7.8
+7.8
+Smooth:
+Version
+=
+naive_smooth:
+Naive
+baseline
+implementation:
+Dim
+32
+64
+128
+256
+512
+Mean
+Your
+CPEs
+87.7
+88.7
+89.2
+89.5
+90.1
+Baseline
+CPEs
+695.0
+698.0
+702.0
+717.0
+722.0
+Speedup
+7.9
+7.9
+7.9
+8.0
+8.0
+7.9
+Summary
+of
+Your
+Best
+Scores:
+Rotate:
+16.8
+(rotate 16 * 16分块)
+Smooth:
+48.9
+(smooth -- 重复使用计算结果，可适用于 dim >= 2)
 ```
 
 
@@ -847,12 +1079,23 @@ static void shark_heap() {
   mm_brk = ptr;
 }
 ```
-
-
 但是这样好像会出问题：
 
 ```
-Results for mm malloc: trace  valid  util     ops      secs  Kops  0       yes25153488%    5694  0.000120 47529  1       yes20989562%    5848  0.000125 46672  2       yes39566562%    6648  0.000177 37602  3       yes42764188%    5380  0.000133 40573  4       yes102375%   14400  0.000267 53912  5       yes195156138%    4800  0.000257 18684  6       yes180407325%    4800  0.000257 18699  7       yes14400000%   12000  0.000246 48840  8       yes7200000%   24000  0.000474 50686  9       yes7688000%   14401  0.000411 35073 10       yes351488%   14401  0.000095151112 Total       48525375%  112372  0.002560 43890  Perf index = 29115225 (util) + 40 (thru) = 29115265/100
+Results for mm malloc: trace  valid  util     ops      secs  Kops
+0       yes25153488%    5694  0.000120 47529
+1       yes20989562%    5848  0.000125 46672
+2       yes39566562%    6648  0.000177 37602
+3       yes42764188%    5380  0.000133 40573
+4       yes102375%   14400  0.000267 53912
+5       yes195156138%    4800  0.000257 18684
+6       yes180407325%    4800  0.000257 18699
+7       yes14400000%   12000  0.000246 48840
+8       yes7200000%   24000  0.000474 50686
+9       yes7688000%   14401  0.000411 35073
+10       yes351488%   14401  0.000095151112
+Total       48525375%  112372  0.002560 43890
+Perf index = 29115225 (util) + 40 (thru) = 29115265/100
 ```
 
 
@@ -865,7 +1108,96 @@ Results for mm malloc: trace  valid  util     ops      secs  Kops  0       yes25
 #### 成绩
 
 ```
-Results for mm malloc: trace  valid  util     ops      secs  Kops  0       yes   99%    5694  0.000102 55605  1       yes  100%    5848  0.000137 42842  2       yes   99%    6648  0.000133 50023  3       yes  100%    5380  0.000093 57912  4       yes  100%   14400  0.000157 92013  5       yes   96%    4800  0.000272 17628  6       yes   94%    4800  0.000243 19786  7       yes   55%   12000  0.000223 53763  8       yes   51%   24000  0.000419 57334  9       yes   90%   14401  0.000348 41382 10       yes   84%   14401  0.000081177134 Total          88%  112372  0.002207 50912  Perf index = 53 (util) + 40 (thru) = 93/100
+Results
+for
+mm
+malloc:
+trace
+valid
+util
+ops
+secs
+Kops
+0
+yes
+99%
+5694
+0.000102
+55605
+1
+yes
+100%
+5848
+0.000137
+42842
+2
+yes
+99%
+6648
+0.000133
+50023
+3
+yes
+100%
+5380
+0.000093
+57912
+4
+yes
+100%
+14400
+0.000157
+92013
+5
+yes
+96%
+4800
+0.000272
+17628
+6
+yes
+94%
+4800
+0.000243
+19786
+7
+yes
+55%
+12000
+0.000223
+53763
+8
+yes
+51%
+24000
+0.000419
+57334
+9
+yes
+90%
+14401
+0.000348
+41382
+10
+yes
+84%
+14401
+0.000081177134
+Total
+88%
+112372
+0.002207
+50912
+Perf
+index
+=
+53
+(util)
++
+40
+(thru)
+=
+93/100
 ```
 
 

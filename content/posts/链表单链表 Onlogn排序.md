@@ -87,9 +87,7 @@ typedef struct LIST {
     LIST* next;
 } *Linklist;
 ```
-
 几个辅助函数：
-
 ```cpp
 void init_list(Linklist& list) {
     Linklist p = new LIST;
@@ -137,9 +135,9 @@ bool empty(Linklist& p) {
     return p == NULL || p->next == NULL;
 }
 ```
-
-splice(): 因为只需要用到第一个节点，所以我这里只要了首节点。
-
+splice
+():
+因为只需要用到第一个节点，所以我这里只要了首节点。
 ```cpp
 void splice_front(Linklist& head, Linklist& p) {
     Linklist temp = head->next;
@@ -148,9 +146,8 @@ void splice_front(Linklist& head, Linklist& p) {
     p->next = temp;
 }
 ```
-
-merge():
-
+merge
+():
 ```cpp
 void list_merge(Linklist& list, Linklist& p) {
     Linklist it = list;
@@ -175,9 +172,7 @@ void list_merge(Linklist& list, Linklist& p) {
     p->next = NULL;
 }
 ```
-
 最后是sort部分的函数：
-
 ```
 void list_sort(Linklist& list) {
     if (list->next == NULL || list->next->next == NULL) return;
@@ -216,9 +211,7 @@ void list_sort(Linklist& list) {
     return;
 }
 ```
-
 全部代码：
-
 ```cpp
 #include <iostream>
 #include <list>

@@ -48,9 +48,8 @@ public:
         root->left=root->right=root;
     }
 ```
-
-## 查询函数及辅助函数：
-
+##
+查询函数及辅助函数：
 ```cpp
     Splaynode*search(int x)
     {
@@ -278,9 +277,8 @@ private:
         Splay(now);
     }
 ```
-
-## 完整代码：
-
+##
+完整代码：
 ```cpp
 #include <iostream>
 #include <algorithm>

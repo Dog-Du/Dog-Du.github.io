@@ -105,7 +105,9 @@ SkipList<Key, Comparator>::NewNode(const Key& key, int height) {
 `std::atomic<Node *>` 类型中只有一个定义如下的成员变量：
 
 ```
-// Align 1/2/4/8/16-byte types to at least their size.      static constexpr int _S_min_alignment = (sizeof(_Tp) & (sizeof(_Tp) - 1)) || sizeof(_Tp) > 16 ? 0 : sizeof(_Tp);       static constexpr int _S_alignment        = _S_min_alignment > alignof(_Tp) ? _S_min_alignment : alignof(_Tp);       alignas(_S_alignment) _Tp _M_i _GLIBCXX20_INIT(_Tp());
+// Align 1/2/4/8/16-byte types to at least their size.      static constexpr int _S_min_alignment = (sizeof(_Tp) & (sizeof(_Tp) - 1)) || sizeof(_Tp) > 16 ? 0 : sizeof(_Tp);
+static constexpr int _S_alignment        = _S_min_alignment > alignof(_Tp) ? _S_min_alignment : alignof(_Tp);
+alignas(_S_alignment) _Tp _M_i _GLIBCXX20_INIT(_Tp());
 ```
 
 
@@ -462,10 +464,11 @@ if (splice->height_ < max_height) {
   recompute_height = max_height;
 }
 ```
-
-
-这里处理的是 splice 的 height 较低的情况，因为这个情况较难处理，所以直接放弃进行优化，直接在下面进行矫正时，从最顶层进行。
-
+这里处理的是
+splice
+的
+height
+较低的情况，因为这个情况较难处理，所以直接放弃进行优化，直接在下面进行矫正时，从最顶层进行。
 ```cpp
 } else {
   while (recompute_height < max_height) {

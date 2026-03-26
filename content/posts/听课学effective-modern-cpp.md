@@ -202,7 +202,9 @@ const /* 底层const */ int *const /* 顶层const */ p = &a;
    | ```cpp
    size_t sz = 0;
    auto Sizecomp = [sz] (const string &a) { return a.size() > sz; }
-   ``` | ```cpp
+   ```
+|
+```cpp
    // 等价于：
    struct Sizecomp {
    	size_t sz;
@@ -764,7 +766,14 @@ class T : public std::enable_shared_from_this<T>;
    NRVO可以被禁用。
 
 ```cpp
-std::vector<int> GetVector2() {   std::vector<int> result(1'000'000, 1);   return result; }  void foo() {   auto vect = GetVector();   .... }  // 优化之后： void GetVector2(std::vector<int> *x) {   new (x) std::vector<int>(1'000'000, 0); }  void foo() {   auto *x = static_cast<std::vector<int> *>(               alloca(sizeof(std::vector<int>)));   GetVector2(x);   ....   delete x; }
+std::vector<int> GetVector2() {   std::vector<int> result(1'000'000, 1);
+return result;
+}  void foo() {   auto vect = GetVector();
+.... }  // 优化之后： void GetVector2(std::vector<int> *x) {   new (x) std::vector<int>(1'000'000, 0);
+}  void foo() {   auto *x = static_cast<std::vector<int> *>(               alloca(sizeof(std::vector<int>)));
+GetVector2(x);
+....   delete x;
+}
 ```
 
 

@@ -50,9 +50,7 @@ public:
         srand(114514);//随机化
     }
 ```
-
 查询函数：
-
 ```cpp
     Treapnode*search(int x)
     {
@@ -70,9 +68,7 @@ public:
     }
 
 ```
-
 辅助函数：
-
 ```cpp
 
     void Rrotate(Treapnode*&now)
@@ -203,9 +199,8 @@ public:
         return;
     }
 ```
-
-## 全部代码：
-
+##
+全部代码：
 ```cpp
 #include <iostream>
 #include <algorithm>

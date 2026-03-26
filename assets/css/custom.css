@@ -98,28 +98,16 @@ pre {
 }
 
 .codeblock-fold__toggle {
-  border-top: 1px solid rgba(var(--color-neutral-300), 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1rem;
   cursor: pointer;
   user-select: none;
-  background: rgba(var(--color-neutral-100), 0.9);
-  transition: background-color 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .codeblock-fold__toggle:hover {
-  background: rgba(var(--color-neutral-200), 0.9);
-}
-
-.dark .codeblock-fold__toggle {
-  border-top-color: rgba(var(--color-neutral-700), 0.9);
-  background: rgba(var(--color-neutral-800), 0.8);
-}
-
-.dark .codeblock-fold__toggle:hover {
-  background: rgba(var(--color-neutral-700), 0.8);
+  opacity: 0.8;
 }
 
 .codeblock-fold__meta {
@@ -136,7 +124,7 @@ pre {
   transition: all 0.2s ease;
 }
 
-.codeblock-fold__toggle:hover .codeblock-fold__hint {
+.codeblock-fold__header:hover .codeblock-fold__hint {
   background: rgba(var(--color-primary-500), 0.2);
 }
 
@@ -145,7 +133,7 @@ pre {
   background: rgba(var(--color-primary-400), 0.15);
 }
 
-.dark .codeblock-fold__toggle:hover .codeblock-fold__hint {
+.dark .codeblock-fold__header:hover .codeblock-fold__hint {
   background: rgba(var(--color-primary-400), 0.25);
 }
 
@@ -153,7 +141,7 @@ pre {
   content: attr(data-closed-label);
 }
 
-.codeblock-fold__checkbox:checked ~ .codeblock-fold__toggle .codeblock-fold__hint::before {
+.codeblock-fold__checkbox:checked ~ .codeblock-fold__header .codeblock-fold__hint::before {
   content: attr(data-open-label);
 }
 
@@ -202,10 +190,6 @@ pre {
 
 .codeblock-fold__checkbox:checked ~ .codeblock-fold__content::after {
   display: none;
-}
-
-.codeblock-fold__checkbox:checked ~ .codeblock-fold__toggle {
-  border-top-color: transparent;
 }
 
 .prose pre code,

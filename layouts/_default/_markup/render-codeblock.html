@@ -23,6 +23,9 @@
     <input id="codeblock-{{ $foldID }}" class="codeblock-fold__checkbox" type="checkbox" {{ if $expandByDefault }}checked{{ end }}>
     <div class="codeblock-fold__header">
       <span class="codeblock-fold__meta">{{ $label }} · 共 {{ $lineCount }} 行</span>
+      <label for="codeblock-{{ $foldID }}" class="codeblock-fold__toggle">
+        <span class="codeblock-fold__hint" data-open-label="收起代码" data-closed-label="展开剩余 {{ $remainingCount }} 行"></span>
+      </label>
     </div>
     <div class="codeblock-fold__content">
       <div class="highlight-wrapper">
@@ -34,9 +37,6 @@
         {{- transform.Highlight $code $lang .Options -}}
       </div>
     </div>
-    <label for="codeblock-{{ $foldID }}" class="codeblock-fold__toggle">
-      <span class="codeblock-fold__hint" data-open-label="收起代码" data-closed-label="展开剩余 {{ $remainingCount }} 行"></span>
-    </label>
   </div>
 {{- else -}}
   <div class="highlight-wrapper">

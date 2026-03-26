@@ -326,7 +326,16 @@ IBM销售多种不同的DBMS产品，并选择在一些产品中实现shared-dis
   考虑一个连接两个表但不使用Dept列的查询：
 
 ```
-SELECT Emp.name, Emp.salary 	FROM Emp, Dept 	WHERE Emp.deptno = Dept.dno
+SELECT
+Emp.name,
+Emp.salary
+FROM
+Emp,
+Dept
+WHERE
+Emp.deptno
+=
+Dept.dno
 ```
 
 
