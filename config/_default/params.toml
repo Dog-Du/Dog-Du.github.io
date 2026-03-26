@@ -76,7 +76,7 @@ customCSS = ["css/custom.css"]
   showAuthorsBadges = false
   showWordCount = true
   showZenMode = false
-  codeBlockFoldThreshold = 18
+  codeBlockFoldThreshold = 30
   codeBlockFoldExpandByDefault = false
 
 [list]
