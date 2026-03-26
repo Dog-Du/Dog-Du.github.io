@@ -873,7 +873,6 @@ fn build_user(email: String, username: String) -> User {
 **从其他实例创建实例**
 
 ```rust
-```rust
 fn main() {
     let user1 = User {
         email: String::from("someone@example.com"),
@@ -895,8 +894,6 @@ fn main() {
     };
 }
 ```
-```
-
 
 但是结构更新语法就像带有 `=` 的赋值，因为它移动了数据，至于克隆，则也是一样的。
 
