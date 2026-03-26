@@ -106,12 +106,26 @@ pre {
 
 .codeblock-fold__hint {
   flex-shrink: 0;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: rgb(var(--color-primary-600));
+  padding: 0.25rem 0.75rem;
+  background: rgba(var(--color-primary-500), 0.1);
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.codeblock-fold__summary:hover .codeblock-fold__hint {
+  background: rgba(var(--color-primary-500), 0.2);
 }
 
 .dark .codeblock-fold__hint {
   color: rgb(var(--color-primary-300));
+  background: rgba(var(--color-primary-400), 0.15);
+}
+
+.dark .codeblock-fold__summary:hover .codeblock-fold__hint {
+  background: rgba(var(--color-primary-400), 0.25);
 }
 
 .codeblock-fold__hint::before {
@@ -122,14 +136,18 @@ pre {
   content: attr(data-open-label);
 }
 
-.codeblock-fold > .highlight-wrapper,
-.codeblock-fold__content > .highlight-wrapper {
+.codeblock-fold__content > .highlight-wrapper,
+.codeblock-fold__content > .highlight-wrapper pre {
   margin: 0;
+  border-radius: 0;
 }
 
-.codeblock-fold > .highlight-wrapper .codeblock-title,
 .codeblock-fold__content > .highlight-wrapper .codeblock-title {
-  margin-top: 0;
+  margin: 0;
+  border-radius: 0;
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
 
 .codeblock-fold__content {
@@ -151,6 +169,10 @@ pre {
 
 .dark .codeblock-fold__content::after {
   background: linear-gradient(to bottom, rgba(var(--color-neutral-900), 0) 0%, rgba(var(--color-neutral-900), 0.95) 100%);
+}
+
+.codeblock-fold__checkbox:checked + .codeblock-fold__summary {
+  border-bottom-color: transparent;
 }
 
 .codeblock-fold__checkbox:checked ~ .codeblock-fold__content {

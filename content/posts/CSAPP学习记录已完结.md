@@ -5,7 +5,7 @@ tags:
 - LAB
 - 已完成
 categories:
-- 系统学习
+- 操作系统与系统
 title: CSAPP学习记录（已完结）
 slug: sys-csapp-notes
 summary: 按实验顺序记录 CSAPP 各 Lab 的学习过程，涵盖位运算、汇编、缓存、Shell、Malloc 与代理等核心系统主题。

@@ -6,7 +6,7 @@ tags:
 - 论文
 - 综述性
 categories:
-- 论文阅读
+- 数据库与论文
 title: 读论文-Architecture of a Database System
 slug: paper-db-architecture
 summary: 阅读并翻译《Architecture of a Database System》，梳理数据库系统在进程模型、查询处理、存储与事务上的整体架构。
