@@ -4,12 +4,15 @@ tags:
 - 数据结构与算法
 title: 链表/单链表 O(nlogn)排序
 slug: algo-list-sort
+summary: 从 STL `list::sort()` 出发讨论为什么链表适合归并排序，并给出单链表 `O(n log n)` 排序实现。
 commentTerm: "链表/单链表 O(nlogn)排序 | DogDu's blog"
 commentDiscussionNumber: 39
 lastmod: '2025-04-04T11:32:10.720Z'
 ---
 
-写单链表的时候突然想到，链表该怎么排序呢？ 毕竟我们链表也要有自己的O(nlogn)排序方法！
+写单链表的时候我突然想到一个问题：数组有 `sort`，那链表自己的 `O(n log n)` 排序范式到底是什么？
+
+顺着这个问题往下查，很自然就会走到 `std::list::sort()`，也就能看到链表为什么天然适合归并排序。
 
 
 <!--more-->
@@ -66,9 +69,6 @@ template<typename _Tp, typename _Alloc>
      }
 ```
 
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
-
 这里确实有点看不太懂。
 
 关于stl这里的源码解析，推荐：[C++ SGI STL 的 list::sort() 分析\_list.sort函数 c++-CSDN博客](https://blog.csdn.net/Ryansior/article/details/126848942)
@@ -85,9 +85,6 @@ typedef struct LIST {
     LIST* next;
 } *Linklist;
 ```
-
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
 
 几个辅助函数：
 
@@ -129,9 +126,6 @@ void show(Linklist& list) {
 }
 ```
 
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
-
 然后是stl库中几个辅助函数的时间：
 
 empty():
@@ -141,9 +135,6 @@ bool empty(Linklist& p) {
     return p == NULL || p->next == NULL;
 }
 ```
-
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
 
 splice(): 因为只需要用到第一个节点，所以我这里只要了首节点。
 
@@ -155,9 +146,6 @@ void splice_front(Linklist& head, Linklist& p) {
     p->next = temp;
 }
 ```
-
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
 
 merge():
 
@@ -185,9 +173,6 @@ void list_merge(Linklist& list, Linklist& p) {
     p->next = NULL;
 }
 ```
-
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
 
 最后是sort部分的函数：
 
@@ -229,9 +214,6 @@ void list_sort(Linklist& list) {
     return;
 }
 ```
-
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
 
 全部代码：
 
@@ -355,9 +337,6 @@ void list_sort(Linklist& list) {
     return;
 }
 ```
-
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
 
 去洛谷试试吧：[P1177 【模板】排序 - 洛谷 | 计算机科学教育新生态 (luogu.com.cn)](https://www.luogu.com.cn/problem/P1177)
 

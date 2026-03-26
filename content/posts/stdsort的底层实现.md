@@ -4,9 +4,14 @@ tags:
 - 数据结构与算法
 title: std::sort的底层实现
 slug: algo-std-sort
+summary: 从 libstdc++ 源码切入分析 std::sort 的 introsort 策略，理解快排、堆排与插排如何组合工作。
 commentTerm: "std::sort的底层实现 | DogDu's blog"
 lastmod: '2025-04-04T11:32:10.709Z'
 ---
+
+想真正理解 `std::sort`，最直接的方法就是顺着源码往下看。它并不是单纯的一套快速排序，而是把快排、堆排和插排组合起来，形成一套兼顾平均性能和最坏情况上界的 introsort 策略。
+
+下面先从源码片段切入，再看这三种排序是如何被拼接到一起的。
 
 ```cpp
 template<typename _RandomAccessIterator, typename _Compare>
@@ -63,7 +68,5 @@ template<typename _RandomAccessIterator, typename _Compare>
 
 
 <!--more-->
-
-![点击并拖拽以移动](data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==)
 
 通过上面的源码，我们知道了sort实际上使用了三种排序方法：heap\_sort,quick\_sort,insert\_sort。观察快排的循环，会发现快排使用了while循环降低了递归深度，可以进行一次模拟，这个和红黑树中的 M\_erase,M\_copy函数不谋而合（可以看我的红黑树课设。）而且，函数对快排进行了深度的限制，即：\_\_lg(last-first)*2，一旦超过这个深度，那么快排停止，如果剩余元素大于15则使用heap\_sort进行排序，不然，则使用insert\_sort进行排序。

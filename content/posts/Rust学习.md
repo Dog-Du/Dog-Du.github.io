@@ -6,12 +6,15 @@ tags:
 - Rust
 title: Rust学习
 slug: lang-rust-learn
+summary: 按照《Rust 程序设计语言》的脉络整理 Rust 基础语法、所有权、结构体、枚举与常用语言特性。
 commentTerm: "Rust学习 | DogDu's blog"
 commentDiscussionNumber: 27
 lastmod: '2025-06-22T04:19:41.348Z'
 ---
 
-[Rust 程序设计语言 - Rust 程序设计语言 简体中文版](https://kaisery.github.io/trpl-zh-cn/title-page.html)
+这篇文章是跟着《Rust 程序设计语言》做的一份学习笔记，主要记录我在入门阶段觉得最需要反复确认的语法和概念。
+
+参考资料：[Rust 程序设计语言（简体中文版）](https://kaisery.github.io/trpl-zh-cn/title-page.html)
 
 
 <!--more-->

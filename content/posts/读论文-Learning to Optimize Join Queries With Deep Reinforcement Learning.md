@@ -7,15 +7,20 @@ tags:
 - 连接优化
 title: 读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning
 slug: paper-rl-join-opt
+summary: 围绕强化学习做连接顺序优化的论文，整理问题建模、状态表示、奖励设计与方法局限。
 commentTerm: "读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning | DogDu's blog"
 commentDiscussionNumber: 26
 lastmod: '2025-05-22T01:54:11.949Z'
 ---
 
-一些问题：
+这篇论文讨论的是：能不能把连接顺序优化建模成强化学习问题，让模型在代价模型的指导下学出比传统启发式更好的决策。
+
+下面先按“初读时最关心的问题”做一轮摘记，再逐步补齐具体细节。
 
 
 <!--more-->
+
+## 初读问题
 
 * 把学习的优化器塞进数据库，不难。
 * 训练开销大，要求推理必须快一些。

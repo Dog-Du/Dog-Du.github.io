@@ -6,12 +6,13 @@ tags:
 - 学习
 title: Go学习
 slug: lang-go-learn
+summary: 从环境配置、模块管理到基础语法整理 Go 入门笔记，适合作为后续写后端前的速查清单。
 commentTerm: "Go学习 | DogDu's blog"
 commentDiscussionNumber: 23
 lastmod: '2025-06-22T04:19:27.989Z'
 ---
 
-**学习Go，我也要成为Go学长。**
+这篇文章是我的 Go 入门整理，先记录环境配置和模块管理，再逐步补充语法与常用写法，方便之后做后端或刷题时快速回看。
 
 
 <!--more-->

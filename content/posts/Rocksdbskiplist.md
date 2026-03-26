@@ -5,17 +5,18 @@ tags:
 - Rocksdb
 title: Rocksdb：skiplist
 slug: db-rocksdb-skiplist
+summary: 结合 RocksDB 源码梳理 SkipList 的节点结构、迭代器设计与多读单写并发控制方式。
 commentTerm: "Rocksdb：skiplist | DogDu's blog"
 commentDiscussionNumber: 22
 lastmod: '2025-10-06T10:54:29.284Z'
 ---
 
-面试时被问到 `skiplist` 怎么做并发控制，答的不是很好，所以来学习一下。
+面试时被问到 `skiplist` 怎么做并发控制，当时回答得不够扎实，所以回来专门看了一遍 RocksDB 的实现，顺手把结构和设计思路记下来。
 
 
 <!--more-->
 
-# SkipList
+## SkipList
 
 代码文件在 [memtable/skiplist.h](https://github.com/facebook/rocksdb/blob/bdf5a8fffbc271dba1868e391409839aeee9b546/memtable/skiplist.h) ，这个版本的 `skiplist` 支持多读单写的无锁并发，如果需要多写的并发安全，则需要外部进行互斥，目前这个版本的跳表似乎已经被弃置。
 

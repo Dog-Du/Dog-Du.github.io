@@ -57,6 +57,72 @@ pre {
   margin: 1.5rem 0;
 }
 
+.codeblock-fold {
+  margin: 1.5rem 0;
+  border: 1px solid rgba(var(--color-neutral-300), 0.8);
+  border-radius: 0.75rem;
+  background: rgba(var(--color-neutral-50), 0.85);
+  overflow: hidden;
+}
+
+.dark .codeblock-fold {
+  border-color: rgba(var(--color-neutral-700), 0.9);
+  background: rgba(var(--color-neutral-900), 0.65);
+}
+
+.codeblock-fold__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  font-size: 0.95rem;
+  color: rgb(var(--color-neutral-700));
+  background: rgba(var(--color-neutral-100), 0.9);
+}
+
+.dark .codeblock-fold__summary {
+  color: rgb(var(--color-neutral-200));
+  background: rgba(var(--color-neutral-800), 0.8);
+}
+
+.codeblock-fold__summary::-webkit-details-marker {
+  display: none;
+}
+
+.codeblock-fold__meta {
+  font-weight: 600;
+}
+
+.codeblock-fold__hint {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  color: rgb(var(--color-primary-600));
+}
+
+.dark .codeblock-fold__hint {
+  color: rgb(var(--color-primary-300));
+}
+
+.codeblock-fold__hint::before {
+  content: attr(data-closed-label);
+}
+
+.codeblock-fold[open] .codeblock-fold__hint::before {
+  content: attr(data-open-label);
+}
+
+.codeblock-fold > .highlight-wrapper {
+  margin: 0;
+}
+
+.codeblock-fold > .highlight-wrapper .codeblock-title {
+  margin-top: 0;
+}
+
 .prose pre code,
 .chroma,
 .chroma code,

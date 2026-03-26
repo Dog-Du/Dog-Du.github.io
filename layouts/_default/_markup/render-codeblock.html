@@ -1,0 +1,42 @@
+{{- $title := or .Attributes.title "" -}}
+{{- $lang := or .Type "text" -}}
+{{- $code := strings.TrimRight "\n" .Inner -}}
+{{- $lineCount := len (split $code "\n") -}}
+{{- $threshold := site.Params.article.codeBlockFoldThreshold | default 18 -}}
+{{- $expandByDefault := site.Params.article.codeBlockFoldExpandByDefault | default false -}}
+{{- $label := "" -}}
+{{- if $title -}}
+  {{- $label = $title -}}
+{{- else if ne $lang "text" -}}
+  {{- $label = printf "%s 代码" (upper $lang) -}}
+{{- else -}}
+  {{- $label = "代码块" -}}
+{{- end -}}
+{{- $shouldFold := ge $lineCount $threshold -}}
+{{- $isOpen := or (not $shouldFold) $expandByDefault -}}
+
+{{- if $shouldFold -}}
+  <details class="codeblock-fold" {{ if $isOpen }}open{{ end }}>
+    <summary class="codeblock-fold__summary">
+      <span class="codeblock-fold__meta">{{ $label }} · {{ $lineCount }} 行</span>
+      <span class="codeblock-fold__hint" data-open-label="收起代码" data-closed-label="展开代码">展开代码</span>
+    </summary>
+    <div class="highlight-wrapper">
+      {{- with $title -}}
+        <div class="codeblock-title">
+          {{- . -}}
+        </div>
+      {{- end -}}
+      {{- transform.Highlight .Inner $lang .Options -}}
+    </div>
+  </details>
+{{- else -}}
+  <div class="highlight-wrapper">
+    {{- with $title -}}
+      <div class="codeblock-title">
+        {{- . -}}
+      </div>
+    {{- end -}}
+    {{- transform.Highlight .Inner $lang .Options -}}
+  </div>
+{{- end -}}
