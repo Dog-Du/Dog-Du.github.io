@@ -9,8 +9,8 @@ slug: algo-std-sort
 summary: 从 libstdc++ 源码切入分析 std::sort 的 introsort 策略，理解快排、堆排与插排如何组合工作。
 commentTerm: "std::sort的底层实现 | DogDu's blog"
 lastmod: '2025-04-04T11:32:10.709Z'
+featureimage: "images/covers/cover_12_mountain.webp"
 ---
-
 想真正理解 `std::sort`，最直接的方法就是顺着源码往下看。它并不是单纯的一套快速排序，而是把快排、堆排和插排组合起来，形成一套兼顾平均性能和最坏情况上界的 introsort 策略。
 
 下面先从源码片段切入，再看这三种排序是如何被拼接到一起的。

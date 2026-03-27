@@ -10,8 +10,8 @@ summary: 从 STL `list::sort()` 出发讨论为什么链表适合归并排序，
 commentTerm: "链表/单链表 O(nlogn)排序 | DogDu's blog"
 commentDiscussionNumber: 39
 lastmod: '2025-04-04T11:32:10.720Z'
+featureimage: "images/covers/cover_33_train.webp"
 ---
-
 写单链表的时候我突然想到一个问题：数组有 `sort`，那链表自己的 `O(n log n)` 排序范式到底是什么？
 
 顺着这个问题往下查，很自然就会走到 `std::list::sort()`，也就能看到链表为什么天然适合归并排序。

@@ -10,8 +10,8 @@ title: 手写B树全代码实现
 slug: algo-b-tree-full-impl
 summary: 围绕 B 树的查找、分裂、删除与调试经验展开，记录一次从概念到完整实现的手写过程，并用桶排场景做验证。
 commentTerm: "手写B树全代码实现 | DogDu's blog"
+featureimage: "images/covers/cover_16_forest.webp"
 ---
-
 <!--more-->
 ## 前言
 
