@@ -25,8 +25,68 @@
       }
     ],
     tips: {
+      style: {
+        position: 'absolute',
+        top: '-120px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '60%',
+        minHeight: '80px',
+        fontSize: '14px',
+        borderRadius: '10px',
+        filter: 'drop-shadow(0 0 5px rgba(240,96,144,0.3))',
+        border: '2px solid rgb(255,209,222)',
+        color: 'rgb(82,73,78)',
+        backgroundColor: 'rgba(255,245,248,0.95)',
+        padding: '8px 10px',
+        textAlign: 'center',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: '10000',
+        fontFamily: '"LXGW WenKai", sans-serif'
+      },
       idleTips: {
-        wordTheDay: function (d) { return d.hitokoto; }
+        wordTheDay: function (d) { return d.hitokoto + ' —— ' + (d.from || ''); },
+        message: [
+          '你好呀～ 欢迎来到这里！(◕ᴗ◕✿)',
+          '今天也要元气满满地写代码哦！ᕦ(ò_óˇ)ᕤ',
+          '学累了就休息一下吧，摸摸头～',
+          '代码就像魔法一样，每一行都在创造奇迹 ✨',
+          '要记得按时吃饭喝水哦～ 身体最重要！',
+          '偶尔抬头看看窗外，眼睛会感谢你的 👀',
+          '「人生就像代码，有 bug 才有乐趣。」',
+          '有什么想对我说的吗？点点我试试看～',
+          '今天的你，又比昨天更厉害了一点呢！',
+          '据说摸鱼的时候效率最高（bushi',
+          '听说这个博客的主人很喜欢动漫呢～ (≧▽≦)',
+          '「即使是很小的星星，也会努力发出自己的光。」',
+          '在写博客的时候，也是在和未来的自己对话呢。',
+          '保持好奇心，这是最棒的超能力！🌟',
+          '「所谓活着，就是不断地出发。」—— 银魂'
+        ],
+        duration: 6000,
+        interval: 10000,
+        priority: 2
+      },
+      welcomeTips: {
+        message: {
+          daybreak: '早上好！一日之计在于晨 🌅',
+          morning: '上午好！今天也要加油写代码哦～',
+          noon: '中午了，该去吃午饭啦！🍱',
+          afternoon: '下午好～ 来杯咖啡提提神吧 ☕',
+          dusk: '傍晚了，辛苦一天啦～ 🌇',
+          night: '晚上好！今天过得开心吗？',
+          lateNight: '已经很晚了哦，早点休息吧，晚安～ 🌙',
+          weeHours: '这么晚还不睡？小心变秃头哦！(╯°□°)╯'
+        },
+        duration: 6000,
+        priority: 3
+      },
+      copyTips: {
+        duration: 3000,
+        priority: 3,
+        message: ['你复制了什么呢？记得注明出处哦～ (｡•̀ᴗ-)✧']
       }
     }
   });

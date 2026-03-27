@@ -2,167 +2,137 @@
 
 /**
  * Live2D 看板娘拖拽功能
- * 支持鼠标和触摸拖拽，位置持久化到 localStorage
+ * 直接操作 #oml2d-stage（position:fixed 元素）
+ * 支持鼠标 + 触摸，位置持久化 localStorage
  */
 (function () {
-  var STORAGE_KEY = 'live2d-drag-position';
+  var STORAGE_KEY = 'live2d-drag-pos';
   var DRAG_THRESHOLD = 5;
   var POLL_INTERVAL = 200;
   var POLL_TIMEOUT = 15000;
 
-  function clamp(val, min, max) {
-    return Math.max(min, Math.min(max, val));
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  function savePos(x, y) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ x: x, y: y })); } catch (_) {}
   }
 
-  function savePosition(x, y) {
+  function loadPos() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ x: x, y: y }));
-    } catch (_) {}
-  }
-
-  function loadPosition() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        var pos = JSON.parse(raw);
-        if (typeof pos.x === 'number' && typeof pos.y === 'number') return pos;
-      }
+      var d = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (d && typeof d.x === 'number' && typeof d.y === 'number') return d;
     } catch (_) {}
     return null;
   }
 
-  function constrainToViewport(wrapper, x, y) {
-    var rect = wrapper.getBoundingClientRect();
-    var vw = window.innerWidth;
-    var vh = window.innerHeight;
-    return {
-      x: clamp(x, 0, vw - rect.width),
-      y: clamp(y, 0, vh - rect.height)
-    };
+  function applyPos(el, x, y) {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var w = el.offsetWidth || 200, h = el.offsetHeight || 350;
+    x = clamp(x, 0, vw - w);
+    y = clamp(y, 0, vh - h);
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.bottom = 'auto';
+    el.style.right = 'auto';
+    return { x: x, y: y };
   }
 
-  function applyPosition(wrapper, x, y) {
-    var pos = constrainToViewport(wrapper, x, y);
-    wrapper.style.position = 'fixed';
-    wrapper.style.left = pos.x + 'px';
-    wrapper.style.top = pos.y + 'px';
-    wrapper.style.bottom = 'auto';
-    wrapper.style.right = 'auto';
-    wrapper.style.transition = 'none';
-    return pos;
-  }
+  function initDrag(stage) {
+    var dragging = false, moved = false;
+    var startX = 0, startY = 0, offX = 0, offY = 0;
 
-  function initDrag(stage, wrapper) {
-    var isDragging = false;
-    var hasMoved = false;
-    var startX = 0, startY = 0, offsetX = 0, offsetY = 0;
+    /* 恢复保存的位置 */
+    var saved = loadPos();
+    if (saved) {
+      /* 等 slide-in 动画完成后再应用位置，避免冲突 */
+      setTimeout(function () { applyPos(stage, saved.x, saved.y); }, 1500);
+    }
 
-    // 恢复上次保存的位置
-    var saved = loadPosition();
-    if (saved) applyPosition(wrapper, saved.x, saved.y);
-
-    // 窗口缩放时将 widget 限制在视口内
     window.addEventListener('resize', function () {
-      var rect = wrapper.getBoundingClientRect();
-      var pos = applyPosition(wrapper, rect.left, rect.top);
-      savePosition(pos.x, pos.y);
+      var r = stage.getBoundingClientRect();
+      var p = applyPos(stage, r.left, r.top);
+      savePos(p.x, p.y);
     });
 
-    function pointerX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
-    function pointerY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
+    function px(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
+    function py(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
 
-    function onPointerDown(e) {
+    function down(e) {
       if (e.button && e.button !== 0) return;
-      isDragging = true;
-      hasMoved = false;
-      var rect = wrapper.getBoundingClientRect();
-      startX = pointerX(e);
-      startY = pointerY(e);
-      offsetX = startX - rect.left;
-      offsetY = startY - rect.top;
+      dragging = true; moved = false;
+      var r = stage.getBoundingClientRect();
+      startX = px(e); startY = py(e);
+      offX = startX - r.left; offY = startY - r.top;
     }
 
-    function onPointerMove(e) {
-      if (!isDragging) return;
-      var cx = pointerX(e), cy = pointerY(e);
-      var dx = cx - startX, dy = cy - startY;
-
-      if (!hasMoved) {
+    function move(e) {
+      if (!dragging) return;
+      var cx = px(e), cy = py(e);
+      if (!moved) {
+        var dx = cx - startX, dy = cy - startY;
         if (Math.sqrt(dx * dx + dy * dy) < DRAG_THRESHOLD) return;
-        hasMoved = true;
-        wrapper.style.opacity = '0.82';
-        wrapper.style.cursor = 'grabbing';
+        moved = true;
+        stage.style.opacity = '0.82';
         stage.style.cursor = 'grabbing';
+        /* 进入拖拽时立即把 bottom 定位切换为 top 定位 */
+        var r = stage.getBoundingClientRect();
+        stage.style.top = r.top + 'px';
+        stage.style.bottom = 'auto';
+        stage.style.right = 'auto';
+        stage.style.transition = 'none';
       }
-
       e.preventDefault();
-      applyPosition(wrapper, cx - offsetX, cy - offsetY);
+      applyPos(stage, cx - offX, cy - offY);
     }
 
-    function onPointerUp() {
-      if (!isDragging) return;
-      isDragging = false;
-      wrapper.style.opacity = '';
-      wrapper.style.cursor = '';
+    function up() {
+      if (!dragging) return;
+      dragging = false;
+      stage.style.opacity = '';
       stage.style.cursor = 'grab';
-
-      if (hasMoved) {
-        var rect = wrapper.getBoundingClientRect();
-        savePosition(rect.left, rect.top);
-        // 阻止此次 click 冒泡到 Live2D 切换模型逻辑
+      if (moved) {
+        var r = stage.getBoundingClientRect();
+        savePos(r.left, r.top);
         var capture = function (ev) {
-          ev.stopPropagation();
-          ev.preventDefault();
+          ev.stopPropagation(); ev.preventDefault();
           stage.removeEventListener('click', capture, true);
         };
         stage.addEventListener('click', capture, true);
       }
-      hasMoved = false;
+      moved = false;
     }
 
-    stage.addEventListener('mousedown', onPointerDown, false);
-    document.addEventListener('mousemove', onPointerMove, false);
-    document.addEventListener('mouseup', onPointerUp, false);
-    stage.addEventListener('touchstart', onPointerDown, { passive: false });
-    document.addEventListener('touchmove', onPointerMove, { passive: false });
-    document.addEventListener('touchend', onPointerUp, false);
+    stage.addEventListener('mousedown', down, false);
+    document.addEventListener('mousemove', move, false);
+    document.addEventListener('mouseup', up, false);
+    stage.addEventListener('touchstart', down, { passive: false });
+    document.addEventListener('touchmove', move, { passive: false });
+    document.addEventListener('touchend', up, false);
 
     stage.style.cursor = 'grab';
   }
 
-  function waitForElement(selector, callback) {
-    var elapsed = 0;
-    var el = document.querySelector(selector);
-    if (el) { callback(el); return; }
-
-    var observer = new MutationObserver(function () {
-      var el = document.querySelector(selector);
-      if (el) { observer.disconnect(); clearInterval(fallback); callback(el); }
+  function waitFor(sel, cb) {
+    var elapsed = 0, el = document.querySelector(sel);
+    if (el) { cb(el); return; }
+    var obs = new MutationObserver(function () {
+      el = document.querySelector(sel);
+      if (el) { obs.disconnect(); clearInterval(poll); cb(el); }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    var fallback = setInterval(function () {
+    obs.observe(document.body, { childList: true, subtree: true });
+    var poll = setInterval(function () {
       elapsed += POLL_INTERVAL;
-      var el = document.querySelector(selector);
-      if (el) {
-        observer.disconnect(); clearInterval(fallback); callback(el);
-      } else if (elapsed >= POLL_TIMEOUT) {
-        observer.disconnect(); clearInterval(fallback);
-      }
+      el = document.querySelector(sel);
+      if (el) { obs.disconnect(); clearInterval(poll); cb(el); }
+      else if (elapsed >= POLL_TIMEOUT) { obs.disconnect(); clearInterval(poll); }
     }, POLL_INTERVAL);
   }
 
   function main() {
-    waitForElement('#oml2d-stage', function (stage) {
-      var wrapper = stage.parentElement;
-      if (!wrapper) return;
-      initDrag(stage, wrapper);
-    });
+    waitFor('#oml2d-stage', function (stage) { initDrag(stage); });
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', main);
-  } else {
-    main();
-  }
+  } else { main(); }
 })();
