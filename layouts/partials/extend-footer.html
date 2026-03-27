@@ -1,0 +1,48 @@
+{{/* ============================================================
+    🌸 Live2D 看板娘 - oh-my-live2d
+    Docs: https://oml2d.hacxy.cn/
+    模型源: npm CDN via jsDelivr (稳定可达)
+    ============================================================ */}}
+
+<script src="https://unpkg.com/oh-my-live2d@latest"></script>
+<script>
+  OML2D.loadOml2d({
+    models: [
+      {
+        // shizuku - 温柔少女
+        path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json',
+        scale: 0.2,
+        position: [70, 70],
+        stageStyle: {
+          height: 370,
+          width: 400
+        }
+      },
+      {
+        // hijiki - 可爱黑猫
+        path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json',
+        scale: 0.2,
+        position: [0, 20],
+        stageStyle: {
+          height: 350
+        }
+      },
+      {
+        // koharu - 元气少女
+        path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-koharu@1.0.5/assets/koharu.model.json',
+        scale: 0.2,
+        position: [0, 0],
+        stageStyle: {
+          height: 350
+        }
+      }
+    ],
+    tips: {
+      idleTips: {
+        wordTheDay: function (wordTheDayData) {
+          return wordTheDayData.hitokoto;
+        }
+      }
+    }
+  });
+</script>

@@ -1,0 +1,45 @@
+/* ============================================================
+   🌸 Sakura - A warm, gentle color scheme
+   Designed for: bright, soft, anime-inspired aesthetics
+   Primary: Sakura Pink | Secondary: Lavender | Neutral: Warm Gray
+   ============================================================ */
+
+:root {
+  --color-neutral: 255, 255, 255;
+
+  /* Warm Gray - slightly pink-tinted for cozy warmth */
+  --color-neutral-50: 253, 250, 252;
+  --color-neutral-100: 249, 244, 247;
+  --color-neutral-200: 240, 233, 237;
+  --color-neutral-300: 225, 215, 220;
+  --color-neutral-400: 192, 180, 187;
+  --color-neutral-500: 153, 141, 148;
+  --color-neutral-600: 113, 102, 108;
+  --color-neutral-700: 82, 73, 78;
+  --color-neutral-800: 52, 45, 49;
+  --color-neutral-900: 30, 25, 28;
+
+  /* Sakura Pink - soft cherry blossom tones */
+  --color-primary-50: 255, 245, 248;
+  --color-primary-100: 255, 231, 238;
+  --color-primary-200: 255, 209, 222;
+  --color-primary-300: 255, 176, 199;
+  --color-primary-400: 251, 136, 172;
+  --color-primary-500: 240, 96, 144;
+  --color-primary-600: 219, 64, 118;
+  --color-primary-700: 190, 44, 96;
+  --color-primary-800: 158, 38, 80;
+  --color-primary-900: 134, 34, 70;
+
+  /* Lavender - gentle purple-periwinkle accent */
+  --color-secondary-50: 247, 244, 255;
+  --color-secondary-100: 238, 234, 254;
+  --color-secondary-200: 222, 215, 254;
+  --color-secondary-300: 199, 188, 252;
+  --color-secondary-400: 172, 155, 246;
+  --color-secondary-500: 146, 122, 237;
+  --color-secondary-600: 124, 96, 220;
+  --color-secondary-700: 106, 76, 196;
+  --color-secondary-800: 88, 62, 164;
+  --color-secondary-900: 74, 52, 138;
+}

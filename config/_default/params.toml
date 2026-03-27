@@ -2,7 +2,7 @@
 # Blowfish Theme Configuration
 # https://blowfish.page/docs/configuration/#theme-parameters
 
-colorScheme = "blowfish"
+colorScheme = "sakura"
 defaultAppearance = "light"
 autoSwitchAppearance = true
 
