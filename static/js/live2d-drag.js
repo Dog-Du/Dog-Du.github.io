@@ -41,11 +41,19 @@
     var dragging = false, moved = false;
     var startX = 0, startY = 0, offX = 0, offY = 0;
 
-    /* 恢复保存的位置 */
+    /* 恢复保存的位置 —— 跳过 slide-in 动画，直接定位 */
     var saved = loadPos();
     if (saved) {
-      /* 等 slide-in 动画完成后再应用位置，避免冲突 */
-      setTimeout(function () { applyPos(stage, saved.x, saved.y); }, 1500);
+      stage.style.setProperty('transition', 'none', 'important');
+      stage.style.setProperty('transform', 'none', 'important');
+      stage.style.setProperty('animation', 'none', 'important');
+      applyPos(stage, saved.x, saved.y);
+
+      setTimeout(function () {
+        stage.style.removeProperty('transition');
+        stage.style.removeProperty('animation');
+        stage.style.setProperty('transform', 'none');
+      }, 2000);
     }
 
     window.addEventListener('resize', function () {
@@ -74,7 +82,6 @@
         moved = true;
         stage.style.opacity = '0.82';
         stage.style.cursor = 'grabbing';
-        /* 进入拖拽时立即把 bottom 定位切换为 top 定位 */
         var r = stage.getBoundingClientRect();
         stage.style.top = r.top + 'px';
         stage.style.bottom = 'auto';
