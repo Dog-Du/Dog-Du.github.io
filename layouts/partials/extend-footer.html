@@ -6,6 +6,7 @@
   (function () {
     /* ---------- 每个模型对应的切换台词 ---------- */
     var modelGreetings = [
+      '「仙狐大人来守护你啦～」🦊',
       '「しずく登场！请多多指教～」✨',
       '「hijiki 来啦！喵～」🐱',
       '「koharu 在此，今天也要元气满满！」🌸',
@@ -17,7 +18,7 @@
     ];
 
     var modelIndex = 0;
-    var modelCount = 8;
+    var modelCount = 9;
 
     /* ---------- 通过 DOM 操作显示切换提示 ---------- */
     function showSwitchTip(text) {
@@ -37,6 +38,12 @@
 
     OML2D.loadOml2d({
       models: [
+        {
+          name: 'senko',
+          path: 'https://model.hacxy.cn/Senko_Normals/senko.model3.json',
+          position: [-10, 20],
+          stageStyle: { height: 350 }
+        },
         {
           name: 'shizuku',
           path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json',
