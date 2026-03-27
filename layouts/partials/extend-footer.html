@@ -4,20 +4,23 @@
 <script src="https://unpkg.com/oh-my-live2d@latest"></script>
 <script>
   (function () {
+    var CDN = 'https://model.hacxy.cn/';
+
     /* ---------- 每个模型对应的切换台词 ---------- */
     var modelGreetings = [
-      '「仙狐大人来守护你啦～」🦊',
-      '「しずく登场！请多多指教～」✨',
-      '「koharu 在此，今天也要元气满满！」🌸',
-      '「chitose 参上！有什么能帮你的？」💫',
+      '「HK416 普通形态，待命中。」🔫',
+      '「HK416 破损形态… 但我还能战斗！」💥',
+      '「HK416 二号机，随时出击！」⚔️',
       '「Pio 来啦！小小身体大大能量～」🎀',
-      '「HK416 待命中，需要火力支援吗？」🔫'
+      '「智乃登场… 请问要来杯咖啡吗？」☕',
+      '「风子参上！要一起做海星吗？」⭐',
+      '「しずく来了！请多多指教～」✨',
+      '「しずく 48 号，是不一样的我哦～」🎵',
+      '「しずく 的睡衣 look～ 晚安好梦！」🌙'
     ];
-
     var modelIndex = 0;
-    var modelCount = 6;
+    var modelCount = 9;
 
-    /* ---------- 通过 DOM 操作显示切换提示 ---------- */
     function showSwitchTip(text) {
       var tips = document.getElementById('oml2d-tips');
       if (!tips) return;
@@ -36,50 +39,66 @@
     OML2D.loadOml2d({
       models: [
         {
-          name: 'senko',
-          path: 'https://model.hacxy.cn/Senko_Normals/senko.model3.json',
-          position: [-10, 20],
-          stageStyle: { height: 350 }
+          name: 'HK416-1-normal',
+          path: CDN + 'HK416-1-normal/model.json',
+          position: [0, 60],
+          scale: 0.08,
+          stageStyle: { height: 450 }
         },
         {
-          name: 'shizuku',
-          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json',
-          scale: 0.2,
-          position: [70, 70],
-          stageStyle: { height: 370, width: 400 }
+          name: 'HK416-2-destroy',
+          path: CDN + 'HK416-2-destroy/model.json',
+          position: [0, 60],
+          scale: 0.08,
+          stageStyle: { height: 450 }
         },
-
         {
-          name: 'koharu',
-          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-koharu@1.0.5/assets/koharu.model.json',
-          scale: 0.2,
-          position: [0, 0],
-          stageStyle: { height: 350 }
+          name: 'HK416-2-normal',
+          path: CDN + 'HK416-2-normal/model.json',
+          position: [0, 60],
+          scale: 0.08,
+          stageStyle: { height: 450 }
         },
-
-
-
         {
-          name: 'chitose',
-          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-chitose@1.0.5/assets/chitose.model.json',
-          scale: 0.2,
-          position: [0, 0],
-          stageStyle: { height: 350 }
-        },
-
-        {
-          name: 'pio',
-          path: 'https://model.hacxy.cn/Pio/model.json',
+          name: 'Pio',
+          path: CDN + 'Pio/model.json',
           scale: 0.4,
           position: [0, 50],
           stageStyle: { height: 300 }
         },
         {
-          name: 'hk416',
-          path: 'https://model.hacxy.cn/HK416-1-normal/model.json',
-          position: [0, 60],
-          scale: 0.08,
-          stageStyle: { height: 450 }
+          name: 'chino',
+          path: CDN + 'chino/model.json',
+          scale: 0.2,
+          position: [0, 0],
+          stageStyle: { height: 350 }
+        },
+        {
+          name: 'fuko',
+          path: CDN + 'fuko/fuko.model3.json',
+          position: [0, 20],
+          stageStyle: { height: 350 }
+        },
+        {
+          name: 'shizuku',
+          path: CDN + 'shizuku/shizuku.model.json',
+          scale: 0.2,
+          position: [70, 70],
+          stageStyle: { height: 370, width: 400 }
+        },
+        {
+          name: 'shizuku_48',
+          path: CDN + 'shizuku_48/index.json',
+          scale: 0.2,
+          position: [30, 30],
+          stageStyle: { height: 350, width: 350 }
+        },
+        {
+          name: 'shizuku_pajama',
+          path: CDN + 'shizuku_pajama/index.json',
+          scale: 0.2,
+          position: [40, 10],
+          stageStyle: { height: 350, width: 330 }
         }
       ],
       tips: {
