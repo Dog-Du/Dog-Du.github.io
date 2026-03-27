@@ -48,7 +48,7 @@ customCSS = ["css/custom.css"]
   showRecentItems = 5
   showMoreLink = true
   showMoreLinkDest = "/posts/"
-  cardView = false
+  cardView = true
   cardViewScreenWidth = false
 
 [article]
@@ -91,7 +91,7 @@ customCSS = ["css/custom.css"]
   showCards = false
   orderByWeight = false
   groupByYear = true
-  cardView = false
+  cardView = true
   cardViewScreenWidth = false
   constrainItemsWidth = false
 
@@ -105,7 +105,7 @@ customCSS = ["css/custom.css"]
   showViews = false
   showLikes = false
   showTableOfContents = false
-  cardView = false
+  cardView = true
 
 [term]
   showHero = false
@@ -114,5 +114,5 @@ customCSS = ["css/custom.css"]
   showLikes = false
   showTableOfContents = true
   groupByYear = true
-  cardView = false
+  cardView = true
   cardViewScreenWidth = false

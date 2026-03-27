@@ -1,17 +1,25 @@
-{{/* 自定义头部扩展 - 预加载字体和关键资源 */}}
+{{/* 自定义头部扩展 - 字体和关键资源 */}}
+
+{{/* 🌸 霞鹜文楷 - 圆润温柔的中文字体，二次元博客圈热门之选 */}}
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css">
+
+{{/* JetBrains Mono - 代码字体保持不变 */}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
-  .prose {
-    font-family: "Noto Serif SC", "Source Han Serif SC", "STSong", "SimSun", serif;
-  }
+  /* 正文 & 标题统一使用霞鹜文楷 */
+  .prose,
   h1, h2, h3, h4, h5, h6,
   .header,
   .nav-link,
-  .footer {
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  .footer,
+  body {
+    font-family: "LXGW WenKai", "Noto Sans SC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
+  /* 代码字体保持 JetBrains Mono */
   code, pre, kbd, samp {
     font-family: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
   }
