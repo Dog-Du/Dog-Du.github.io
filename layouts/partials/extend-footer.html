@@ -8,19 +8,14 @@
     var modelGreetings = [
       '「仙狐大人来守护你啦～」🦊',
       '「しずく登场！请多多指教～」✨',
-      '「hijiki 来啦！喵～」🐱',
       '「koharu 在此，今天也要元气满满！」🌸',
-      '「miku miku～ 初音未来为你应援！」🎵',
-      '「tororo 报到～ 请摸摸我！」🐾',
-      '「wanko 来了！汪汪！」🐶',
       '「chitose 参上！有什么能帮你的？」💫',
-      '「nito 登场～ 一起加油吧！」⭐',
       '「Pio 来啦！小小身体大大能量～」🎀',
       '「HK416 待命中，需要火力支援吗？」🔫'
     ];
 
     var modelIndex = 0;
-    var modelCount = 11;
+    var modelCount = 6;
 
     /* ---------- 通过 DOM 操作显示切换提示 ---------- */
     function showSwitchTip(text) {
@@ -53,13 +48,7 @@
           position: [70, 70],
           stageStyle: { height: 370, width: 400 }
         },
-        {
-          name: 'hijiki',
-          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json',
-          scale: 0.2,
-          position: [0, 20],
-          stageStyle: { height: 350 }
-        },
+
         {
           name: 'koharu',
           path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-koharu@1.0.5/assets/koharu.model.json',
@@ -67,27 +56,9 @@
           position: [0, 0],
           stageStyle: { height: 350 }
         },
-        {
-          name: 'miku',
-          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-miku@1.0.5/assets/miku.model.json',
-          scale: 0.2,
-          position: [0, 0],
-          stageStyle: { height: 350 }
-        },
-        {
-          name: 'tororo',
-          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-tororo@1.0.5/assets/tororo.model.json',
-          scale: 0.2,
-          position: [0, 0],
-          stageStyle: { height: 350 }
-        },
-        {
-          name: 'wanko',
-          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-wanko@1.0.5/assets/wanko.model.json',
-          scale: 0.2,
-          position: [0, 20],
-          stageStyle: { height: 350 }
-        },
+
+
+
         {
           name: 'chitose',
           path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-chitose@1.0.5/assets/chitose.model.json',
@@ -95,13 +66,7 @@
           position: [0, 0],
           stageStyle: { height: 350 }
         },
-        {
-          name: 'nito',
-          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-nito@1.0.5/assets/nito.model.json',
-          scale: 0.2,
-          position: [0, 0],
-          stageStyle: { height: 350 }
-        },
+
         {
           name: 'pio',
           path: 'https://model.hacxy.cn/Pio/model.json',
