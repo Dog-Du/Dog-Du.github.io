@@ -822,3 +822,24 @@ html:not(.dark) .chroma .line,
 html:is(.dark *) .chroma .line {
   display: block !important;
 }
+
+/* --------------------------------------------------------------------------
+   10. 代码块 Hover 悬浮效果
+   微妙的抬起 + 阴影，增加交互质感，不干扰阅读
+   -------------------------------------------------------------------------- */
+
+.highlight-wrapper,
+.codeblock-fold {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.highlight-wrapper:hover,
+.codeblock-fold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dark .highlight-wrapper:hover,
+.dark .codeblock-fold:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
