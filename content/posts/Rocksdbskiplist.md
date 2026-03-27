@@ -104,8 +104,10 @@ SkipList<Key, Comparator>::NewNode(const Key& key, int height) {
 
 `std::atomic<Node *>` 类型中只有一个定义如下的成员变量：
 
-```
-// Align 1/2/4/8/16-byte types to at least their size.      static constexpr int _S_min_alignment = (sizeof(_Tp) & (sizeof(_Tp) - 1)) || sizeof(_Tp) > 16 ? 0 : sizeof(_Tp);
+```cpp
+// Align 1/2/4/8/16-byte types to at least their size.
+static constexpr int _S_min_alignment =
+    (sizeof(_Tp) & (sizeof(_Tp) - 1)) || sizeof(_Tp) > 16 ? 0 : sizeof(_Tp);
 static constexpr int _S_alignment        = _S_min_alignment > alignof(_Tp) ? _S_min_alignment : alignof(_Tp);
 alignas(_S_alignment) _Tp _M_i _GLIBCXX20_INIT(_Tp());
 ```

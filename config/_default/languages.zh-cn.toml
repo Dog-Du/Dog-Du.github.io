@@ -8,13 +8,13 @@ title = "DogDu's blog"
   isoCode = "zh-cn"
   rtl = false
   dateFormat = "2006-01-02"
-  description = "DogDu 的技术博客，记录数据库、系统编程、Go/Rust 学习笔记"
+  description = "DogDu 的技术博客，记录数据库、系统编程。喜欢看动漫"
 
 [params.author]
   name = "DogDu"
   image = "/img/head.jpg"
-  headline = "数据库内核 / 系统编程 / Go / Rust"
-  bio = "相信代码的力量，用实现驱动学习"
+  headline = "喜欢看动漫, 并非喜欢 数据库 / C++"
+  bio = "学累了, 要不休息一会, **[看会动漫吧 ~](https://bangumi.tv/user/dogdu)**"
   links = [
     { github = "https://github.com/Dog-Du" },
   ]
