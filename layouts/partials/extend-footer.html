@@ -6,24 +6,22 @@
   (function () {
     var CDN = 'https://model.hacxy.cn/';
 
-    /* ---------- 每个模型对应的切换台词 ---------- */
-    var modelGreetings = [
-      '「HK416 普通形态，待命中。」🔫',
-      '「HK416 破损形态… 但我还能战斗！」💥',
-      '「HK416 二号机，随时出击！」⚔️',
-      '「Pio 来啦！小小身体大大能量～」🎀',
-      '「智乃登场… 请问要来杯咖啡吗？」☕',
-      '「风子参上！要一起做海星吗？」⭐',
-      '「しずく来了！请多多指教～」✨',
-      '「しずく 48 号，是不一样的我哦～」🎵',
-      '「しずく 的睡衣 look～ 晚安好梦！」🌙'
+    /* ---------- 切换角色时随机显示一句 ---------- */
+    var switchTips = [
+      '✨ 新角色登场！请多多关照～',
+      '🎉 哒哒！换我上场啦～',
+      '🌟 初次见面，请多指教！',
+      '🎀 新的小伙伴来咯～',
+      '💫 角色切换完成！你喜欢我吗？',
+      '🌸 换了个心情，也换个看板娘吧～',
+      '🎭 当当当～全新亮相！',
+      '✋ 嗨！让我来陪你吧～'
     ];
-    var modelIndex = 0;
-    var modelCount = 9;
 
-    function showSwitchTip(text) {
+    function showSwitchTip() {
       var tips = document.getElementById('oml2d-tips');
       if (!tips) return;
+      var text = switchTips[Math.floor(Math.random() * switchTips.length)];
       var content = tips.querySelector('*') || tips;
       content.textContent = text;
       tips.style.opacity = '1';
@@ -194,9 +192,8 @@
             title: '切换角色',
             onClick: function (i) {
               i.loadNextModel();
-              modelIndex = (modelIndex + 1) % modelCount;
               setTimeout(function () {
-                showSwitchTip(modelGreetings[modelIndex]);
+                showSwitchTip();
               }, 800);
             }
           },
