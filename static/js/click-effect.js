@@ -1,16 +1,27 @@
 /**
- * ✨ 鼠标点击特效 - 随机绽放爱心/星星/花瓣
+ * ✨ 鼠标点击特效 - 随机绽放 emoji（30 种）
  */
 (function () {
   'use strict';
-  var symbols = ['❤', '✨', '⭐', '🌸', '💫', '♪', '☆', '🌟'];
+  var symbols = [
+    /* 爱心 & 星星 */
+    '❤', '💖', '💗', '💕', '✨', '⭐', '🌟', '💫', '☆',
+    /* 花卉 & 自然 */
+    '🌸', '🌺', '🍀', '🌷', '🌻',
+    /* 小黄脸 & 表情 */
+    '😊', '😄', '🥰', '😘', '🤗', '😆', '😋', '🥳', '😸',
+    /* 手势 & 符号 */
+    '🎉', '🎶', '♪', '👻', '🦋', '🍬', '🧸'
+  ];
   var colors = [
     'rgb(240, 96, 144)',
     'rgb(146, 122, 237)',
     'rgb(255, 176, 199)',
     'rgb(172, 155, 246)',
     'rgb(255, 209, 222)',
-    'rgb(124, 96, 220)'
+    'rgb(124, 96, 220)',
+    'rgb(255, 154, 86)',
+    'rgb(100, 200, 160)'
   ];
 
   document.addEventListener('click', function (e) {
@@ -28,7 +39,6 @@
     span.style.transform = 'translate(-50%,-50%) scale(1)';
     document.body.appendChild(span);
 
-    // 强制浏览器渲染初始帧，再触发过渡
     void span.offsetHeight;
     span.style.transition = 'all 0.8s ease-out';
     span.style.opacity = '0';
