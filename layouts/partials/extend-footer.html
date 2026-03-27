@@ -3,93 +3,208 @@
     ============================================================ */}}
 <script src="https://unpkg.com/oh-my-live2d@latest"></script>
 <script>
-  OML2D.loadOml2d({
-    models: [
-      {
-        path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json',
-        scale: 0.2,
-        position: [70, 70],
-        stageStyle: { height: 370, width: 400 }
-      },
-      {
-        path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json',
-        scale: 0.2,
-        position: [0, 20],
-        stageStyle: { height: 350 }
-      },
-      {
-        path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-koharu@1.0.5/assets/koharu.model.json',
-        scale: 0.2,
-        position: [0, 0],
-        stageStyle: { height: 350 }
-      }
-    ],
-    tips: {
-      style: {
-        position: 'absolute',
-        top: '-120px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '60%',
-        minHeight: '80px',
-        fontSize: '14px',
-        borderRadius: '10px',
-        filter: 'drop-shadow(0 0 5px rgba(240,96,144,0.3))',
-        border: '2px solid rgb(255,209,222)',
-        color: 'rgb(82,73,78)',
-        backgroundColor: 'rgba(255,245,248,0.95)',
-        padding: '8px 10px',
-        textAlign: 'center',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: '10000',
-        fontFamily: '"LXGW WenKai", sans-serif'
-      },
-      idleTips: {
-        wordTheDay: function (d) { return d.hitokoto + ' —— ' + (d.from || ''); },
-        message: [
-          '你好呀～ 欢迎来到这里！(◕ᴗ◕✿)',
-          '今天也要元气满满地写代码哦！ᕦ(ò_óˇ)ᕤ',
-          '学累了就休息一下吧，摸摸头～',
-          '代码就像魔法一样，每一行都在创造奇迹 ✨',
-          '要记得按时吃饭喝水哦～ 身体最重要！',
-          '偶尔抬头看看窗外，眼睛会感谢你的 👀',
-          '「人生就像代码，有 bug 才有乐趣。」',
-          '有什么想对我说的吗？点点我试试看～',
-          '今天的你，又比昨天更厉害了一点呢！',
-          '据说摸鱼的时候效率最高（bushi',
-          '听说这个博客的主人很喜欢动漫呢～ (≧▽≦)',
-          '「即使是很小的星星，也会努力发出自己的光。」',
-          '在写博客的时候，也是在和未来的自己对话呢。',
-          '保持好奇心，这是最棒的超能力！🌟',
-          '「所谓活着，就是不断地出发。」—— 银魂'
-        ],
-        duration: 6000,
-        interval: 10000,
-        priority: 2
-      },
-      welcomeTips: {
-        message: {
-          daybreak: '早上好！一日之计在于晨 🌅',
-          morning: '上午好！今天也要加油写代码哦～',
-          noon: '中午了，该去吃午饭啦！🍱',
-          afternoon: '下午好～ 来杯咖啡提提神吧 ☕',
-          dusk: '傍晚了，辛苦一天啦～ 🌇',
-          night: '晚上好！今天过得开心吗？',
-          lateNight: '已经很晚了哦，早点休息吧，晚安～ 🌙',
-          weeHours: '这么晚还不睡？小心变秃头哦！(╯°□°)╯'
-        },
-        duration: 6000,
-        priority: 3
-      },
-      copyTips: {
-        duration: 3000,
-        priority: 3,
-        message: ['你复制了什么呢？记得注明出处哦～ (｡•̀ᴗ-)✧']
-      }
+  (function () {
+    /* ---------- 每个模型对应的切换台词 ---------- */
+    var modelGreetings = [
+      '「しずく登场！请多多指教～」✨',
+      '「hijiki 来啦！喵～」🐱',
+      '「koharu 在此，今天也要元气满满！」🌸',
+      '「miku miku～ 初音未来为你应援！」🎵',
+      '「tororo 报到～ 请摸摸我！」🐾',
+      '「wanko 来了！汪汪！」🐶',
+      '「chitose 参上！有什么能帮你的？」💫',
+      '「nito 登场～ 一起加油吧！」⭐'
+    ];
+
+    var modelIndex = 0;
+    var modelCount = 8;
+
+    /* ---------- 通过 DOM 操作显示切换提示 ---------- */
+    function showSwitchTip(text) {
+      var tips = document.getElementById('oml2d-tips');
+      if (!tips) return;
+      var content = tips.querySelector('*') || tips;
+      content.textContent = text;
+      tips.style.opacity = '1';
+      tips.style.visibility = 'visible';
+      tips.style.animationName = 'oml2d-display-tips, oml2d-shake-tips';
+      setTimeout(function () {
+        tips.style.opacity = '0';
+        tips.style.visibility = 'hidden';
+        tips.style.animationName = 'oml2d-hidden-tips';
+      }, 4000);
     }
-  });
+
+    OML2D.loadOml2d({
+      models: [
+        {
+          name: 'shizuku',
+          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json',
+          scale: 0.2,
+          position: [70, 70],
+          stageStyle: { height: 370, width: 400 }
+        },
+        {
+          name: 'hijiki',
+          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json',
+          scale: 0.2,
+          position: [0, 20],
+          stageStyle: { height: 350 }
+        },
+        {
+          name: 'koharu',
+          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-koharu@1.0.5/assets/koharu.model.json',
+          scale: 0.2,
+          position: [0, 0],
+          stageStyle: { height: 350 }
+        },
+        {
+          name: 'miku',
+          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-miku@1.0.5/assets/miku.model.json',
+          scale: 0.2,
+          position: [0, 0],
+          stageStyle: { height: 350 }
+        },
+        {
+          name: 'tororo',
+          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-tororo@1.0.5/assets/tororo.model.json',
+          scale: 0.2,
+          position: [0, 0],
+          stageStyle: { height: 350 }
+        },
+        {
+          name: 'wanko',
+          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-wanko@1.0.5/assets/wanko.model.json',
+          scale: 0.2,
+          position: [0, 20],
+          stageStyle: { height: 350 }
+        },
+        {
+          name: 'chitose',
+          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-chitose@1.0.5/assets/chitose.model.json',
+          scale: 0.2,
+          position: [0, 0],
+          stageStyle: { height: 350 }
+        },
+        {
+          name: 'nito',
+          path: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-nito@1.0.5/assets/nito.model.json',
+          scale: 0.2,
+          position: [0, 0],
+          stageStyle: { height: 350 }
+        }
+      ],
+      tips: {
+        style: {
+          position: 'absolute',
+          top: '-120px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '60%',
+          minHeight: '80px',
+          fontSize: '14px',
+          borderRadius: '10px',
+          filter: 'drop-shadow(0 0 5px rgba(240,96,144,0.3))',
+          border: '2px solid rgb(255,209,222)',
+          color: 'rgb(82,73,78)',
+          backgroundColor: 'rgba(255,245,248,0.95)',
+          padding: '8px 10px',
+          textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: '10000',
+          fontFamily: '"LXGW WenKai", sans-serif'
+        },
+        idleTips: {
+          wordTheDay: function (d) {
+            return d.hitokoto + (d.from ? ' —— ' + d.from : '');
+          },
+          message: [
+            '你好呀～ 欢迎来到这里！(◕ᴗ◕✿)',
+            '今天也要元气满满地写代码哦！ᕦ(ò_óˇ)ᕤ',
+            '学累了就休息一下吧，摸摸头～',
+            '代码就像魔法一样，每一行都在创造奇迹 ✨',
+            '要记得按时吃饭喝水哦～ 身体最重要！',
+            '偶尔抬头看看窗外，眼睛会感谢你的 👀',
+            '「人生就像代码，有 bug 才有乐趣。」',
+            '有什么想对我说的吗？点点我试试看～',
+            '今天的你，又比昨天更厉害了一点呢！',
+            '据说摸鱼的时候效率最高（bushi',
+            '听说这个博客的主人很喜欢动漫呢～ (≧▽≦)',
+            '「即使是很小的星星，也会努力发出自己的光。」',
+            '在写博客的时候，也是在和未来的自己对话呢。',
+            '保持好奇心，这是最棒的超能力！🌟',
+            '「所谓活着，就是不断地出发。」—— 银魂',
+            '「不管前方的路有多苦，只要方向正确。」—— 千与千寻',
+            '这里风景不错吧？都是博主精心布置的哦～',
+            '鼠标放在我身上试试？我会跟着你动的！'
+          ],
+          duration: 6000,
+          interval: 10000,
+          priority: 2
+        },
+        welcomeTips: {
+          message: {
+            daybreak: '早上好！一日之计在于晨 🌅',
+            morning: '上午好！今天也要加油写代码哦～',
+            noon: '中午了，该去吃午饭啦！🍱',
+            afternoon: '下午好～ 来杯咖啡提提神吧 ☕',
+            dusk: '傍晚了，辛苦一天啦～ 🌇',
+            night: '晚上好！今天过得开心吗？',
+            lateNight: '已经很晚了哦，早点休息吧，晚安～ 🌙',
+            weeHours: '这么晚还不睡？小心变秃头哦！(╯°□°)╯'
+          },
+          duration: 6000,
+          priority: 3
+        },
+        copyTips: {
+          duration: 3000,
+          priority: 3,
+          message: ['你复制了什么呢？记得注明出处哦～ (｡•̀ᴗ-)✧']
+        }
+      },
+      menus: {
+        items: [
+          {
+            id: 'Rest',
+            icon: 'icon-rest',
+            title: '休息',
+            onClick: function (i) {
+              i.statusBarOpen(i.options.statusBar && i.options.statusBar.restMessage);
+              i.clearTips();
+              i.setStatusBarClickEvent(function () {
+                i.statusBarClose();
+                i.stageSlideIn();
+                i.statusBarClearEvents();
+              });
+              i.stageSlideOut();
+            }
+          },
+          {
+            id: 'SwitchModel',
+            icon: 'icon-switch',
+            title: '切换角色',
+            onClick: function (i) {
+              i.loadNextModel();
+              modelIndex = (modelIndex + 1) % modelCount;
+              setTimeout(function () {
+                showSwitchTip(modelGreetings[modelIndex]);
+              }, 800);
+            }
+          },
+          {
+            id: 'About',
+            icon: 'icon-about',
+            title: '关于',
+            onClick: function () {
+              window.open('https://oml2d.com');
+            }
+          }
+        ]
+      }
+    });
+  })();
 </script>
 
 {{/* 🌸 樱花飘落（仅首页） */}}
