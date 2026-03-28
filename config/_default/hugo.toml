@@ -18,11 +18,11 @@ buildExpired = false
 
 enableEmoji = true
 
-# Disable RSS as per original config
+# RSS enabled on home & section for feed subscription
 [outputs]
-  home = ["HTML", "JSON"]
+  home = ["HTML", "RSS", "JSON"]
   page = ["HTML"]
-  section = ["HTML"]
+  section = ["HTML", "RSS"]
   taxonomy = ["HTML"]
   term = ["HTML"]
 
@@ -40,6 +40,7 @@ enableEmoji = true
   tag = "tags"
   category = "categories"
   author = "authors"
+  series = "series"
 
 [sitemap]
   changefreq = 'daily'
@@ -57,6 +58,10 @@ enableEmoji = true
     [[related.indices]]
         name = "categories"
         weight = 100
+
+    [[related.indices]]
+        name = "series"
+        weight = 150
 
     [[related.indices]]
         name = "date"

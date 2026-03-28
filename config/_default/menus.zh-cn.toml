@@ -1,5 +1,4 @@
 # -- Main Menu --
-# Chinese navigation menu
 
 [[main]]
   name = "首页"
@@ -10,6 +9,11 @@
   name = "文章"
   pageRef = "posts"
   weight = 20
+
+[[main]]
+  name = "系列"
+  pageRef = "series"
+  weight = 25
 
 [[main]]
   name = "归档"
@@ -42,3 +46,8 @@
   name = "标签"
   pageRef = "tags"
   weight = 20
+
+[[footer]]
+  name = "系列"
+  pageRef = "series"
+  weight = 30

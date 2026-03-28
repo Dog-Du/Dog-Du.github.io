@@ -10,7 +10,9 @@ title: Treap树堆带旋版本实现
 slug: algo-treap-rotating
 summary: 介绍带旋 Treap 的定义、插入删除策略与旋转维护方式，并用洛谷 P3369 的完整实现说明这类随机平衡树为何写起来足够直接。
 commentTerm: "Treap树堆带旋版本实现 | DogDu's blog"
-featureimage: "images/covers/cover_11_stars.webp"
+featureimage: "images/covers/cover_28_field.webp"
+series:
+- "平衡树专题"
 ---
 <!--more-->
 带旋 Treap 的优势，在于它把“维持二叉搜索树有序性”和“维持随机堆性质”拆成了两件足够清楚的事：按 `key` 插入位置，按 `fix` 通过旋转恢复平衡。相比 AVL 树和红黑树，它的规则更少，因此非常适合作为第一棵“能真正手写出来的随机平衡树”。

@@ -10,7 +10,9 @@ title: 无旋fhq-Treap实现
 slug: algo-fhq-treap
 summary: 用 split / merge 视角整理无旋 fhq-Treap 的代码实现，展示它为何在模板竞赛题里兼具简洁度与扩展性。
 commentTerm: "无旋fhq-Treap实现 | DogDu's blog"
-featureimage: "images/covers/cover_20_road.webp"
+featureimage: "images/covers/cover_28_field.webp"
+series:
+- "平衡树专题"
 ---
 <!--more-->
 fhq-Treap 的核心不在旋转，而在 **split / merge** 这两个操作。把这两个基础动作写顺之后，插入、删除、按排名查询、前驱后继等常见有序集合操作都会自然地落出来，这也是它在竞赛模板里很受欢迎的原因。

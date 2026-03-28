@@ -626,3 +626,120 @@ body.max-w-7xl {
     cursor: url('/cursors/pointer.svg') 10 0, pointer;
   }
 }
+
+/* ==========================================================================
+   14. 复制成功 Toast 提示 Copy Toast
+   --------------------------------------------------------------------------
+   代码块一键复制后弹出的浮动提示
+   ========================================================================== */
+
+.copy-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(1rem);
+  background: rgba(var(--color-primary-500), 0.92);
+  color: #fff;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(6px);
+}
+
+.copy-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ==========================================================================
+   15. 搜索快捷键徽章 Search Hint Badge
+   --------------------------------------------------------------------------
+   搜索按钮旁显示 Ctrl+K / ⌘K 快捷键提示
+   ========================================================================== */
+
+.search-hint-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  line-height: 1.4;
+  color: rgba(var(--color-neutral-500), 1);
+  background: rgba(var(--color-neutral-100), 0.7);
+  border: 1px solid rgba(var(--color-neutral-300), 0.5);
+  border-radius: 0.25rem;
+  pointer-events: none;
+  vertical-align: middle;
+}
+
+.dark .search-hint-badge {
+  color: rgba(var(--color-neutral-400), 1);
+  background: rgba(var(--color-neutral-800), 0.6);
+  border-color: rgba(var(--color-neutral-600), 0.5);
+}
+
+/* 移动端隐藏徽章 */
+@media (max-width: 640px) {
+  .search-hint-badge {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   16. 文章目录增强 TOC Enhancement
+   --------------------------------------------------------------------------
+   高度约束作用于 .toc-right（Blowfish 原生滚动容器），
+   外层 .toc 仅负责 sticky 定位，不参与滚动。
+   ========================================================================== */
+
+/* Blowfish 内层滚动容器：添加高度约束 + 平滑滚动 */
+.toc-right {
+  max-height: calc(100vh - 10rem);
+  scroll-behavior: smooth;
+}
+
+/* TOC 链接基础样式 */
+#TableOfContents a {
+  display: block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgba(var(--color-neutral-500), 1);
+  border-left: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  text-decoration: none;
+}
+
+#TableOfContents a:hover {
+  color: rgba(var(--color-primary-600), 1);
+  border-left-color: rgba(var(--color-primary-400), 0.5);
+  background-color: rgba(var(--color-primary-50), 0.3);
+}
+
+.dark #TableOfContents a:hover {
+  background-color: rgba(var(--color-primary-900), 0.15);
+}
+
+/* TOC 活跃状态 */
+#TableOfContents a.active,
+#TableOfContents li.active > a {
+  color: rgba(var(--color-primary-600), 1);
+  border-left-color: rgba(var(--color-primary-500), 1);
+  font-weight: 600;
+  background-color: rgba(var(--color-primary-50), 0.5);
+}
+
+.dark #TableOfContents a.active,
+.dark #TableOfContents li.active > a {
+  color: rgba(var(--color-primary-400), 1);
+  background-color: rgba(var(--color-primary-900), 0.25);
+}

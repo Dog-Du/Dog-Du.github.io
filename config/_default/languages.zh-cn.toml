@@ -14,7 +14,7 @@ title = "DogDu's blog"
   name = "DogDu"
   image = "/img/head.jpg"
   headline = "喜欢看动漫, 并非喜欢 数据库 / C++"
-  bio = "学累了, 要不休息一会, **[看会动漫吧 ~](https://bangumi.tv/user/dogdu)**"
+  bio = "工作结束或者累了, 要不休息一会, **[看会动漫吧 ~](https://bangumi.tv/user/dogdu)**"
   links = [
     { github = "https://github.com/Dog-Du" },
   ]

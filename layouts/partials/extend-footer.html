@@ -9,10 +9,13 @@
     3. ✨ 鼠标点击特效    → static/js/click-effect.js
     4. 🎌 页脚动漫台词    → static/js/footer-quote.js
     5. ✋ Live2D 拖拽     → static/js/live2d-drag.js（须在 live2d-config 之后）
+    6. 📋 代码复制提示    → static/js/copy-toast.js
+    7. 🔍 搜索快捷键      → static/js/search-hint.js
 
   修改历史：
     2025-06 - 初始版本
     2026-03 - Live2D 配置抽离为独立 JS，版本锁定，添加懒加载
+    2026-03 - 新增代码复制 toast 提示、搜索快捷键提示
   ==========================================================================
 */}}
 
@@ -30,3 +33,9 @@
 
 {{/* ✋ Live2D 拖拽（须在 live2d-config 之后加载） */}}
 <script src="/js/live2d-drag.js" defer></script>
+
+{{/* 📋 代码块复制成功 toast 提示 */}}
+<script src="/js/copy-toast.js" defer></script>
+
+{{/* 🔍 搜索快捷键（Ctrl+K / ⌘K）+ 视觉提示徽章 */}}
+<script src="/js/search-hint.js" defer></script>

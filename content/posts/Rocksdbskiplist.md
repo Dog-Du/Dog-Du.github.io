@@ -12,6 +12,8 @@ commentTerm: "Rocksdb：skiplist | DogDu's blog"
 commentDiscussionNumber: 22
 lastmod: '2025-10-06T10:54:29.284Z'
 featureimage: "images/covers/cover_07_city.webp"
+series:
+- "跳表探索"
 ---
 面试时被问到 `skiplist` 怎么做并发控制，当时回答得不够扎实，所以回来专门看了一遍 RocksDB 的实现，顺手把结构和设计思路记下来。
 

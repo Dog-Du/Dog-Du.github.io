@@ -9,7 +9,7 @@ slug: algo-trapping-rain
 summary: 围绕 LeetCode 接雨水题，总结单调栈、区间查询、动态规划与双指针四种经典解法及其思路差异。
 commentTerm: "LeetCode接雨水i 两种思想四种解法 | DogDu's blog"
 lastmod: '2025-04-04T11:32:10.709Z'
-featureimage: "images/covers/cover_06_city.webp"
+featureimage: "images/covers/cover_18_forest.webp"
 ---
 这道题非常适合拿来对比不同解法的思维差异。核心视角主要有两类：一类是“以区间凹槽为中心”去找左右边界，另一类是“以单个柱子的贡献为中心”去算每个位置能接多少水。
 

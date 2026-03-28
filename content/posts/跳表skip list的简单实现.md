@@ -9,7 +9,9 @@ slug: algo-skiplist-impl
 summary: 给出一份基础跳表实现，说明随机层高、跨度维护以及排名、前驱后继等常见操作。
 commentTerm: "跳表（skip list）的简单实现 | DogDu's blog"
 lastmod: '2025-04-04T11:32:10.720Z'
-featureimage: "images/covers/cover_31_landscape.webp"
+featureimage: "images/covers/cover_23_lake.webp"
+series:
+- "跳表探索"
 ---
 参考文章：[普通平衡树 - 跳表 - Tibrella 的隙间](https://www.luogu.com.cn/blog/tibrella/pu-tong-ping-heng-shu-tiao-biao)
 

@@ -10,7 +10,9 @@ title: Splay树伸展树入门与实现
 slug: algo-splay-tree
 summary: 围绕伸展操作的直觉、旋转策略与删除流程，整理 Splay 树的核心实现，并结合洛谷 P3369 给出完整代码与实战记录。
 commentTerm: "Splay树伸展树入门与实现 | DogDu's blog"
-featureimage: "images/covers/cover_09_stars.webp"
+featureimage: "images/covers/cover_23_lake.webp"
+series:
+- "平衡树专题"
 ---
 <!--more-->
 ## 前言
