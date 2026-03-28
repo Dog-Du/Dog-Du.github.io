@@ -1,22 +1,18 @@
 /* ==========================================================================
-   DogDu's Blog - Custom Styles
-   基于 Blowfish 主题的优雅定制
-   目标：提升阅读舒适度、视觉层次和品牌一致性
+   DogDu's Blog - Custom Styles (Cleaned & Consolidated)
+   基于 Blowfish 主题 + Sakura 配色方案
+   重构日期：2026-03-28
    ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   1. 排版优化 Typography
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   1. 排版 Typography
+   ========================================================================== */
 
-/* 正文基础 - 提升中文阅读体验 */
 .prose {
-  /* 更宽松的中文字间距 */
   letter-spacing: 0.01em;
-  /* 优化的行高 */
   line-height: 1.8;
 }
 
-/* 文章标题层次优化 */
 .prose h1 {
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -45,62 +41,56 @@
   margin-bottom: 0.75rem;
 }
 
-/* 代码块优化 */
-.prose pre,
-pre {
-  white-space: pre;
-  overflow-x: auto;
+/* 行内代码 */
+.prose :not(pre) > code {
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  background-color: rgba(var(--color-primary-500), 0.1);
+  color: var(--color-primary-600);
 }
 
-.prose pre,
-pre {
-  white-space: pre;
-  overflow-x: auto;
-  border-radius: 0.75rem !important;
+.dark .prose :not(pre) > code {
+  background-color: rgba(var(--color-primary-400), 0.15);
+  color: var(--color-primary-300);
 }
 
-.highlight-wrapper {
-  border: 1px solid rgba(var(--color-neutral-300), 0.8);
-  border-radius: 0.75rem;
-  overflow: hidden;
+/* 代码字体 —— JetBrains Mono 优先（与 extend-head.html 保持一致） */
+.prose code {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+  font-size: 0.875em;
 }
 
-.codeblock-fold__content,
-.codeblock-fold__content > .highlight-wrapper,
-.codeblock-fold__content > .highlight-wrapper pre,
-.codeblock-fold__content > .highlight-wrapper .chroma {
-  border-bottom-left-radius: 0.75rem;
-  border-bottom-right-radius: 0.75rem;
+/* 引用块 */
+.prose blockquote {
+  border-left: 3px solid var(--color-primary-500);
+  background-color: rgba(var(--color-neutral-100), 0.5);
+  padding: 1rem 1.25rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: normal;
 }
 
-.codeblock-fold__content {
-  position: relative;
-  overflow: hidden;
-  max-height: calc(var(--code-fold-lines, 30) * 1.6em);
-  border-radius: 0 0 0.75rem 0.75rem;
+.dark .prose blockquote {
+  background-color: rgba(var(--color-neutral-800), 0.5);
 }
 
-.codeblock-fold__content::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 9rem;
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-50), 0) 0%, rgba(var(--color-neutral-50), 1) 100%);
-  pointer-events: none;
+.prose blockquote p {
+  margin: 0;
 }
 
-.dark .codeblock-fold__content::after {
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-900), 0) 0%, rgba(var(--color-neutral-900), 1) 100%);
-}
+/* ==========================================================================
+   2. 代码块 Code Blocks
+   --------------------------------------------------------------------------
+   代码换行策略：pre-wrap（自动换行，避免水平滚动）
+   如需恢复水平滚动，将 white-space 改为 pre 并移除 overflow-wrap/word-break
+   ========================================================================== */
 
 .prose pre,
 pre {
   white-space: pre-wrap;
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-wrap: anywhere;
   word-break: break-word;
+  border-radius: 0.75rem;
 }
 
 .prose pre code,
@@ -116,90 +106,7 @@ pre {
   display: block;
 }
 
-.article-content.max-w-prose,
-#single_header.max-w-prose,
-footer.max-w-prose {
-  max-width: 90ch;
-}
-
-@media (min-width: 1024px) {
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
-    padding-left: 0.25rem;
-    margin-left: 2.5rem;
-    max-width: 16rem;
-  }
-
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
-    width: 16rem;
-  }
-}
-
-.codeblock-fold__header {
-  background: rgba(var(--color-neutral-200), 0.98);
-  border-bottom: 1px solid rgba(var(--color-neutral-400), 0.95);
-  border-top-left-radius: 0.75rem;
-  border-top-right-radius: 0.75rem;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.dark .codeblock-fold__header {
-  background: rgba(var(--color-neutral-900), 0.96);
-  border-bottom-color: rgba(var(--color-neutral-600), 0.95);
-}
-
-.codeblock-fold__content {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  border-bottom-left-radius: 0.75rem;
-  border-bottom-right-radius: 0.75rem;
-}
-
-.codeblock-fold__content > .highlight-wrapper,
-.codeblock-fold__content > .highlight-wrapper pre,
-.codeblock-fold__content > .highlight-wrapper .chroma {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  border-bottom-left-radius: 0.75rem;
-  border-bottom-right-radius: 0.75rem;
-}
-
-.codeblock-fold__content::after {
-  height: 10rem;
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-50), 0) 0%, rgba(var(--color-neutral-50), 0.45) 35%, rgba(var(--color-neutral-50), 0.9) 75%, rgba(var(--color-neutral-50), 1) 100%);
-}
-
-.dark .codeblock-fold__content::after {
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-900), 0) 0%, rgba(var(--color-neutral-900), 0.45) 35%, rgba(var(--color-neutral-900), 0.9) 75%, rgba(var(--color-neutral-900), 1) 100%);
-}
-
-.article-content.max-w-prose {
-  max-width: 75ch;
-}
-
-#single_header.max-w-prose,
-footer.max-w-prose {
-  max-width: 75ch;
-}
-
-@media (min-width: 1024px) {
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
-    padding-left: 1rem;
-    max-width: 16rem;
-  }
-
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
-    width: 16rem;
-  }
-}
-
-.dark .codeblock-fold__content > .highlight-wrapper,
-.dark .codeblock-fold__content > .highlight-wrapper pre,
-.dark .codeblock-fold__content > .highlight-wrapper .chroma {
-  border-bottom-left-radius: 0.75rem;
-  border-bottom-right-radius: 0.75rem;
-}
-
+/* Highlight 容器 */
 .highlight-wrapper {
   border: 1px solid rgba(var(--color-neutral-300), 0.8);
   border-radius: 0.75rem;
@@ -210,23 +117,52 @@ footer.max-w-prose {
   border-color: rgba(var(--color-neutral-700), 0.9);
 }
 
-.codeblock-title {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid rgba(var(--color-neutral-300), 0.8);
-  background: rgba(var(--color-neutral-100), 0.9);
-  font-size: 0.95rem;
+/* 溢出控制 */
+.codeblock-fold__content,
+.highlight-wrapper,
+.highlight,
+pre.chroma,
+.chroma {
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-.dark .codeblock-title {
-  border-bottom-color: rgba(var(--color-neutral-700), 0.9);
-  background: rgba(var(--color-neutral-800), 0.8);
+/* ==========================================================================
+   3. 代码块折叠 Code Block Folding
+   --------------------------------------------------------------------------
+   纯 CSS 方案：隐藏 checkbox + :checked 切换折叠状态
+   ========================================================================== */
+
+/* 外层容器 + Hover 效果 */
+.codeblock-wrapper {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow-anchor: none;
 }
 
-.dark .codeblock-fold {
-  border-color: rgba(var(--color-neutral-700), 0.9);
-  background: rgba(var(--color-neutral-900), 0.65);
+.codeblock-wrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+.dark .codeblock-wrapper:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* 非折叠代码块也有 Hover */
+.prose > .highlight-wrapper {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.prose > .highlight-wrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dark .prose > .highlight-wrapper:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* 无障碍隐藏 checkbox */
 .codeblock-fold__checkbox {
   position: absolute;
   width: 1px;
@@ -239,14 +175,18 @@ footer.max-w-prose {
   border: 0;
 }
 
-.codeblock-fold,
-.codeblock-fold__header,
-.codeblock-fold__content {
+/* 折叠容器 */
+.codeblock-fold {
   border-radius: 0.75rem;
 }
 
+.dark .codeblock-fold {
+  border-color: rgba(var(--color-neutral-700), 0.9);
+  background: rgba(var(--color-neutral-900), 0.65);
+}
+
+/* 折叠头部 */
 .codeblock-fold__header {
-  border-bottom: 1px solid rgba(var(--color-neutral-300), 0.8);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -255,32 +195,87 @@ footer.max-w-prose {
   user-select: none;
   font-size: 0.95rem;
   color: rgb(var(--color-neutral-700));
-  background: rgba(var(--color-neutral-100), 0.9);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  background: rgba(var(--color-neutral-50), 0.98);
+  border-bottom: 1px solid rgba(var(--color-neutral-200), 0.95);
+  border-radius: 0.75rem 0.75rem 0 0;
 }
 
+.dark .codeblock-fold__header {
+  color: rgb(var(--color-neutral-200));
+  background: rgba(var(--color-neutral-900), 0.96);
+  border-bottom-color: rgba(var(--color-neutral-600), 0.95);
+}
+
+/* 折叠内容区 */
+.codeblock-fold__content {
+  position: relative;
+  overflow: hidden;
+  max-height: calc(var(--code-fold-lines, 30) * 1.6em);
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* 底部渐变遮罩 */
 .codeblock-fold__content::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 9rem;
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-50), 0) 0%, rgba(var(--color-neutral-50), 0.45) 35%, rgba(var(--color-neutral-50), 0.9) 75%, rgba(var(--color-neutral-50), 1) 100%);
+  height: 10rem;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--color-neutral-50), 0) 0%,
+    rgba(var(--color-neutral-50), 0.45) 35%,
+    rgba(var(--color-neutral-50), 0.9) 75%,
+    rgba(var(--color-neutral-50), 1) 100%
+  );
   pointer-events: none;
 }
 
 .dark .codeblock-fold__content::after {
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-900), 0) 0%, rgba(var(--color-neutral-900), 0.45) 35%, rgba(var(--color-neutral-900), 0.9) 75%, rgba(var(--color-neutral-900), 1) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--color-neutral-900), 0) 0%,
+    rgba(var(--color-neutral-900), 0.45) 35%,
+    rgba(var(--color-neutral-900), 0.9) 75%,
+    rgba(var(--color-neutral-900), 1) 100%
+  );
 }
 
-.dark .codeblock-fold__header {
+/* 折叠内容内的 highlight-wrapper：圆角只在底部 */
+.codeblock-fold__content > .highlight-wrapper {
+  margin: 0;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.codeblock-fold__content > .highlight-wrapper pre,
+.codeblock-fold__content > .highlight-wrapper .chroma {
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* 折叠内部标题 */
+.codeblock-fold__content > .highlight-wrapper .codeblock-title {
+  margin: 0;
+  border-radius: 0;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+/* 代码块标题 */
+.codeblock-title {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(var(--color-neutral-300), 0.8);
+  background: rgba(var(--color-neutral-100), 0.9);
+  font-size: 0.95rem;
+}
+
+.dark .codeblock-title {
   border-bottom-color: rgba(var(--color-neutral-700), 0.9);
-  color: rgb(var(--color-neutral-200));
   background: rgba(var(--color-neutral-800), 0.8);
 }
 
+/* 折叠按钮 */
 .codeblock-fold__toggle {
   display: flex;
   align-items: center;
@@ -298,6 +293,7 @@ footer.max-w-prose {
   font-weight: 600;
 }
 
+/* Hint 药丸按钮 */
 .codeblock-fold__hint {
   font-size: 0.8rem;
   font-weight: 500;
@@ -321,6 +317,7 @@ footer.max-w-prose {
   background: rgba(var(--color-primary-400), 0.25);
 }
 
+/* Hint 文字通过 CSS 切换 */
 .codeblock-fold__hint::before {
   content: attr(data-closed-label);
 }
@@ -329,41 +326,7 @@ footer.max-w-prose {
   content: attr(data-open-label);
 }
 
-.codeblock-fold__content > .highlight-wrapper,
-.codeblock-fold__content > .highlight-wrapper pre {
-  margin: 0;
-  border-radius: 0;
-}
-
-.codeblock-fold__content > .highlight-wrapper .codeblock-title {
-  margin: 0;
-  border-radius: 0;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-}
-
-.codeblock-fold__content {
-  position: relative;
-  overflow: hidden;
-  max-height: calc(var(--code-fold-lines, 30) * 1.6em);
-}
-
-.codeblock-fold__content::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 6rem;
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-50), 0) 20%, rgba(var(--color-neutral-50), 1.0) 100%);
-  pointer-events: none;
-}
-
-.dark .codeblock-fold__content::after {
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-900), 0) 20%, rgba(var(--color-neutral-900), 1.0) 100%);
-}
-
+/* Checkbox 状态切换 */
 .codeblock-fold__checkbox:checked ~ .codeblock-fold__header {
   border-bottom-color: transparent;
 }
@@ -376,84 +339,20 @@ footer.max-w-prose {
   display: none;
 }
 
-.prose pre code,
-.chroma,
-.chroma code,
-.chroma .line {
-  white-space: inherit;
-}
+/* ==========================================================================
+   4. 布局 Layout
+   --------------------------------------------------------------------------
+   使用 !important 覆盖 Tailwind 工具类（.max-w-prose 等）
+   ========================================================================== */
 
-.prose code {
-  font-family: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
-  font-size: 0.875em;
-}
-
-/* 行内代码 */
-.prose :not(pre) > code {
-  padding: 0.2em 0.4em;
-  border-radius: 0.25rem;
-  background-color: rgba(var(--color-primary-500), 0.1);
-  color: var(--color-primary-600);
-}
-
-.dark .prose :not(pre) > code {
-  background-color: rgba(var(--color-primary-400), 0.15);
-  color: var(--color-primary-300);
-}
-
-.prose pre,
-pre {
-  white-space: pre-wrap !important;
-  overflow-x: hidden !important;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-.prose pre code,
-.chroma,
-.chroma code,
-.chroma .line {
-  white-space: pre-wrap !important;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-.chroma .line {
-  display: block;
-}
-
+/* 文章内容宽度：90ch 为中文阅读舒适区间（约 45 个汉字/行） */
 .article-content.max-w-prose,
 #single_header.max-w-prose,
 footer.max-w-prose {
   max-width: 90ch !important;
 }
 
-@media (min-width: 1024px) {
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
-    padding-left: 0.25rem !important;
-    margin-left: 2.5rem !important;
-    max-width: 16rem !important;
-  }
-
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
-    width: 16rem !important;
-  }
-}
-
-.codeblock-fold__header {
-  background: rgba(var(--color-neutral-200), 0.98) !important;
-  border-bottom: 1px solid rgba(var(--color-neutral-400), 0.95) !important;
-  border-top-left-radius: 0.75rem !important;
-  border-top-right-radius: 0.75rem !important;
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-}
-
-.dark .codeblock-fold__header {
-  background: rgba(var(--color-neutral-900), 0.96) !important;
-  border-bottom-color: rgba(var(--color-neutral-600), 0.95) !important;
-}
-
+/* 页面容器 */
 body.max-w-7xl {
   max-width: 100rem !important;
 }
@@ -463,55 +362,23 @@ body.max-w-7xl {
     padding-left: 4rem !important;
     padding-right: 4rem !important;
   }
+
+  /* TOC 侧边栏 */
+  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
+    padding-left: 0.75rem !important;
+    margin-left: 6rem !important;
+    max-width: 16rem !important;
+  }
+
+  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
+    width: 16rem !important;
+  }
 }
 
-.codeblock-fold__content {
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
-  border-bottom-left-radius: 0.75rem !important;
-  border-bottom-right-radius: 0.75rem !important;
-}
+/* ==========================================================================
+   5. 链接与交互 Links & Interactive
+   ========================================================================== */
 
-.codeblock-fold__content > .highlight-wrapper,
-.codeblock-fold__content > .highlight-wrapper pre,
-.codeblock-fold__content > .highlight-wrapper .chroma {
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
-  border-bottom-left-radius: 0.75rem !important;
-  border-bottom-right-radius: 0.75rem !important;
-}
-
-.codeblock-fold__content::after {
-  height: 10rem !important;
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-50), 0) 0%, rgba(var(--color-neutral-50), 0.45) 35%, rgba(var(--color-neutral-50), 0.9) 75%, rgba(var(--color-neutral-50), 1) 100%) !important;
-}
-
-.dark .codeblock-fold__content::after {
-  background: linear-gradient(to bottom, rgba(var(--color-neutral-900), 0) 0%, rgba(var(--color-neutral-900), 0.45) 35%, rgba(var(--color-neutral-900), 0.9) 75%, rgba(var(--color-neutral-900), 1) 100%) !important;
-}
-
-/* 引用块样式 */
-.prose blockquote {
-  border-left: 3px solid var(--color-primary-500);
-  background-color: rgba(var(--color-neutral-100), 0.5);
-  padding: 1rem 1.25rem;
-  border-radius: 0 0.5rem 0.5rem 0;
-  font-style: normal;
-}
-
-.dark .prose blockquote {
-  background-color: rgba(var(--color-neutral-800), 0.5);
-}
-
-.prose blockquote p {
-  margin: 0;
-}
-
-/* --------------------------------------------------------------------------
-   2. 链接和交互 Link & Interactive
-   -------------------------------------------------------------------------- */
-
-/* 文章内链接 */
 .prose a {
   text-decoration: none;
   border-bottom: 1px solid rgba(var(--color-primary-500), 0.3);
@@ -527,7 +394,6 @@ body.max-w-7xl {
   color: var(--color-primary-300);
 }
 
-/* 文章列表链接 */
 .article-link {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -536,11 +402,10 @@ body.max-w-7xl {
   transform: translateY(-1px);
 }
 
-/* --------------------------------------------------------------------------
-   3. 列表和归档 List & Archives
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   6. 归档页 Archives
+   ========================================================================== */
 
-/* 归档年份标题 */
 .archive-year {
   position: relative;
   padding-left: 1rem;
@@ -557,7 +422,6 @@ body.max-w-7xl {
   border-radius: 2px;
 }
 
-/* 归档文章条目 */
 .archive-item {
   position: relative;
   padding-left: 1.5rem;
@@ -584,11 +448,10 @@ body.max-w-7xl {
   border-left-color: rgba(var(--color-neutral-700), 0.5);
 }
 
-/* --------------------------------------------------------------------------
-   4. 主页 Profile 页面优化
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   7. 主页 Homepage
+   ========================================================================== */
 
-/* 个人资料区域 */
 .author-profile {
   text-align: center;
 }
@@ -604,7 +467,6 @@ body.max-w-7xl {
   box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
 }
 
-/* 主页介绍文字 */
 .home-intro {
   max-width: 65ch;
   margin: 0 auto;
@@ -619,7 +481,6 @@ body.max-w-7xl {
   color: var(--color-neutral-400);
 }
 
-/* 主页列表样式 */
 .home-list {
   list-style: none;
   padding: 0;
@@ -639,11 +500,10 @@ body.max-w-7xl {
   font-weight: bold;
 }
 
-/* --------------------------------------------------------------------------
-   5. 导航和页眉 Header & Navigation
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   8. 导航与页眉 Header & Navigation
+   ========================================================================== */
 
-/* 固定头部优化 */
 .header-fixed {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -654,7 +514,6 @@ body.max-w-7xl {
   background-color: rgba(var(--color-neutral-900), 0.85);
 }
 
-/* 导航链接 */
 .nav-link {
   position: relative;
   padding: 0.5rem 0.75rem;
@@ -666,7 +525,6 @@ body.max-w-7xl {
   background-color: rgba(var(--color-primary-500), 0.1);
 }
 
-/* 当前页面指示器 */
 .nav-link.active {
   color: var(--color-primary-600);
   font-weight: 500;
@@ -676,9 +534,9 @@ body.max-w-7xl {
   color: var(--color-primary-400);
 }
 
-/* --------------------------------------------------------------------------
-   6. 页脚 Footer
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   9. 页脚 Footer
+   ========================================================================== */
 
 .footer {
   border-top: 1px solid rgba(var(--color-neutral-200), 0.5);
@@ -688,29 +546,9 @@ body.max-w-7xl {
   border-top-color: rgba(var(--color-neutral-800), 0.5);
 }
 
-/* --------------------------------------------------------------------------
-   7. 响应式优化
-   -------------------------------------------------------------------------- */
-
-@media (max-width: 768px) {
-  .prose {
-    line-height: 1.75;
-  }
-  
-  .prose h1 {
-    font-size: 1.875rem;
-    margin-top: 2rem;
-  }
-  
-  .prose h2 {
-    font-size: 1.5rem;
-    margin-top: 1.75rem;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   8. 暗色模式微调
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   10. 暗色模式 Dark Mode
+   ========================================================================== */
 
 .dark .prose {
   color: var(--color-neutral-300);
@@ -727,160 +565,64 @@ body.max-w-7xl {
   color: var(--color-neutral-200);
 }
 
-/* --------------------------------------------------------------------------
-   9. 打印优化
-   -------------------------------------------------------------------------- */
+/* ==========================================================================
+   11. 响应式 Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .prose {
+    line-height: 1.75;
+  }
+
+  .prose h1 {
+    font-size: 1.875rem;
+    margin-top: 2rem;
+  }
+
+  .prose h2 {
+    font-size: 1.5rem;
+    margin-top: 1.75rem;
+  }
+}
+
+/* ==========================================================================
+   12. 打印 Print
+   ========================================================================== */
 
 @media print {
   .prose {
     line-height: 1.6;
   }
-  
+
   .prose a {
     border-bottom: none;
     text-decoration: underline;
   }
 }
 
-.article-content.max-w-prose,
-#single_header.max-w-prose,
-footer.max-w-prose {
-  max-width: 108ch !important;
-}
+/* ==========================================================================
+   13. 自定义光标 Custom Cursor
+   --------------------------------------------------------------------------
+   仅桌面端生效（pointer: fine），移动端忽略
+   ========================================================================== */
 
-@media (min-width: 1024px) {
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
-    padding-left: 0.75rem !important;
-    margin-left: 6rem !important;
-    max-width: 16rem !important;
+@media (pointer: fine) {
+  body,
+  html {
+    cursor: url('/cursors/default.svg') 2 1, default;
   }
 
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
-    width: 16rem !important;
+  a,
+  button,
+  [role="button"],
+  label[for],
+  select,
+  summary,
+  .cursor-pointer,
+  input[type="submit"],
+  input[type="button"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    cursor: url('/cursors/pointer.svg') 10 0, pointer;
   }
-}
-
-.codeblock-fold__header {
-  background: rgba(var(--color-neutral-50), 0.98) !important;
-  border-bottom: 1px solid rgba(var(--color-neutral-200), 0.95) !important;
-}
-
-.dark .codeblock-fold__header {
-  background: rgba(var(--color-neutral-900), 0.96) !important;
-  border-bottom-color: rgba(var(--color-neutral-600), 0.95) !important;
-}
-
-.codeblock-fold__content,
-.highlight-wrapper,
-.highlight,
-pre.chroma,
-.chroma {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-}
-
-.prose pre,
-.prose pre code,
-.chroma,
-.chroma code,
-.chroma .line {
-  white-space: pre !important;
-  word-break: normal !important;
-  overflow-wrap: normal !important;
-}
-
-.chroma .line {
-  display: block !important;
-}
-
-.codeblock-fold__content > .highlight-wrapper,
-.codeblock-fold__content > .highlight-wrapper pre,
-.codeblock-fold__content > .highlight-wrapper .chroma {
-  min-width: max-content;
-}
-
-html:not(.dark) .prose pre,
-html:not(.dark) pre,
-html:is(.dark *) .prose pre,
-html:is(.dark *) pre {
-  white-space: pre-wrap !important;
-  overflow-x: auto !important;
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
-}
-
-html:not(.dark) .prose pre code,
-html:not(.dark) .chroma,
-html:not(.dark) .chroma code,
-html:not(.dark) .chroma .line,
-html:is(.dark *) .prose pre code,
-html:is(.dark *) .chroma,
-html:is(.dark *) .chroma code,
-html:is(.dark *) .chroma .line {
-  white-space: pre-wrap !important;
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
-}
-
-html:not(.dark) .chroma .line,
-html:is(.dark *) .chroma .line {
-  display: block !important;
-}
-
-/* --------------------------------------------------------------------------
-   10. 代码块 Hover 悬浮效果
-   整个代码块（含折叠头部）统一抬起 + 柔和阴影
-   -------------------------------------------------------------------------- */
-
-/* 折叠式代码块 - 以 codeblock-wrapper 为整体 */
-.codeblock-wrapper {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  overflow-anchor: none;
-}
-
-.codeblock-wrapper:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-.dark .codeblock-wrapper:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
-/* 非折叠式代码块 - 直接以 highlight-wrapper 为整体 */
-.prose > .highlight-wrapper {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.prose > .highlight-wrapper:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-.dark .prose > .highlight-wrapper:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
-/* --------------------------------------------------------------------------
-   11. 自定义鼠标光标 🌸
-   樱花粉色箭头 + 可爱手指，呼应 sakura 主题
-   -------------------------------------------------------------------------- */
-
-body,
-html {
-  cursor: url('/cursors/default.svg') 2 1, default;
-}
-
-a,
-button,
-[role="button"],
-label[for],
-select,
-summary,
-.cursor-pointer,
-input[type="submit"],
-input[type="button"],
-input[type="checkbox"],
-input[type="radio"] {
-  cursor: url('/cursors/pointer.svg') 10 0, pointer;
 }
