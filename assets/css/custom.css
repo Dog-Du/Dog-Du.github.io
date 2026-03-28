@@ -70,7 +70,8 @@
 }
 
 .dark .prose blockquote {
-  background-color: rgba(var(--color-neutral-800), 0.5);
+  background-color: rgba(var(--color-primary-900), 0.12);
+  border-left-color: rgba(var(--color-primary-400), 0.7);
 }
 
 .prose blockquote p {
@@ -363,15 +364,29 @@ body.max-w-7xl {
     padding-right: 4rem !important;
   }
 
-  /* TOC 侧边栏 */
+  /* TOC 侧边栏 —— 用 clamp 自适应间距替代固定 margin */
   .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
-    padding-left: 0.75rem !important;
-    margin-left: 6rem !important;
+    padding-left: 1rem !important;
+    margin-left: clamp(2rem, 4vw, 6rem) !important;
     max-width: 16rem !important;
   }
 
   .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
     width: 16rem !important;
+    background: rgba(var(--color-neutral-50), 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    border: 1px solid rgba(var(--color-neutral-200), 0.5);
+  }
+}
+
+/* TOC 暗色模式背景 */
+@media (min-width: 1024px) {
+  .dark .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
+    background: rgba(var(--color-neutral-900), 0.5);
+    border-color: rgba(var(--color-neutral-700), 0.4);
   }
 }
 
@@ -404,48 +419,129 @@ body.max-w-7xl {
 
 /* ==========================================================================
    6. 归档页 Archives
+   --------------------------------------------------------------------------
+   年份胶囊标签 + 时间线竖线 + 圆点悬浮扩散效果
    ========================================================================== */
 
-.archive-year {
-  position: relative;
-  padding-left: 1rem;
+/* 年份胶囊徽章 */
+.archive-year-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.85rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: rgb(var(--color-primary-600));
+  background: rgba(var(--color-primary-100), 0.7);
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
 }
 
-.archive-year::before {
+.dark .archive-year-badge {
+  color: rgb(var(--color-primary-300));
+  background: rgba(var(--color-primary-900), 0.35);
+}
+
+/* 篇数标签 */
+.archive-year-count {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgb(var(--color-neutral-400));
+  white-space: nowrap;
+}
+
+/* 年份右侧延伸线 */
+.archive-year-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(var(--color-primary-300), 0.5),
+    rgba(var(--color-neutral-200), 0)
+  );
+}
+
+.dark .archive-year-line {
+  background: linear-gradient(
+    to right,
+    rgba(var(--color-primary-700), 0.4),
+    rgba(var(--color-neutral-800), 0)
+  );
+}
+
+/* 时间线容器 */
+.archive-timeline {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-left: 0.5rem;
+}
+
+/* 时间线竖线 */
+.archive-timeline::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0.5rem;
-  bottom: 0.5rem;
-  width: 3px;
-  background: linear-gradient(to bottom, var(--color-primary-500), var(--color-primary-300));
-  border-radius: 2px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--color-primary-400), 0.6),
+    rgba(var(--color-neutral-200), 0.3)
+  );
+  border-radius: 1px;
 }
 
+.dark .archive-timeline::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--color-primary-600), 0.5),
+    rgba(var(--color-neutral-700), 0.2)
+  );
+}
+
+/* 时间线圆点 */
 .archive-item {
   position: relative;
-  padding-left: 1.5rem;
-  border-left: 1px solid rgba(var(--color-neutral-300), 0.5);
 }
 
 .archive-item::before {
   content: '';
   position: absolute;
-  left: -4px;
-  top: 0.75rem;
-  width: 7px;
-  height: 7px;
+  left: -1.5rem;
+  top: 1rem;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background-color: var(--color-neutral-400);
-  transition: background-color 0.2s ease;
+  background-color: rgb(var(--color-neutral-300));
+  transform: translateX(-3px);
+  transition: all 0.25s ease;
+  box-shadow: 0 0 0 0 rgba(var(--color-primary-400), 0);
 }
 
 .archive-item:hover::before {
-  background-color: var(--color-primary-500);
+  background-color: rgb(var(--color-primary-500));
+  box-shadow: 0 0 0 4px rgba(var(--color-primary-400), 0.2);
+  transform: translateX(-3px) scale(1.2);
 }
 
-.dark .archive-item {
-  border-left-color: rgba(var(--color-neutral-700), 0.5);
+.dark .archive-item::before {
+  background-color: rgb(var(--color-neutral-600));
+}
+
+.dark .archive-item:hover::before {
+  background-color: rgb(var(--color-primary-400));
+  box-shadow: 0 0 0 4px rgba(var(--color-primary-500), 0.15);
+}
+
+/* 归档年份标题（移除旧的伪元素装饰，改用 badge） */
+.archive-year {
+  position: relative;
+  padding-left: 0;
+  border-bottom: none !important;
+}
+
+.archive-year::before {
+  display: none;
 }
 
 /* ==========================================================================
@@ -563,6 +659,15 @@ body.max-w-7xl {
 
 .dark .prose strong {
   color: var(--color-neutral-200);
+}
+
+.dark .prose h2 {
+  border-bottom-color: rgba(var(--color-primary-800), 0.3);
+}
+
+/* 暗色模式下链接底线 */
+.dark .prose a {
+  border-bottom-color: rgba(var(--color-primary-400), 0.25);
 }
 
 /* ==========================================================================
@@ -742,4 +847,27 @@ body.max-w-7xl {
 .dark #TableOfContents li.active > a {
   color: rgba(var(--color-primary-400), 1);
   background-color: rgba(var(--color-primary-900), 0.25);
+}
+
+/* ==========================================================================
+   17. 阅读进度条 Reading Progress Bar
+   --------------------------------------------------------------------------
+   顶部细条，颜色跟随 Sakura 主色，仅文章页生效
+   ========================================================================== */
+
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--color-primary-400), 0.8),
+    rgba(var(--color-primary-500), 1)
+  );
+  z-index: 9999;
+  transition: width 80ms linear;
+  pointer-events: none;
+  box-shadow: 0 0 6px rgba(var(--color-primary-500), 0.35);
 }

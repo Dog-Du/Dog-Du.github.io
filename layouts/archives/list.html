@@ -13,20 +13,19 @@
 
   {{ $posts := where site.RegularPages "Section" "posts" }}
   {{ if gt (len $posts) 0 }}
-    <section class="space-y-12 w-full">
+    <section class="space-y-14 w-full">
       {{ range ($posts.GroupByDate "2006") }}
         <section class="archive-year-group">
-          <h2 class="archive-year text-2xl font-semibold text-neutral-700 dark:text-neutral-300 mb-6 pb-2 border-b border-neutral-200 dark:border-neutral-700">
-            {{ .Key }}
-            <span class="text-sm font-normal text-neutral-500 dark:text-neutral-500 ml-2">
-              ({{ len .Pages }} 篇)
-            </span>
+          <h2 class="archive-year text-2xl font-semibold text-neutral-700 dark:text-neutral-300 mb-8 pb-2 flex items-center gap-3">
+            <span class="archive-year-badge">{{ .Key }}</span>
+            <span class="archive-year-count">{{ len .Pages }} 篇</span>
+            <span class="archive-year-line"></span>
           </h2>
-          <div class="space-y-4">
+          <div class="archive-timeline">
             {{ range .Pages.ByDate.Reverse }}
-              <article class="archive-item py-2">
+              <article class="archive-item py-2.5">
                 <a href="{{ .RelPermalink }}" class="group flex items-start gap-4 hover:no-underline">
-                  <time class="flex-shrink-0 text-sm font-medium text-neutral-500 dark:text-neutral-500 w-20 pt-0.5">
+                  <time class="flex-shrink-0 text-sm font-medium text-neutral-500 dark:text-neutral-500 w-20 pt-0.5 tabular-nums">
                     {{ .Date.Format "01-02" }}
                   </time>
                   <div class="flex-1 min-w-0">

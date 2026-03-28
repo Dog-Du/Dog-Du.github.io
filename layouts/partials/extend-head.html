@@ -1,13 +1,21 @@
 {{/* 自定义头部扩展 - 字体和关键资源 */}}
 
-{{/* 🌸 霞鹜文楷 - 圆润温柔的中文字体 */}}
+{{/* 🌸 霞鹜文楷 - 圆润温柔的中文字体（异步加载，避免阻塞首屏） */}}
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css"
+      media="print" onload="this.media='all'">
+<noscript>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css">
+</noscript>
 
-{{/* JetBrains Mono - 代码字体 */}}
+{{/* JetBrains Mono - 代码字体（仅 400/500 权重，display=swap 避免 FOIT） */}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet" media="print" onload="this.media='all'">
+<noscript>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</noscript>
 
 <style>
   /* 正文 & 标题统一使用霞鹜文楷 */
@@ -19,7 +27,7 @@
   body {
     font-family: "LXGW WenKai", "Noto Sans SC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
-  /* 代码字体：JetBrains Mono 优先（与 custom.css 保持一致） */
+  /* 代码字体：JetBrains Mono 优先 */
   code, pre, kbd, samp {
     font-family: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
   }
