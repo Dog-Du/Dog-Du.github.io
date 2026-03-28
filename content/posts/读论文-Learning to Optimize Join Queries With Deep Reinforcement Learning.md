@@ -6,7 +6,7 @@ tags:
 - 论文
 - 连接优化
 categories:
-- 数据库与论文
+- 数据库相关
 title: 读论文-Learning to Optimize Join Queries With Deep Reinforcement Learning
 slug: paper-rl-join-opt
 summary: 围绕强化学习做连接顺序优化的论文，整理问题建模、状态表示、奖励设计与方法局限。
