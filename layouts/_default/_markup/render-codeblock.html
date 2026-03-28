@@ -1,35 +1,96 @@
-{{- $title := or .Attributes.title "" -}}
-{{- $lang := or .Type "text" -}}
-{{- $code := strings.TrimRight "\n" .Inner -}}
-{{- $lines := split $code "\n" -}}
-{{- $lineCount := len $lines -}}
-{{- $threshold := site.Params.article.codeBlockFoldThreshold | default 30 -}}
-{{- $expandByDefault := site.Params.article.codeBlockFoldExpandByDefault | default false -}}
+{{/*
+  ==========================================================================
+  代码块渲染模板 (render-codeblock.html)
+  ==========================================================================
+
+  功能概述：
+    Hugo 的 Markdown 代码块渲染钩子（render hook），替换默认的代码块输出。
+    为代码块添加"折叠/展开"功能：超过阈值行数的代码块默认折叠，
+    显示预览行数 + 渐变遮罩 + "展开剩余 N 行"按钮。
+
+  工作原理：
+    1. 解析代码块的语言类型、标题属性、行数
+    2. 若行数 >= 阈值（默认 30 行），生成可折叠结构
+    3. 折叠使用纯 CSS 实现（隐藏 checkbox + :checked 选择器），无需 JS
+    4. 未超阈值的代码块正常显示，带有语言标签和行数信息
+
+  HTML 结构：
+    .codeblock-wrapper            → 最外层容器
+      input.codeblock-fold__checkbox  → 隐藏的 checkbox（CSS 开关）
+      .codeblock-fold__header       → 头部：语言标签 + 行数 + 展开/收起按钮
+      .codeblock-fold__content      → 内容区（受 max-height 控制折叠）
+        .highlight-wrapper          → Hugo 高亮输出容器
+
+  配置项（在 params.toml 中设置）：
+    - article.codeBlockFoldThreshold      → 折叠阈值行数（默认 30）
+    - article.codeBlockFoldExpandByDefault → 是否默认展开（默认 false）
+
+  CSS 配合说明（定义在 assets/css/custom.css）：
+    - checkbox 使用 visually-hidden 技术隐藏（position:absolute + clip）
+    - 折叠状态：max-height 限制 + 底部渐变遮罩（::after 伪元素）
+    - 展开状态（:checked）：max-height:none + 隐藏遮罩
+    - overflow-anchor:none 防止展开时视口跳动
+
+  相关文件：
+    - assets/css/custom.css               → 折叠动画、渐变、按钮样式
+    - config/_default/params.toml         → 阈值和默认展开配置
+    - themes/blowfish/assets/js/code.js   → 代码复制按钮（主题自带）
+
+  修改历史：
+    2025-06 - 初始版本：纯 CSS 折叠方案
+    2026-03 - 修复展开时视口跳动（配合 CSS 修改）
+  ==========================================================================
+*/}}
+
+{{/* ---- 解析代码块参数 ---- */}}
+{{- $title := or .Attributes.title "" -}}          {{/* 代码块标题（```go title="xxx"） */}}
+{{- $lang := or .Type "text" -}}                    {{/* 语言类型，默认 "text" */}}
+{{- $code := strings.TrimRight "\n" .Inner -}}      {{/* 代码内容，去掉末尾空行 */}}
+{{- $lines := split $code "\n" -}}                  {{/* 按行分割 */}}
+{{- $lineCount := len $lines -}}                    {{/* 总行数 */}}
+
+{{/* ---- 折叠配置 ---- */}}
+{{- $threshold := site.Params.article.codeBlockFoldThreshold | default 30 -}}       {{/* 折叠阈值 */}}
+{{- $expandByDefault := site.Params.article.codeBlockFoldExpandByDefault | default false -}} {{/* 默认展开？ */}}
+
+{{/* ---- 生成头部标签文字 ---- */}}
 {{- $label := "" -}}
 {{- if $title -}}
-  {{- $label = $title -}}
+  {{- $label = $title -}}                           {{/* 有标题用标题 */}}
 {{- else if ne $lang "text" -}}
-  {{- $label = printf "%s 代码" (upper $lang) -}}
+  {{- $label = printf "%s 代码" (upper $lang) -}}    {{/* 有语言用 "GO 代码" 格式 */}}
 {{- else -}}
-  {{- $label = "代码块" -}}
+  {{- $label = "代码块" -}}                          {{/* 兜底 */}}
 {{- end -}}
-{{- $shouldFold := ge $lineCount $threshold -}}
-{{- $previewLines := first $threshold $lines -}}
-{{- $remainingCount := sub $lineCount (len $previewLines) -}}
+
+{{/* ---- 判断是否需要折叠 ---- */}}
+{{- $shouldFold := ge $lineCount $threshold -}}     {{/* 行数 >= 阈值则折叠 */}}
+{{- $previewLines := first $threshold $lines -}}     {{/* 预览行（用于计算剩余行数） */}}
+{{- $remainingCount := sub $lineCount (len $previewLines) -}} {{/* 剩余行数 */}}
+
+{{/* 用 md5 生成唯一 ID，确保同一页面多个代码块不冲突 */}}
 {{- $foldID := printf "%s-%s-%d" $label $lang $lineCount | md5 -}}
 
+{{/* ---- 输出 HTML ---- */}}
 <div class="codeblock-wrapper {{ if $shouldFold }}codeblock-fold{{ end }}" {{ if $shouldFold }}style="--code-fold-lines: {{ $threshold }};"{{ end }}>
+
+  {{/* 隐藏 checkbox：checked = 展开，unchecked = 折叠
+       不需要折叠时始终 checked（即始终展开） */}}
   <input id="codeblock-{{ $foldID }}" class="codeblock-fold__checkbox" type="checkbox" {{ if not $shouldFold }}checked{{ end }} {{ if and $shouldFold (not $expandByDefault) }}{{ else }}checked{{ end }}>
   
+  {{/* 头部：语言标签 + 行数 + 折叠按钮 */}}
   <div class="codeblock-fold__header">
     <span class="codeblock-fold__meta">{{ $label }} · 共 {{ $lineCount }} 行</span>
     {{- if $shouldFold -}}
+    {{/* label 关联 checkbox，点击切换折叠状态（纯 CSS，无 JS） */}}
     <label for="codeblock-{{ $foldID }}" class="codeblock-fold__toggle">
+      {{/* hint 文字通过 CSS ::before + data-*-label 属性切换显示 */}}
       <span class="codeblock-fold__hint" data-open-label="收起代码" data-closed-label="展开剩余 {{ $remainingCount }} 行"></span>
     </label>
     {{- end -}}
   </div>
 
+  {{/* 内容区：折叠状态下受 max-height 限制，展开状态 max-height:none */}}
   <div class="codeblock-fold__content">
     <div class="highlight-wrapper">
       {{- with $title -}}
@@ -37,6 +98,7 @@
           {{- . -}}
         </div>
       {{- end -}}
+      {{/* Hugo 内置语法高亮 */}}
       {{- transform.Highlight $code $lang .Options -}}
     </div>
   </div>
