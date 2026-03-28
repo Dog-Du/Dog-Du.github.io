@@ -1,0 +1,147 @@
+{{ define "main" }}
+  {{ .Scratch.Set "scope" "list" }}
+
+  {{/* ── Hero (保持原生 Blowfish 行为) ── */}}
+  {{ $showHero := .Params.showHero | default site.Params.taxonomy.showHero | default false }}
+  {{ if $showHero }}
+    {{ $heroStyle := print "hero/" site.Params.taxonomy.heroStyle ".html" }}
+    {{ if templates.Exists (printf "partials/%s" $heroStyle) }}
+      {{ partial $heroStyle . }}
+    {{ else }}
+      {{ partial "hero/basic.html" . }}
+    {{ end }}
+  {{ end }}
+
+  {{/* ── Header (面包屑 + 标题 + 描述 + article-meta) ── */}}
+  <header class="mt-5">
+    {{ if .Params.showBreadcrumbs | default (site.Params.taxonomy.showBreadcrumbs | default false) }}
+      {{ partial "breadcrumbs.html" . }}
+    {{ end }}
+    <h1 class="mt-5 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+      {{ .Title | emojify }}
+    </h1>
+    {{ with .Description }}
+      <p class="mt-2 text-lg text-neutral-500 dark:text-neutral-400">{{ . }}</p>
+    {{ end }}
+    <div class="mt-1 mb-2 text-base text-neutral-500 dark:text-neutral-400 print:hidden">
+      {{ partial "article-meta/taxonomy.html" (dict "context" . "scope" "single") }}
+    </div>
+  </header>
+
+  {{/* ── 正文内容区 ── */}}
+  {{ if .Content }}
+    <section class="flex flex-col max-w-full mt-0 prose dark:prose-invert lg:flex-row">
+      <div class="min-w-0 min-h-0 max-w-prose">{{ .Content }}</div>
+    </section>
+  {{ end }}
+
+  {{/* ================================================================
+       根据 taxonomy singular name 分支渲染
+       ================================================================ */}}
+
+  {{ if eq .Data.Singular "tag" }}
+    {{/* ────────────────────────────────────────────────────────────────
+         TAG CLOUD — 标签云
+         ──────────────────────────────────────────────────────────────── */}}
+    <section class="taxonomy-tag-cloud" aria-label="标签云">
+      {{ range .Data.Terms.Alphabetical }}
+        {{- $count := .Count -}}
+        {{- $sizeClass := "taxonomy-tag-cloud__item--xs" -}}
+        {{- if ge $count 16 -}}
+          {{- $sizeClass = "taxonomy-tag-cloud__item--xl" -}}
+        {{- else if ge $count 8 -}}
+          {{- $sizeClass = "taxonomy-tag-cloud__item--lg" -}}
+        {{- else if ge $count 4 -}}
+          {{- $sizeClass = "taxonomy-tag-cloud__item--md" -}}
+        {{- else if ge $count 2 -}}
+          {{- $sizeClass = "taxonomy-tag-cloud__item--sm" -}}
+        {{- end -}}
+        <a href="{{ .Page.RelPermalink }}"
+           class="taxonomy-tag-cloud__item {{ $sizeClass }}"
+           title="{{ .Page.Title | emojify }} — {{ $count }} 篇文章">
+          <span class="taxonomy-tag-cloud__name">{{ .Page.Title | emojify }}</span>
+          <span class="taxonomy-tag-cloud__count">{{ $count }}</span>
+        </a>
+      {{ end }}
+    </section>
+
+  {{ else if eq .Data.Singular "series" }}
+    {{/* ────────────────────────────────────────────────────────────────
+         SERIES PATH — 学习路径 / 时间线
+         ──────────────────────────────────────────────────────────────── */}}
+    <section class="taxonomy-series" aria-label="系列列表">
+      {{ $terms := .Data.Terms.ByCount }}
+      {{ $total := len $terms }}
+      {{ range $idx, $term := $terms }}
+        {{ $num := add $idx 1 }}
+        {{ $isLast := eq $num $total }}
+        <div class="taxonomy-series__item{{ if not $isLast }} taxonomy-series__item--connected{{ end }}">
+          {{/* 左侧编号圆圈 */}}
+          <div class="taxonomy-series__number" aria-hidden="true">{{ $num }}</div>
+          {{/* 右侧内容卡片 */}}
+          <a href="{{ .Page.RelPermalink }}" class="taxonomy-series__link">
+            <h3 class="taxonomy-series__title">{{ .Page.Title | emojify }}</h3>
+            <div class="taxonomy-series__meta">
+              <span class="taxonomy-series__count">{{ .Count }} 篇文章</span>
+            </div>
+            {{ with .Page.Description }}
+              <p class="taxonomy-series__desc">{{ . }}</p>
+            {{ end }}
+            {{ $articles := first 3 .Page.Pages }}
+            {{ if $articles }}
+              <ul class="taxonomy-series__articles">
+                {{ range $articles }}
+                  <li>{{ .Title | emojify }}</li>
+                {{ end }}
+                {{ if gt (len .Page.Pages) 3 }}
+                  <li class="taxonomy-series__more">还有 {{ sub (len .Page.Pages) 3 }} 篇…</li>
+                {{ end }}
+              </ul>
+            {{ end }}
+          </a>
+        </div>
+      {{ end }}
+    </section>
+
+  {{ else }}
+    {{/* ────────────────────────────────────────────────────────────────
+         CATEGORIES (默认 fallback) — 图标卡片
+         ──────────────────────────────────────────────────────────────── */}}
+    <section class="taxonomy-category-grid" aria-label="分类列表">
+      {{ range .Data.Terms.ByCount }}
+        <a href="{{ .Page.RelPermalink }}" class="taxonomy-category-card">
+          {{/* 图标 */}}
+          <div class="taxonomy-category-card__icon">
+            {{ with .Page.Params.icon }}
+              {{ . | emojify }}
+            {{ else }}
+              📁
+            {{ end }}
+          </div>
+          {{/* 文字信息 */}}
+          <div class="taxonomy-category-card__body">
+            <div class="taxonomy-category-card__header">
+              <span class="taxonomy-category-card__title">{{ .Page.Title | emojify }}</span>
+              <span class="taxonomy-category-card__count">{{ .Count }}</span>
+            </div>
+            {{ with .Page.Description }}
+              <p class="taxonomy-category-card__desc">{{ . }}</p>
+            {{ end }}
+            {{ $articles := first 3 .Page.Pages }}
+            {{ if $articles }}
+              <ul class="taxonomy-category-card__articles">
+                {{ range $articles }}
+                  <li>{{ .Title | emojify }}</li>
+                {{ end }}
+                {{ if gt (len .Page.Pages) 3 }}
+                  <li class="taxonomy-category-card__more">…</li>
+                {{ end }}
+              </ul>
+            {{ end }}
+          </div>
+        </a>
+      {{ end }}
+    </section>
+
+  {{ end }}
+{{ end }}
