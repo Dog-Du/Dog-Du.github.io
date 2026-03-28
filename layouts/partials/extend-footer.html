@@ -4,41 +4,23 @@
   ==========================================================================
 
   功能模块（所有脚本均使用 defer，按文档顺序执行）：
-    1. 🌸 Live2D 看板娘   → static/js/live2d-config.js（懒加载 oh-my-live2d@0.19.3）
-    2. 🌸 樱花飘落特效    → static/js/sakura.js（仅首页）
-    3. ✨ 鼠标点击特效    → static/js/click-effect.js
-    4. 🎌 页脚动漫台词    → static/js/footer-quote.js
-    5. ✋ Live2D 拖拽     → static/js/live2d-drag.js（须在 live2d-config 之后）
-    6. 📋 代码复制提示    → static/js/copy-toast.js
-    7. 🔍 搜索快捷键      → static/js/search-hint.js
+    1. 🌸 Live2D 看板娘   → static/js/live2d.js（懒加载 oh-my-live2d@0.19.3 + 拖拽）
+    2. 🌸 页面增强        → static/js/page-enhancements.js（樱花特效 + 页脚台词 + 阅读进度条）
+    3. ✨ UI 交互特效     → static/js/ui-effects.js（点击特效 + 复制提示 + 搜索快捷键）
 
   修改历史：
     2025-06 - 初始版本
     2026-03 - Live2D 配置抽离为独立 JS，版本锁定，添加懒加载
     2026-03 - 新增代码复制 toast 提示、搜索快捷键提示
+    2026-03 - 合并 8 个 JS 文件为 3 个 bundle
   ==========================================================================
 */}}
 
-{{/* 🌸 Live2D 看板娘（懒加载 + 版本锁定） */}}
-<script src="/js/live2d-config.js" defer></script>
+{{/* 🌸 Live2D 看板娘（配置 + 懒加载 + 拖拽） */}}
+<script src="/js/live2d.js" defer></script>
 
-{{/* 🌸 樱花飘落特效（仅首页） */}}
-<script src="/js/sakura.js" defer></script>
+{{/* 🌸 页面增强（樱花飘落 + 页脚台词 + 阅读进度条） */}}
+<script src="/js/page-enhancements.js" defer></script>
 
-{{/* ✨ 鼠标点击 emoji 特效 */}}
-<script src="/js/click-effect.js" defer></script>
-
-{{/* 🎌 页脚动漫台词 */}}
-<script src="/js/footer-quote.js" defer></script>
-
-{{/* ✋ Live2D 拖拽（须在 live2d-config 之后加载） */}}
-<script src="/js/live2d-drag.js" defer></script>
-
-{{/* 📋 代码块复制成功 toast 提示 */}}
-<script src="/js/copy-toast.js" defer></script>
-
-{{/* 🔍 搜索快捷键（Ctrl+K / ⌘K）+ 视觉提示徽章 */}}
-<script src="/js/search-hint.js" defer></script>
-
-{{/* 📖 阅读进度条（仅文章页） */}}
-<script src="/js/reading-progress.js" defer></script>
+{{/* ✨ UI 交互特效（点击 emoji + 复制 toast + 搜索快捷键） */}}
+<script src="/js/ui-effects.js" defer></script>

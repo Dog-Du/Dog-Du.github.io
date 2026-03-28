@@ -43,3 +43,14 @@
   --color-secondary-800: 88, 62, 164;
   --color-secondary-900: 74, 52, 138;
 }
+
+/* Dark mode adjustments - brighter primaries for dark backgrounds */
+.dark {
+  --color-primary-200: 255, 218, 230;
+  --color-primary-300: 255, 186, 207;
+  --color-primary-400: 255, 150, 185;
+  --color-primary-500: 248, 120, 160;
+  
+  --color-secondary-300: 210, 200, 254;
+  --color-secondary-400: 185, 170, 250;
+}

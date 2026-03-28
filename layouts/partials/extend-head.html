@@ -1,11 +1,11 @@
 {{/* 自定义头部扩展 - 字体和关键资源 */}}
 
-{{/* 🌸 霞鹜文楷 - 圆润温柔的中文字体（异步加载，避免阻塞首屏） */}}
+{{/* 🌸 霞鹜文楷 Lite - 常用 6000+ 汉字子集版，体积约为完整版的 1/3（异步加载） */}}
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css"
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css"
       media="print" onload="this.media='all'">
 <noscript>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css">
 </noscript>
 
 {{/* JetBrains Mono - 代码字体（仅 400/500 权重，display=swap 避免 FOIT） */}}
@@ -18,14 +18,17 @@
 </noscript>
 
 <style>
-  /* 正文 & 标题统一使用霞鹜文楷 */
+  /* 正文 & 标题统一使用霞鹜文楷 Lite（子集版）
+   * font-family 名称不变（仍为 "LXGW WenKai Lite"），
+   * Lite 版的 CSS 自动声明该 font-family。
+   * 回退字体：Noto Sans SC → 系统字体栈 */
   .prose,
   h1, h2, h3, h4, h5, h6,
   .header,
   .nav-link,
   .footer,
   body {
-    font-family: "LXGW WenKai", "Noto Sans SC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: "LXGW WenKai Lite", "LXGW WenKai", "Noto Sans SC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   /* 代码字体：JetBrains Mono 优先 */
   code, pre, kbd, samp {

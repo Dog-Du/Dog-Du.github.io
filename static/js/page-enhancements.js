@@ -1,6 +1,16 @@
 /**
  * ==========================================================================
- * 樱花飘落特效 (sakura.js)
+ * Page Enhancements Bundle (page-enhancements.js)
+ * ==========================================================================
+ * Modules:
+ *   1. 樱花飘落特效 (sakura)
+ *   2. 页脚动漫台词 (footer-quote)
+ *   3. 阅读进度条 (reading-progress)
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+ * [Module 1/3] 樱花飘落特效 (sakura)
  * ==========================================================================
  *
  * 功能概述：
@@ -28,13 +38,9 @@
  *   - size：花瓣大小（4~12px）
  *   - hue 340~355°：樱花粉色系的色相范围
  *
- * 相关文件：
- *   - layouts/partials/extend-footer.html → <script src="/js/sakura.js" defer>
- *
  * 修改历史：
  *   2025-06 - 初始版本
- * ==========================================================================
- */
+ * ========================================================================== */
 (function () {
   'use strict';
 
@@ -160,4 +166,112 @@
       animate();
     }
   });
+})();
+
+/* ==========================================================================
+ * [Module 2/3] 页脚动漫台词 (footer-quote)
+ * ==========================================================================
+ *
+ * 功能概述：
+ *   在页面底部页脚区域插入一行动漫相关的引导文字，
+ *   链接指向博主的 Bangumi 个人主页。
+ *
+ * 工作原理：
+ *   1. 查找 #site-footer 元素（Blowfish 主题的页脚容器）
+ *   2. 检查是否已存在 .anime-quote（防止重复插入）
+ *   3. 创建 <p> 元素并插入到页脚末尾
+ *
+ * 样式说明：
+ *   - 使用 LXGW WenKai 字体保持与博客整体风格一致
+ *   - 链接使用虚线下划线，hover 无特殊效果（继承全局样式）
+ *   - 颜色使用 CSS 变量，自动适配亮色/暗色主题
+ *
+ * 修改历史：
+ *   2025-06 - 初始版本
+ * ========================================================================== */
+(function () {
+  'use strict';
+
+  /**
+   * 注入页脚台词到 #site-footer
+   * 仅执行一次，通过 .anime-quote 类名判断是否已注入
+   */
+  function inject() {
+    var footer = document.querySelector('#site-footer');
+    if (!footer || footer.querySelector('.anime-quote')) return; // 不存在或已注入
+
+    var el = document.createElement('p');
+    el.className = 'anime-quote';
+    el.style.cssText = [
+      'text-align:center',
+      'font-size:0.8rem',
+      'margin-top:0.75rem',
+      'color:rgb(var(--color-neutral-400))',  // 使用 Blowfish 主题色变量
+      'font-family:"LXGW WenKai Lite","LXGW WenKai",sans-serif',
+      'font-style:italic'
+    ].join(';') + ';';
+
+    /* 链接到博主 Bangumi 个人主页 */
+    el.innerHTML = '「<a href="https://bangumi.tv/user/dogdu" target="_blank" ' +
+      'rel="noopener noreferrer" ' +
+      'style="color:rgb(var(--color-primary-500));text-decoration:none;' +
+      'border-bottom:1px dashed rgb(var(--color-primary-300));">' +
+      '学累了就看会动漫吧~</a>」';
+
+    footer.appendChild(el);
+  }
+
+  /* DOMContentLoaded 或立即执行 */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inject);
+  } else {
+    inject();
+  }
+})();
+
+/* ==========================================================================
+ * [Module 3/3] 阅读进度条 (reading-progress)
+ * ==========================================================================
+ *
+ * 功能：仅在文章详情页显示顶部阅读进度条。
+ *
+ * 修改历史：
+ *   2026-03 - 初始版本
+ * ========================================================================== */
+/* 📖 阅读进度条 - 仅在文章页显示 */
+(function () {
+  'use strict';
+
+  // 仅在有 article-content 的页面（即文章详情页）生效
+  var article = document.querySelector('.article-content');
+  if (!article) return;
+
+  // 创建进度条元素
+  var bar = document.createElement('div');
+  bar.className = 'reading-progress';
+  bar.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(bar);
+
+  var ticking = false;
+
+  function updateProgress() {
+    var scrollTop = window.scrollY || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (docHeight <= 0) {
+      bar.style.width = '100%';
+      return;
+    }
+    var pct = Math.min(100, Math.max(0, (scrollTop / docHeight) * 100));
+    bar.style.width = pct + '%';
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!ticking) {
+      requestAnimationFrame(updateProgress);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  updateProgress();
 })();

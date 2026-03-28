@@ -33,6 +33,8 @@
   font-weight: 600;
   margin-top: 2rem;
   margin-bottom: 0.875rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid rgba(var(--color-primary-400), 0.6);
 }
 
 .prose h4 {
@@ -415,6 +417,39 @@ body.max-w-7xl {
 
 .article-link:hover {
   transform: translateY(-1px);
+}
+
+/* 文章卡片 hover 效果增强 */
+.article-link--card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.article-link--card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(240, 96, 144, 0.12);
+  border-color: rgba(var(--color-primary-300), 0.6);
+}
+
+.dark .article-link--card:hover {
+  box-shadow: 0 12px 32px rgba(240, 96, 144, 0.08);
+  border-color: rgba(var(--color-primary-500), 0.4);
+}
+
+/* Simple 列表视图也添加 hover */
+.article-link--simple {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+
+.article-link--simple:hover {
+  transform: translateX(4px);
+  background-color: rgba(var(--color-primary-50), 0.5);
+}
+
+.dark .article-link--simple:hover {
+  background-color: rgba(var(--color-primary-900), 0.15);
 }
 
 /* ==========================================================================
