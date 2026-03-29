@@ -1747,3 +1747,23 @@ body.max-w-7xl {
 .archive-item__readtime::before {
   content: "⏱ ";
 }
+
+/* ==========================================================================
+   25. 不蒜子访问统计 Busuanzi Stats
+   ========================================================================== */
+
+.busuanzi-site-stats {
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(var(--color-neutral-300), 0.3);
+}
+
+.busuanzi-value {
+  font-weight: 600;
+  color: rgb(var(--color-primary-500));
+}
+
+.busuanzi-article-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
