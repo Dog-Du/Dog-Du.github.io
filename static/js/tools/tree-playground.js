@@ -7,7 +7,8 @@
   // ─── Constants ───────────────────────────────────────────────────
   const NODE_R = 18;
   const LEVEL_H = 60;
-  const ANIM_MS = 300;
+  const ANIM_MS = 500;
+  let busy = false; // prevent overlapping operations
 
   function isDark() { return document.documentElement.classList.contains('dark'); }
 
@@ -195,19 +196,19 @@
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw(1);
+    draw(1, null, 0);
   }
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
-  function draw(t) {
+  function draw(t, removedNodes, removedAlpha) {
     const c = colors();
     const w = canvas.width / (window.devicePixelRatio || 1);
     const h = canvas.height / (window.devicePixelRatio || 1);
     ctx.fillStyle = c.bg;
     ctx.fillRect(0, 0, w, h);
 
-    if (!root) {
+    if (!root && (!removedNodes || removedNodes.size === 0)) {
       ctx.fillStyle = c.edge;
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
@@ -215,7 +216,7 @@
       return;
     }
 
-    // Interpolate positions
+    // Interpolate positions for living nodes
     const current = new Map();
     for (const [val, target] of targetPositions) {
       const prev = positions.get(val) || target;
@@ -226,29 +227,42 @@
       });
     }
 
-    // Draw edges
-    drawEdges(root, current, c);
+    // Draw edges first (behind nodes)
+    if (root) drawEdges(root, current, c);
 
-    // Draw nodes
+    // Draw living nodes
     for (const [val, pos] of current) {
-      const isRB = treeType === 'rb';
-      let fillColor = c.node;
-      if (isRB) {
-        fillColor = pos.color === RED ? c.red : c.black;
-      }
-      if (val === highlightVal) fillColor = c.highlight;
-
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y, NODE_R, 0, Math.PI * 2);
-      ctx.fillStyle = fillColor;
-      ctx.fill();
-
-      ctx.fillStyle = c.nodeText;
-      ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(val, pos.x, pos.y);
+      drawNode(val, pos, c, 1.0);
     }
+
+    // Draw fading removed nodes
+    if (removedNodes && removedAlpha > 0.01) {
+      for (const [val, pos] of removedNodes) {
+        drawNode(val, pos, c, removedAlpha);
+      }
+    }
+  }
+
+  function drawNode(val, pos, c, alpha) {
+    ctx.globalAlpha = alpha;
+    const isRB = treeType === 'rb';
+    let fillColor = c.node;
+    if (isRB) {
+      fillColor = pos.color === RED ? c.red : c.black;
+    }
+    if (val === highlightVal) fillColor = c.highlight;
+
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, NODE_R, 0, Math.PI * 2);
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+
+    ctx.fillStyle = c.nodeText;
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(val, pos.x, pos.y);
+    ctx.globalAlpha = 1.0;
   }
 
   function drawEdges(node, posMap, c) {
@@ -278,32 +292,58 @@
   }
 
   function animateTo() {
-    animStart = performance.now();
-    animating = true;
-    function frame(now) {
-      const t = Math.min(1, (now - animStart) / ANIM_MS);
-      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      draw(ease);
-      if (t < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        positions = new Map(targetPositions);
-        animating = false;
+    return new Promise((resolve) => {
+      animStart = performance.now();
+      animating = true;
+
+      // For new nodes (not in old positions), start from top-center or parent
+      const w = canvas.width / (window.devicePixelRatio || 1);
+      for (const [val, target] of targetPositions) {
+        if (!positions.has(val)) {
+          // New node: start from top center, creates a "drop in" effect
+          positions.set(val, { x: w / 2, y: -NODE_R, color: target.color });
+        }
       }
-    }
-    requestAnimationFrame(frame);
+
+      // For removed nodes: keep them in target so they can fade
+      const removedNodes = new Map();
+      for (const [val, pos] of positions) {
+        if (!targetPositions.has(val)) {
+          removedNodes.set(val, pos);
+        }
+      }
+
+      function frame(now) {
+        const t = Math.min(1, (now - animStart) / ANIM_MS);
+        const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        draw(ease, removedNodes, 1 - ease);
+        if (t < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          // Clean up: set positions to final targets
+          positions = new Map();
+          for (const [val, target] of targetPositions) {
+            positions.set(val, { ...target });
+          }
+          animating = false;
+          resolve();
+        }
+      }
+      requestAnimationFrame(frame);
+    });
   }
 
   function updateTree() {
     const w = canvas.width / (window.devicePixelRatio || 1);
     targetPositions = new Map();
     computeLayout(root, 0, 20, w - 20, targetPositions);
-    animateTo();
+    return animateTo();
   }
 
-  // ─── Actions ─────────────────────────────────────────────────────
-  function insertVal(val) {
-    if (isNaN(val)) return;
+  // ─── Actions (async, queued) ─────────────────────────────────────
+  async function insertVal(val) {
+    if (isNaN(val) || busy) return;
+    busy = true;
     highlightVal = val;
     if (treeType === 'avl') {
       root = AVL.insert(root, val);
@@ -311,37 +351,54 @@
       root = RB.insert(root, val);
       if (root) root.color = BLACK;
     }
-    updateTree();
-    setTimeout(() => { highlightVal = null; draw(1); }, 800);
+    await updateTree();
+    // Keep highlight briefly after animation
+    await new Promise(r => setTimeout(r, 250));
+    highlightVal = null;
+    draw(1, null, 0);
+    busy = false;
   }
 
-  function deleteVal(val) {
-    if (isNaN(val)) return;
+  async function deleteVal(val) {
+    if (isNaN(val) || busy) return;
+    busy = true;
+    highlightVal = val;
+    draw(1, null, 0); // flash the node to be deleted
+    await new Promise(r => setTimeout(r, 300));
+    highlightVal = null;
     if (treeType === 'avl') {
       root = AVL.remove(root, val);
     } else {
       root = RB.remove(root, val);
       if (root) root.color = BLACK;
     }
-    updateTree();
+    await updateTree();
+    busy = false;
   }
 
   function clearTree() {
     root = null;
     positions = new Map();
     targetPositions = new Map();
-    draw(1);
+    busy = false;
+    draw(1, null, 0);
   }
 
-  function randomInsert() {
+  async function randomInsert() {
+    if (busy) return;
     const existing = new Set();
     function collect(n) { if (!n) return; existing.add(n.val); collect(n.left); collect(n.right); }
     collect(root);
+    const toInsert = [];
     for (let i = 0; i < 5; i++) {
       let v;
       do { v = Math.floor(Math.random() * 100) + 1; } while (existing.has(v));
       existing.add(v);
-      insertVal(v);
+      toInsert.push(v);
+    }
+    // Insert one by one with animation
+    for (const v of toInsert) {
+      await insertVal(v);
     }
   }
 
@@ -368,7 +425,7 @@
   });
 
   window.addEventListener('resize', resizeCanvas);
-  new MutationObserver(() => draw(1)).observe(document.documentElement, {
+  new MutationObserver(() => draw(1, null, 0)).observe(document.documentElement, {
     attributes: true, attributeFilter: ['class']
   });
 
