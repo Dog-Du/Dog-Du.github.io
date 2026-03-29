@@ -32,6 +32,9 @@
 (function () {
   'use strict';
 
+  /* mobile skip */
+  if (window.innerWidth < 768) return;
+
   /** oh-my-live2d CDN 地址（版本锁定） */
   var OML2D_CDN = 'https://unpkg.com/oh-my-live2d@0.19.3';
 

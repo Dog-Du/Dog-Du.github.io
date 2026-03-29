@@ -32,11 +32,17 @@
                     <h3 class="text-base font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
                       {{ .Title }}
                     </h3>
-                    {{ with .Summary }}
-                      <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-500 line-clamp-1">
-                        {{ . | plainify | truncate 80 }}
-                      </p>
-                    {{ end }}
+                    {{/* P3: 新增 —— 分类徽章 + 预计阅读时间 */}}
+                    <div class="mt-1 flex items-center gap-2 flex-wrap">
+                      {{ with .Params.categories }}
+                        {{ range first 1 . }}
+                          <span class="archive-item__category">{{ . }}</span>
+                        {{ end }}
+                      {{ end }}
+                      {{ if .ReadingTime }}
+                        <span class="archive-item__readtime">{{ .ReadingTime }} 分钟</span>
+                      {{ end }}
+                    </div>
                   </div>
                 </a>
               </article>

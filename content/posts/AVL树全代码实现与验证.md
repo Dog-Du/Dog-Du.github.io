@@ -10,7 +10,7 @@ title: AVL树全代码实现与验证
 slug: algo-avl-tree-full-impl
 summary: 按定义、旋转、插入删除三个层次整理 AVL 树手写过程，并通过洛谷 P3369 与 P1177 的代码记录验证实现正确性。
 commentTerm: "AVL树全代码实现与验证 | DogDu's blog"
-featureimage: "images/covers/cover_16_forest.webp"
+featureimage: "images/covers/cover_08_mountain.webp"
 series:
 - "平衡树专题"
 ---

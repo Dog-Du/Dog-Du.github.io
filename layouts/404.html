@@ -1,17 +1,24 @@
 {{ define "main" }}
 <div style="text-align:center; padding: 4rem 1rem;">
-  <div style="font-size: 6rem; margin-bottom: 1rem;">( ﾟ∀ﾟ)σ</div>
+  {{/* 动漫 GIF 插图 */}}
+  <img src="/img/friend_404.gif" alt="迷路了"
+       style="max-width: 240px; margin: 0 auto 2rem; display: block; border-radius: 1rem;
+              box-shadow: 0 4px 20px rgba(0,0,0,0.1);"
+       loading="lazy">
+
   <h1 class="mb-3 text-4xl font-extrabold" style="color: rgb(var(--color-primary-500));">
     404
   </h1>
   <p class="mt-4 mb-2 text-xl text-neutral-600 dark:text-neutral-300"
-     style="font-family: 'LXGW WenKai', sans-serif;">
+     style="font-family: 'LXGW WenKai Lite', 'LXGW WenKai', sans-serif;">
     页面走丢了~
   </p>
   <p class="mb-8 text-neutral-400 dark:text-neutral-500"
-     style="font-family: 'LXGW WenKai', sans-serif;">
+     style="font-family: 'LXGW WenKai Lite', 'LXGW WenKai', sans-serif;">
     这个页面可能已经被搬走了，或者从来就不存在呢 (´・ω・`)
   </p>
+
+  {{/* 导航按钮 */}}
   <div class="prose dark:prose-invert" style="display:inline-block;">
     <a href="/"
        class="inline-block px-6 py-3 rounded-full text-white font-medium transition-all duration-300 hover:scale-105"
@@ -25,9 +32,11 @@
       📚 看看文章
     </a>
   </div>
+
+  {{/* 随机动漫台词 */}}
   <p class="mt-12 text-sm text-neutral-300 dark:text-neutral-600"
      id="quote-404"
-     style="font-family: 'LXGW WenKai', sans-serif; font-style: italic;">
+     style="font-family: 'LXGW WenKai Lite', 'LXGW WenKai', sans-serif; font-style: italic;">
   </p>
   <script>
     (function() {
@@ -36,7 +45,10 @@
         "「不管前方的路有多苦，只要走的方向正确。」—— 千与千寻",
         "「人生中遇到的每个人，都有各自要走的路。」—— 夏目友人帐",
         "「即使被风吹散，花也会在某处再次绽放。」—— 未闻花名",
-        "「就算迷了路，也比站在原地好。」—— 银魂"
+        "「就算迷了路，也比站在原地好。」—— 银魂",
+        "「无论发生什么事情，都请不要忘记微笑。」—— CLANNAD",
+        "「人们之所以怀有一丝希望，是因为他们看不见死亡。」—— 死神",
+        "「重要的东西，用眼睛是看不见的。」—— 小王子"
       ];
       var el = document.getElementById('quote-404');
       if (el) el.textContent = quotes[Math.floor(Math.random() * quotes.length)];

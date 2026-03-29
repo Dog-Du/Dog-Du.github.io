@@ -352,7 +352,7 @@ pre.chroma,
 .article-content.max-w-prose,
 #single_header.max-w-prose,
 footer.max-w-prose {
-  max-width: 90ch !important;
+  max-width: 72ch !important;
 }
 
 /* 页面容器 */
@@ -1272,4 +1272,478 @@ body.max-w-7xl {
 
 .dark .taxonomy-series__articles {
   color: rgb(var(--color-neutral-400));
+}
+
+/* ==========================================================================
+   19. 表格增强 Table Enhancement
+   --------------------------------------------------------------------------
+   斑马条纹 + 表头高亮 + 响应式溢出滚动 + Sakura 配色协调
+   ========================================================================== */
+
+/* 响应式滚动包装 */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 640px) {
+  .prose table {
+    display: table;
+  }
+}
+
+/* 表头 */
+.prose thead th {
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: rgba(var(--color-primary-100), 0.5);
+  border-bottom: 2px solid rgba(var(--color-primary-300), 0.5);
+  color: rgb(var(--color-neutral-800));
+  white-space: nowrap;
+}
+
+.dark .prose thead th {
+  background: rgba(var(--color-primary-900), 0.3);
+  border-bottom-color: rgba(var(--color-primary-600), 0.3);
+  color: rgb(var(--color-neutral-200));
+}
+
+/* 单元格 */
+.prose tbody td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid rgba(var(--color-neutral-200), 0.7);
+}
+
+.dark .prose tbody td {
+  border-bottom-color: rgba(var(--color-neutral-700), 0.5);
+}
+
+/* 斑马条纹 */
+.prose tbody tr:nth-child(even) {
+  background: rgba(var(--color-primary-50), 0.3);
+}
+
+.dark .prose tbody tr:nth-child(even) {
+  background: rgba(var(--color-primary-950), 0.15);
+}
+
+/* 行 hover */
+.prose tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.prose tbody tr:hover {
+  background: rgba(var(--color-primary-100), 0.4);
+}
+
+.dark .prose tbody tr:hover {
+  background: rgba(var(--color-primary-900), 0.25);
+}
+
+/* ==========================================================================
+   20. 图片灯箱增强 Lightbox Enhancement
+   --------------------------------------------------------------------------
+   文章图片 hover 提示 + GLightbox 主题色覆盖
+   ========================================================================== */
+
+/* 文章图片包裹链接样式 */
+.article-content .glightbox {
+  cursor: zoom-in;
+  display: block;
+  border-bottom: none !important;
+}
+
+.article-content .glightbox:hover {
+  border-bottom: none !important;
+}
+
+.article-content .glightbox img {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 0.5rem;
+}
+
+.article-content .glightbox:hover img {
+  transform: scale(1.01);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.dark .article-content .glightbox:hover img {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* GLightbox 蒙层 */
+.goverlay {
+  background: rgba(0, 0, 0, 0.88) !important;
+}
+
+/* 导航按钮使用 Sakura 主色 */
+.glightbox-clean .gnext,
+.glightbox-clean .gprev,
+.glightbox-clean .gclose {
+  background-color: rgba(var(--color-primary-500), 0.75) !important;
+  border-radius: 50% !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.glightbox-clean .gnext:hover,
+.glightbox-clean .gprev:hover,
+.glightbox-clean .gclose:hover {
+  background-color: rgba(var(--color-primary-600), 0.9) !important;
+}
+
+/* 描述文字 */
+.glightbox-clean .gdesc-inner {
+  font-family: "LXGW WenKai Lite", "LXGW WenKai", system-ui, sans-serif !important;
+}
+
+/* ==========================================================================
+   21. 移动端目录 Mobile TOC
+   --------------------------------------------------------------------------
+   固定浮动按钮 + 底部抽屉面板，仅在 < 1024px 且页面有 TOC 时可见
+   ========================================================================== */
+
+/* 浮动按钮 */
+.mobile-toc-btn {
+  position: fixed;
+  bottom: 5rem;
+  right: 1.5rem;
+  z-index: 40;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--color-primary-300), 0.6);
+  background: rgba(var(--color-neutral-50), 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgb(var(--color-primary-600));
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-toc-btn:hover,
+.mobile-toc-btn:active {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(var(--color-primary-400), 0.3);
+}
+
+.dark .mobile-toc-btn {
+  background: rgba(var(--color-neutral-800), 0.92);
+  border-color: rgba(var(--color-primary-600), 0.4);
+  color: rgb(var(--color-primary-400));
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 1023px) {
+  .mobile-toc-btn {
+    display: flex;
+  }
+}
+
+/* 抽屉覆盖层 */
+.mobile-toc-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mobile-toc-drawer--open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* 半透明背景 */
+.mobile-toc-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-toc-drawer--open .mobile-toc-drawer__backdrop {
+  opacity: 1;
+}
+
+/* 底部面板 */
+.mobile-toc-drawer__panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 70vh;
+  background: rgb(var(--color-neutral-50));
+  border-radius: 1rem 1rem 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+}
+
+.dark .mobile-toc-drawer__panel {
+  background: rgb(var(--color-neutral-900));
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-toc-drawer--open .mobile-toc-drawer__panel {
+  transform: translateY(0);
+}
+
+/* 面板头部 */
+.mobile-toc-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(var(--color-neutral-200), 0.7);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: rgb(var(--color-neutral-700));
+  flex-shrink: 0;
+}
+
+.dark .mobile-toc-drawer__header {
+  border-bottom-color: rgba(var(--color-neutral-700), 0.5);
+  color: rgb(var(--color-neutral-300));
+}
+
+/* 关闭按钮 */
+.mobile-toc-drawer__close {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: rgba(var(--color-neutral-200), 0.5);
+  color: rgb(var(--color-neutral-500));
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.mobile-toc-drawer__close:hover {
+  background: rgba(var(--color-neutral-300), 0.6);
+}
+
+.dark .mobile-toc-drawer__close {
+  background: rgba(var(--color-neutral-700), 0.5);
+  color: rgb(var(--color-neutral-400));
+}
+
+/* TOC 内容区（可滚动） */
+.mobile-toc-drawer__body {
+  overflow-y: auto;
+  padding: 0.75rem 1rem 2rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-toc-drawer__body ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-toc-drawer__body > ul > li > ul {
+  padding-left: 1rem;
+}
+
+.mobile-toc-drawer__body > ul > li > ul > li > ul {
+  padding-left: 1rem;
+}
+
+.mobile-toc-drawer__body a {
+  display: block;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(var(--color-neutral-600));
+  text-decoration: none;
+  border-radius: 0.375rem;
+  border-bottom: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.mobile-toc-drawer__body a:hover,
+.mobile-toc-drawer__body a:active {
+  background: rgba(var(--color-primary-100), 0.4);
+  color: rgb(var(--color-primary-600));
+}
+
+.dark .mobile-toc-drawer__body a {
+  color: rgb(var(--color-neutral-400));
+}
+
+.dark .mobile-toc-drawer__body a:hover,
+.dark .mobile-toc-drawer__body a:active {
+  background: rgba(var(--color-primary-900), 0.3);
+  color: rgb(var(--color-primary-400));
+}
+
+/* ==========================================================================
+   22. 减少动画偏好 prefers-reduced-motion
+   --------------------------------------------------------------------------
+   尊重用户的无障碍设置，禁用所有自定义动画/过渡
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* 禁用所有自定义 hover 动画 */
+  .article-content .glightbox:hover img,
+  .taxonomy-category-card:hover,
+  .taxonomy-series__link:hover,
+  .archive-item a:hover h3,
+  .codeblock-wrapper:hover,
+  .prose > .highlight-wrapper:hover {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* 禁用阅读进度条过渡 */
+  .reading-progress {
+    transition: none !important;
+  }
+
+  /* 隐藏樱花 Canvas */
+  #sakura-canvas {
+    display: none !important;
+  }
+
+  /* 禁用 mobile TOC 面板动画 */
+  .mobile-toc-drawer__panel,
+  .mobile-toc-drawer__backdrop {
+    transition: none !important;
+  }
+
+  /* 禁用所有 card hover 上浮 */
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ==========================================================================
+   23. 薰衣草辅色引入 Secondary Color Usage
+   --------------------------------------------------------------------------
+   将 Sakura 方案中定义但未使用的 --color-secondary-* 薰衣草紫色阶
+   引入到各 UI 组件中，丰富视觉层次
+   ========================================================================== */
+
+/* ---- 标签药丸使用薰衣草色系 ---- */
+.taxonomy-tag-cloud__item {
+  border-color: rgba(var(--color-secondary-300), 0.5) !important;
+}
+
+.taxonomy-tag-cloud__item:hover {
+  background: rgba(var(--color-secondary-100), 0.5) !important;
+  border-color: rgba(var(--color-secondary-400), 0.6) !important;
+}
+
+.dark .taxonomy-tag-cloud__item:hover {
+  background: rgba(var(--color-secondary-900), 0.3) !important;
+  border-color: rgba(var(--color-secondary-600), 0.4) !important;
+}
+
+/* ---- 系列编号圆圈：粉→紫渐变 ---- */
+.taxonomy-series__number {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--color-primary-400)),
+    rgb(var(--color-secondary-500))
+  ) !important;
+  color: white !important;
+}
+
+/* ---- 引用块左边框使用薰衣草紫 ---- */
+.prose blockquote {
+  border-left-color: rgb(var(--color-secondary-400)) !important;
+}
+
+.dark .prose blockquote {
+  border-left-color: rgb(var(--color-secondary-600)) !important;
+}
+
+/* ---- 暗色模式链接 hover 使用薰衣草紫调 ---- */
+.dark .prose a:hover {
+  color: rgb(var(--color-secondary-400));
+}
+
+/* ---- 代码块顶部装饰条：粉→紫渐变 ---- */
+.highlight-wrapper::before,
+.prose .highlight > pre::before {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--color-primary-400)),
+    rgb(var(--color-secondary-400))
+  );
+}
+
+/* ---- TOC 活跃项使用薰衣草色标记 ---- */
+#TableOfContents a.active,
+#TableOfContents a:hover {
+  color: rgb(var(--color-secondary-500));
+  border-left-color: rgb(var(--color-secondary-500));
+}
+
+.dark #TableOfContents a.active,
+.dark #TableOfContents a:hover {
+  color: rgb(var(--color-secondary-400));
+  border-left-color: rgb(var(--color-secondary-400));
+}
+
+/* ---- 移动端 TOC 活跃项也使用薰衣草色 ---- */
+.mobile-toc-drawer__body a:hover,
+.mobile-toc-drawer__body a:active {
+  color: rgb(var(--color-secondary-600)) !important;
+}
+
+.dark .mobile-toc-drawer__body a:hover,
+.dark .mobile-toc-drawer__body a:active {
+  color: rgb(var(--color-secondary-400)) !important;
+}
+
+/* ==========================================================================
+   24. 归档页增强样式 Archive Enhancement
+   --------------------------------------------------------------------------
+   分类徽章 + 阅读时间的样式
+   ========================================================================== */
+
+.archive-item__category {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(var(--color-secondary-100), 0.6);
+  color: rgb(var(--color-secondary-700));
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.dark .archive-item__category {
+  background: rgba(var(--color-secondary-900), 0.3);
+  color: rgb(var(--color-secondary-300));
+}
+
+.archive-item__readtime {
+  font-size: 0.7rem;
+  color: rgb(var(--color-neutral-400));
+  white-space: nowrap;
+}
+
+.archive-item__readtime::before {
+  content: "⏱ ";
 }

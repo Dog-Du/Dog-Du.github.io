@@ -8,13 +8,22 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css">
 </noscript>
 
-{{/* JetBrains Mono - 代码字体（仅 400/500 权重，display=swap 避免 FOIT） */}}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet" media="print" onload="this.media='all'">
+{{/* JetBrains Mono - 代码字体（via jsDelivr @fontsource，统一 CDN 源，国内友好）
+     替换原 Google Fonts 方案，消除 fonts.googleapis.com / fonts.gstatic.com 依赖 */}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.1.1/400.css"
+      media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.1.1/500.css"
+      media="print" onload="this.media='all'">
 <noscript>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.1.1/400.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.1.1/500.css">
+</noscript>
+
+{{/* 📷 GLightbox - 轻量图片灯箱（~11KB gzip） */}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css"
+      media="print" onload="this.media='all'">
+<noscript>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
 </noscript>
 
 <style>

@@ -44,6 +44,9 @@
 (function () {
   'use strict';
 
+  /* reduced-motion check */
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
   /* ---- 页面限定：仅首页生效 ---- */
   if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') return;
 
@@ -238,7 +241,6 @@
  * 修改历史：
  *   2026-03 - 初始版本
  * ========================================================================== */
-/* 📖 阅读进度条 - 仅在文章页显示 */
 (function () {
   'use strict';
 

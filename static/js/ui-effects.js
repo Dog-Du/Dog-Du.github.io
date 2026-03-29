@@ -39,6 +39,9 @@
 (function () {
   'use strict';
 
+  /* reduced-motion: skip click effect */
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
   /**
    * 可出现的 emoji 列表（共 30 种）
    * 分为 4 大类，保证视觉多样性

@@ -10,7 +10,7 @@ title: Treap树堆带旋版本实现
 slug: algo-treap-rotating
 summary: 介绍带旋 Treap 的定义、插入删除策略与旋转维护方式，并用洛谷 P3369 的完整实现说明这类随机平衡树为何写起来足够直接。
 commentTerm: "Treap树堆带旋版本实现 | DogDu's blog"
-featureimage: "images/covers/cover_28_field.webp"
+featureimage: "images/covers/cover_25_night.webp"
 series:
 - "平衡树专题"
 ---

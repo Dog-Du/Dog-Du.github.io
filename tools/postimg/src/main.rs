@@ -1,27 +1,476 @@
 use anyhow::{bail, Context, Result};
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use image::{ImageFormat, ImageReader};
 use regex::Regex;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+// ─── CLI ────────────────────────────────────────────────────────────────────
+
 #[derive(Debug, Parser)]
 #[command(name = "postimg")]
-#[command(about = "Convert images referenced by one Hugo post to WebP")]
+#[command(about = "Hugo blog image toolkit: convert & clean")]
 struct Cli {
-    post: PathBuf,
-
-    #[arg(long)]
-    rewrite: bool,
-
-    #[arg(long)]
-    delete_original: bool,
-
-    #[arg(long)]
-    dry_run: bool,
+    #[command(subcommand)]
+    command: Commands,
 }
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Convert images referenced by one Hugo post to WebP
+    Convert {
+        /// Path to the markdown post file
+        post: PathBuf,
+
+        /// Rewrite image references in the markdown file to .webp
+        #[arg(long)]
+        rewrite: bool,
+
+        /// Delete original image files after successful conversion (requires --rewrite)
+        #[arg(long)]
+        delete_original: bool,
+
+        /// Show what would be done without making changes
+        #[arg(long)]
+        dry_run: bool,
+    },
+    /// Scan a directory (recursively) for unreferenced images and optionally delete them
+    Clean {
+        /// Root directory of the Hugo repository (must contain content/ and static/)
+        #[arg(default_value = ".")]
+        repo: PathBuf,
+
+        /// Image directories to scan, relative to repo root (can specify multiple)
+        #[arg(long = "image-dir", default_values_t = vec!["static/img".to_string()])]
+        image_dirs: Vec<String>,
+
+        /// Additional content directories to scan for references (can specify multiple)
+        #[arg(long = "content-dir", default_values_t = vec!["content".to_string()])]
+        content_dirs: Vec<String>,
+
+        /// Also scan these directories for image references (e.g. layouts, assets)
+        #[arg(long = "extra-ref-dir")]
+        extra_ref_dirs: Vec<String>,
+
+        /// Actually delete unreferenced images (default: dry-run / list only)
+        #[arg(long)]
+        delete: bool,
+
+        /// Glob patterns for files to never delete (e.g. "favicon-*.png")
+        #[arg(long = "keep", default_values_t = vec![
+            "favicon-*.png".to_string(),
+            "favicon.ico".to_string(),
+            "apple-touch-icon*.png".to_string(),
+        ])]
+        keep_patterns: Vec<String>,
+    },
+}
+
+// ─── Entry ──────────────────────────────────────────────────────────────────
+
+fn main() -> Result<()> {
+    let cli = Cli::parse();
+    match cli.command {
+        Commands::Convert {
+            post,
+            rewrite,
+            delete_original,
+            dry_run,
+        } => run_convert(post, rewrite, delete_original, dry_run),
+        Commands::Clean {
+            repo,
+            image_dirs,
+            content_dirs,
+            extra_ref_dirs,
+            delete,
+            keep_patterns,
+        } => run_clean(repo, image_dirs, content_dirs, extra_ref_dirs, delete, keep_patterns),
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CLEAN  subcommand
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Image extensions we consider when scanning the image directories.
+const IMAGE_EXTENSIONS: &[&str] = &[
+    "png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico", "avif",
+];
+
+/// Text file extensions we scan for image references.
+const TEXT_EXTENSIONS: &[&str] = &[
+    "md", "html", "htm", "xml", "toml", "yaml", "yml", "json", "css", "js", "ts", "scss",
+];
+
+fn run_clean(
+    repo: PathBuf,
+    image_dirs: Vec<String>,
+    content_dirs: Vec<String>,
+    extra_ref_dirs: Vec<String>,
+    delete: bool,
+    keep_patterns: Vec<String>,
+) -> Result<()> {
+    let repo = fs::canonicalize(&repo)
+        .with_context(|| format!("failed to canonicalize repo path {}", repo.display()))?;
+
+    // 1. Collect all image files on disk
+    let mut all_images: BTreeSet<PathBuf> = BTreeSet::new();
+    for dir in &image_dirs {
+        let abs_dir = repo.join(dir);
+        if !abs_dir.is_dir() {
+            eprintln!("WARN: image directory {} does not exist, skipping", abs_dir.display());
+            continue;
+        }
+        collect_image_files(&abs_dir, &mut all_images)?;
+    }
+
+    if all_images.is_empty() {
+        println!("No image files found in the specified image directories.");
+        return Ok(());
+    }
+    println!("Found {} image file(s) on disk.", all_images.len());
+
+    // 2. Collect all text references to images
+    let mut ref_dirs: Vec<String> = Vec::new();
+    ref_dirs.extend(content_dirs);
+    ref_dirs.extend(extra_ref_dirs);
+
+    // Also scan image_dirs themselves (some HTML/JS might live there)
+    // and common Hugo directories
+    for extra in &["layouts", "assets", "config", "themes"] {
+        let p = repo.join(extra);
+        if p.is_dir() {
+            ref_dirs.push(extra.to_string());
+        }
+    }
+
+    let mut referenced_stems: BTreeSet<String> = BTreeSet::new();
+    for dir in &ref_dirs {
+        let abs_dir = repo.join(dir);
+        if !abs_dir.is_dir() {
+            continue;
+        }
+        collect_references_from_dir(&abs_dir, &repo, &mut referenced_stems)?;
+    }
+
+    // Also scan image_dirs for references (in case there are HTML files inside)
+    for dir in &image_dirs {
+        let abs_dir = repo.join(dir);
+        if abs_dir.is_dir() {
+            collect_references_from_dir(&abs_dir, &repo, &mut referenced_stems)?;
+        }
+    }
+
+    println!("Found {} unique image reference(s) in text files.", referenced_stems.len());
+
+    // 3. Build the protected-patterns matcher
+    let keep_matchers: Vec<glob::Pattern> = keep_patterns
+        .iter()
+        .filter_map(|p| {
+            glob::Pattern::new(p)
+                .map_err(|e| eprintln!("WARN: invalid keep pattern '{}': {}", p, e))
+                .ok()
+        })
+        .collect();
+
+    // 4. Determine which images are unreferenced
+    let mut orphans: Vec<PathBuf> = Vec::new();
+    let mut kept_protected = 0usize;
+
+    for image_path in &all_images {
+        let file_name = image_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("");
+
+        // Check keep patterns
+        if keep_matchers.iter().any(|m| m.matches(file_name)) {
+            kept_protected += 1;
+            continue;
+        }
+
+        // Check if referenced: we try multiple matching strategies
+        if is_image_referenced(image_path, &repo, &referenced_stems) {
+            continue;
+        }
+
+        orphans.push(image_path.clone());
+    }
+
+    // 5. Report
+    let total_images = all_images.len();
+    let referenced_count = total_images - orphans.len() - kept_protected;
+
+    println!();
+    println!("=== Clean Summary ===");
+    println!("Total images on disk:    {}", total_images);
+    println!("Referenced (in use):     {}", referenced_count);
+    println!("Protected (keep rules):  {}", kept_protected);
+    println!("Unreferenced (orphans):  {}", orphans.len());
+
+    if orphans.is_empty() {
+        println!("\nAll images are referenced or protected. Nothing to clean.");
+        return Ok(());
+    }
+
+    // Calculate total size
+    let total_bytes: u64 = orphans
+        .iter()
+        .filter_map(|p| fs::metadata(p).ok().map(|m| m.len()))
+        .sum();
+
+    println!(
+        "Orphan total size:       {} KB ({:.1} MB)",
+        total_bytes / 1024,
+        total_bytes as f64 / 1024.0 / 1024.0
+    );
+    println!();
+
+    // List orphans
+    for orphan in &orphans {
+        let rel = orphan
+            .strip_prefix(&repo)
+            .unwrap_or(orphan)
+            .display();
+        let size_kb = fs::metadata(orphan).map(|m| m.len() / 1024).unwrap_or(0);
+        if delete {
+            println!("DELETE: {} ({}KB)", rel, size_kb);
+        } else {
+            println!("ORPHAN: {} ({}KB)", rel, size_kb);
+        }
+    }
+
+    // 6. Delete if requested
+    if delete {
+        let mut deleted = 0usize;
+        let mut delete_errors = 0usize;
+        for orphan in &orphans {
+            match fs::remove_file(orphan) {
+                Ok(()) => deleted += 1,
+                Err(e) => {
+                    eprintln!(
+                        "ERROR: failed to delete {}: {}",
+                        orphan.display(),
+                        e
+                    );
+                    delete_errors += 1;
+                }
+            }
+        }
+        println!(
+            "\nDeleted {} file(s), {} error(s), freed ~{} KB",
+            deleted,
+            delete_errors,
+            total_bytes / 1024
+        );
+    } else {
+        println!(
+            "\nDry run: no files deleted. Use --delete to remove these {} orphan(s).",
+            orphans.len()
+        );
+    }
+
+    Ok(())
+}
+
+/// Recursively collect all image files under `dir`.
+fn collect_image_files(dir: &Path, out: &mut BTreeSet<PathBuf>) -> Result<()> {
+    for entry in fs::read_dir(dir)
+        .with_context(|| format!("failed to read directory {}", dir.display()))?
+    {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_image_files(&path, out)?;
+        } else if path.is_file() {
+            if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+                if IMAGE_EXTENSIONS.contains(&ext.to_ascii_lowercase().as_str()) {
+                    out.insert(fs::canonicalize(&path)?);
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Recursively scan text files under `dir`, extracting anything that looks like
+/// an image filename reference. We store decoded filenames (without directory)
+/// and also full relative paths.
+fn collect_references_from_dir(
+    dir: &Path,
+    repo_root: &Path,
+    out: &mut BTreeSet<String>,
+) -> Result<()> {
+    for entry in fs::read_dir(dir)
+        .with_context(|| format!("failed to read directory {}", dir.display()))?
+    {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            // Skip hidden dirs and node_modules
+            let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            if name.starts_with('.') || name == "node_modules" || name == "public" {
+                continue;
+            }
+            collect_references_from_dir(&path, repo_root, out)?;
+        } else if path.is_file() {
+            if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+                if TEXT_EXTENSIONS.contains(&ext.to_ascii_lowercase().as_str()) {
+                    extract_image_refs_from_file(&path, repo_root, out)?;
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Extract image references from a single text file.
+/// We use multiple strategies to catch as many references as possible:
+///   - Markdown: `![...](path)`
+///   - HTML: `<img ... src="path">`
+///   - HTML: `src="path"`, `href="path"` (general)
+///   - Hugo: `resources`, `featureimage`, `image`, `cover` front-matter keys
+///   - CSS: `url(path)`
+///   - Plain filename matches
+fn extract_image_refs_from_file(
+    path: &Path,
+    repo_root: &Path,
+    out: &mut BTreeSet<String>,
+) -> Result<()> {
+    let content = match fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(_) => return Ok(()), // skip binary files
+    };
+
+    // Strategy 1: Markdown image syntax  ![alt](path)
+    let md_re = Regex::new(r#"!\[[^\]]*\]\((?P<path>[^)\s]+)"#)?;
+    for cap in md_re.captures_iter(&content) {
+        if let Some(m) = cap.name("path") {
+            add_ref(m.as_str(), repo_root, out);
+        }
+    }
+
+    // Strategy 2: HTML src/href attributes
+    let attr_re = Regex::new(r#"(?:src|href|url|image|featureimage|featureImage|cover)\s*[:=]\s*["']?(?P<path>[^"'\s)>]+)"#)?;
+    for cap in attr_re.captures_iter(&content) {
+        if let Some(m) = cap.name("path") {
+            add_ref(m.as_str(), repo_root, out);
+        }
+    }
+
+    // Strategy 3: CSS url()
+    let css_re = Regex::new(r#"url\(\s*["']?(?P<path>[^"')]+)"#)?;
+    for cap in css_re.captures_iter(&content) {
+        if let Some(m) = cap.name("path") {
+            add_ref(m.as_str(), repo_root, out);
+        }
+    }
+
+    // Strategy 4: Hugo front-matter style — key: "value" or key = "value"
+    // This catches TOML/YAML image paths
+    let frontmatter_re = Regex::new(r#"(?:image|cover|thumbnail|banner|featureimage|featureImage|src)\s*[:=]\s*["'](?P<path>[^"']+)"#)?;
+    for cap in frontmatter_re.captures_iter(&content) {
+        if let Some(m) = cap.name("path") {
+            add_ref(m.as_str(), repo_root, out);
+        }
+    }
+
+    // Strategy 5: Catch ANY quoted string that looks like a local image path.
+    // This handles Hugo config keys like `defaultBackgroundImage = "img/top_img.jpg"`
+    // where the key name is not predictable.
+    let quoted_img_re = Regex::new(
+        r#"["'](?P<path>[^"'\s]*?\.(?:png|jpe?g|gif|webp|svg|bmp|ico|avif))["']"#
+    )?;
+    for cap in quoted_img_re.captures_iter(&content) {
+        if let Some(m) = cap.name("path") {
+            add_ref(m.as_str(), repo_root, out);
+        }
+    }
+
+    Ok(())
+}
+
+/// Normalize and add an image reference.
+fn add_ref(raw: &str, _repo_root: &Path, out: &mut BTreeSet<String>) {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return;
+    }
+
+    // Skip data URIs and protocol-relative URLs
+    if trimmed.starts_with("data:") || trimmed.starts_with("//") {
+        return;
+    }
+
+    // For remote URLs, skip — they don't reference local files
+    let lower = trimmed.to_ascii_lowercase();
+    if lower.starts_with("http://") || lower.starts_with("https://") {
+        return;
+    }
+
+    // Decode percent-encoding
+    let decoded = urlencoding::decode(trimmed)
+        .map(|v| v.into_owned())
+        .unwrap_or_else(|_| trimmed.to_string());
+
+    // Store multiple forms for matching:
+    // 1. The filename only (e.g., "image-20250317201828571.webp")
+    if let Some(fname) = Path::new(&decoded).file_name().and_then(|n| n.to_str()) {
+        out.insert(fname.to_string());
+    }
+
+    // 2. The full path as-is (stripped of leading /)
+    let normalized = decoded.trim_start_matches('/');
+    out.insert(normalized.to_string());
+}
+
+/// Check if an image is referenced by any of the collected references.
+fn is_image_referenced(
+    image_path: &Path,
+    repo_root: &Path,
+    referenced: &BTreeSet<String>,
+) -> bool {
+    // Match by filename
+    if let Some(fname) = image_path.file_name().and_then(|n| n.to_str()) {
+        if referenced.contains(fname) {
+            return true;
+        }
+        // Also check without extension (some refs might use different ext)
+        let stem = Path::new(fname)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("");
+        // Check if any reference contains this stem with any image extension
+        for ext in IMAGE_EXTENSIONS {
+            let variant = format!("{}.{}", stem, ext);
+            if referenced.contains(&variant) {
+                return true;
+            }
+        }
+    }
+
+    // Match by relative path from repo root
+    if let Ok(rel) = image_path.strip_prefix(repo_root) {
+        let rel_str = rel.to_string_lossy().replace('\\', "/");
+        if referenced.contains(rel_str.as_ref() as &str) {
+            return true;
+        }
+        // Also try with "static/" stripped (Hugo serves static/ at root)
+        if let Some(stripped) = rel_str.strip_prefix("static/") {
+            if referenced.contains(stripped) {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CONVERT  subcommand  (original functionality, unchanged logic)
+// ═══════════════════════════════════════════════════════════════════════════
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ImageRef {
@@ -38,23 +487,18 @@ enum ConversionOutcome {
     SkippedUnsupported,
 }
 
-fn main() -> Result<()> {
-    let cli = Cli::parse();
-    run(cli)
-}
-
-fn run(cli: Cli) -> Result<()> {
-    if cli.delete_original && !cli.rewrite {
+fn run_convert(post: PathBuf, rewrite: bool, delete_original: bool, dry_run: bool) -> Result<()> {
+    if delete_original && !rewrite {
         bail!("--delete-original requires --rewrite");
     }
 
-    let repo_root = find_repo_root(&cli.post)?;
-    let post_path = fs::canonicalize(&cli.post)
-        .with_context(|| format!("failed to canonicalize post path {}", cli.post.display()))?;
+    let repo_root = find_repo_root(&post)?;
+    let post_path = fs::canonicalize(&post)
+        .with_context(|| format!("failed to canonicalize post path {}", post.display()))?;
     let markdown = fs::read_to_string(&post_path)
         .with_context(|| format!("failed to read post {}", post_path.display()))?;
 
-    let refs = collect_image_refs(&markdown, &post_path, &repo_root)?;
+    let refs = collect_convert_image_refs(&markdown, &post_path, &repo_root)?;
     if refs.is_empty() {
         println!(
             "No local PNG/JPG/JPEG images found in {}",
@@ -74,7 +518,7 @@ fn run(cli: Cli) -> Result<()> {
     let mut skipped_unsupported = 0usize;
     let mut rewritten_refs = Vec::new();
     for image_ref in &refs {
-        match process_image(image_ref, cli.dry_run)? {
+        match process_image(image_ref, dry_run)? {
             ConversionOutcome::Converted => {
                 converted += 1;
                 rewritten_refs.push(image_ref.clone());
@@ -87,14 +531,14 @@ fn run(cli: Cli) -> Result<()> {
         }
     }
 
-    let rewritten = if cli.rewrite {
-        rewrite_markdown(&post_path, &markdown, &rewritten_refs, cli.dry_run)?
+    let rewritten = if rewrite {
+        rewrite_markdown(&post_path, &markdown, &rewritten_refs, dry_run)?
     } else {
         0
     };
 
-    let deleted = if cli.delete_original {
-        delete_originals(&rewritten_refs, cli.dry_run)?
+    let deleted = if delete_original {
+        delete_originals(&rewritten_refs, dry_run)?
     } else {
         0
     };
@@ -127,9 +571,9 @@ fn find_repo_root(start: &Path) -> Result<PathBuf> {
     }
 }
 
-fn collect_image_refs(markdown: &str, post_path: &Path, repo_root: &Path) -> Result<Vec<ImageRef>> {
+fn collect_convert_image_refs(markdown: &str, post_path: &Path, repo_root: &Path) -> Result<Vec<ImageRef>> {
     let markdown_re = Regex::new(r#"!\[[^\]]*\]\((?P<path>[^)]+)\)"#)?;
-    let html_re = Regex::new(r#"<img[^>]+src=[\"'](?P<path>[^\"']+)[\"']"#)?;
+    let html_re = Regex::new(r#"<img[^>]+src=["'](?P<path>[^"']+)["']"#)?;
     let mut refs = BTreeMap::new();
 
     for captures in markdown_re
@@ -140,7 +584,7 @@ fn collect_image_refs(markdown: &str, post_path: &Path, repo_root: &Path) -> Res
             continue;
         };
         let original = raw.as_str().trim().to_string();
-        if should_skip_path(&original) || !is_supported_image_path(&original) {
+        if should_skip_path(&original) || !is_convertible_image_path(&original) {
             continue;
         }
 
@@ -176,7 +620,7 @@ fn should_skip_path(path: &str) -> bool {
         || lowered.starts_with("//")
 }
 
-fn is_supported_image_path(path: &str) -> bool {
+fn is_convertible_image_path(path: &str) -> bool {
     let lowered = path.to_ascii_lowercase();
     lowered.ends_with(".png") || lowered.ends_with(".jpg") || lowered.ends_with(".jpeg")
 }
@@ -293,7 +737,6 @@ fn is_valid_generated_webp(path: &Path) -> Result<bool> {
     if !path.exists() {
         return Ok(false);
     }
-
     let metadata = fs::metadata(path)
         .with_context(|| format!("failed to stat generated webp {}", path.display()))?;
     Ok(metadata.len() > 0)
@@ -303,7 +746,6 @@ fn cleanup_invalid_generated_webp(path: &Path) -> Result<()> {
     if !path.exists() {
         return Ok(());
     }
-
     let metadata = fs::metadata(path)
         .with_context(|| format!("failed to stat generated webp {}", path.display()))?;
     if metadata.len() == 0 {
@@ -393,11 +835,17 @@ fn delete_originals(refs: &[ImageRef], dry_run: bool) -> Result<usize> {
     Ok(deleted)
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  Tests
+// ═══════════════════════════════════════════════════════════════════════════
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fs;
     use tempfile::TempDir;
+
+    // ── convert tests ───────────────────────────────────────────────────
 
     #[test]
     fn collects_absolute_and_relative_images() {
@@ -410,8 +858,7 @@ mod tests {
         let post = repo.join("content/posts/sub/post.md");
         fs::write(&post, "![a](/img/demo/a.png)\n<img src=\"local.jpg\">\n").unwrap();
 
-        let refs = collect_image_refs(&fs::read_to_string(&post).unwrap(), &post, repo).unwrap();
-
+        let refs = collect_convert_image_refs(&fs::read_to_string(&post).unwrap(), &post, repo).unwrap();
         assert_eq!(refs.len(), 2);
         assert_eq!(refs[0].rewritten_path, "/img/demo/a.webp");
         assert_eq!(refs[1].rewritten_path, "local.webp");
@@ -430,8 +877,7 @@ mod tests {
         )
         .unwrap();
 
-        let refs = collect_image_refs(&fs::read_to_string(&post).unwrap(), &post, repo).unwrap();
-
+        let refs = collect_convert_image_refs(&fs::read_to_string(&post).unwrap(), &post, repo).unwrap();
         assert!(refs.is_empty());
     }
 
@@ -474,7 +920,7 @@ mod tests {
         fs::write(&webp, b"webp").unwrap();
         fs::write(&post, "![a](/img/demo/a.png)\n").unwrap();
 
-        let refs = collect_image_refs(&fs::read_to_string(&post).unwrap(), &post, repo).unwrap();
+        let refs = collect_convert_image_refs(&fs::read_to_string(&post).unwrap(), &post, repo).unwrap();
         let rewrites =
             rewrite_markdown(&post, &fs::read_to_string(&post).unwrap(), &refs, false).unwrap();
         let deleted = delete_originals(&refs, false).unwrap();
@@ -498,14 +944,9 @@ mod tests {
         fs::write(&original, b"png").unwrap();
         fs::write(&post, "![a](/img/demo/a.png)\n").unwrap();
 
-        let error = run(Cli {
-            post,
-            rewrite: false,
-            delete_original: true,
-            dry_run: true,
-        })
-        .unwrap_err()
-        .to_string();
+        let error = run_convert(post, false, true, true)
+            .unwrap_err()
+            .to_string();
 
         assert!(error.contains("--delete-original requires --rewrite"));
     }
@@ -550,5 +991,72 @@ mod tests {
         let outcome = process_image(&image_ref, false).unwrap();
         assert_eq!(outcome, ConversionOutcome::SkippedUnsupported);
         assert!(!target.exists());
+    }
+
+    // ── clean tests ─────────────────────────────────────────────────────
+
+    #[test]
+    fn clean_finds_orphan_images() {
+        let fixture = TempDir::new().unwrap();
+        let repo = fixture.path();
+        fs::create_dir_all(repo.join("content/posts")).unwrap();
+        fs::create_dir_all(repo.join("static/img")).unwrap();
+
+        // One referenced image, one orphan
+        fs::write(repo.join("static/img/used.webp"), b"webp").unwrap();
+        fs::write(repo.join("static/img/orphan.webp"), b"webp").unwrap();
+        fs::write(
+            repo.join("content/posts/post.md"),
+            "![used](/img/used.webp)\n",
+        )
+        .unwrap();
+
+        let mut all_images = BTreeSet::new();
+        collect_image_files(&repo.join("static/img"), &mut all_images).unwrap();
+        assert_eq!(all_images.len(), 2);
+
+        let mut refs = BTreeSet::new();
+        collect_references_from_dir(&repo.join("content"), repo, &mut refs).unwrap();
+        assert!(refs.contains("used.webp"));
+
+        // used.webp should be referenced, orphan.webp should not
+        let used = fs::canonicalize(repo.join("static/img/used.webp")).unwrap();
+        let orphan = fs::canonicalize(repo.join("static/img/orphan.webp")).unwrap();
+        assert!(is_image_referenced(&used, repo, &refs));
+        assert!(!is_image_referenced(&orphan, repo, &refs));
+    }
+
+    #[test]
+    fn clean_respects_keep_patterns() {
+        let fixture = TempDir::new().unwrap();
+        let repo = fixture.path();
+        fs::create_dir_all(repo.join("content")).unwrap();
+        fs::create_dir_all(repo.join("static/img")).unwrap();
+
+        fs::write(repo.join("static/img/favicon-32.png"), b"ico").unwrap();
+
+        let pattern = glob::Pattern::new("favicon-*.png").unwrap();
+        assert!(pattern.matches("favicon-32.png"));
+    }
+
+    #[test]
+    fn clean_matches_url_encoded_refs() {
+        let fixture = TempDir::new().unwrap();
+        let repo = fixture.path();
+        fs::create_dir_all(repo.join("content/posts")).unwrap();
+        fs::create_dir_all(repo.join("static/img/操作系统")).unwrap();
+
+        fs::write(repo.join("static/img/操作系统/a.webp"), b"webp").unwrap();
+        // URL-encoded reference
+        fs::write(
+            repo.join("content/posts/post.md"),
+            "![os](/img/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/a.webp)\n",
+        )
+        .unwrap();
+
+        let mut refs = BTreeSet::new();
+        collect_references_from_dir(&repo.join("content"), repo, &mut refs).unwrap();
+        // Should have decoded the filename
+        assert!(refs.contains("a.webp"));
     }
 }

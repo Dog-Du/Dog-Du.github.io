@@ -9,7 +9,7 @@ slug: algo-dsu-on-tree
 summary: 以颜色平衡树题为例讲解 dsu on tree 的保重儿子、删轻留重与统计维护思路。
 commentTerm: "树上启发式合并（dsu on tree） | DogDu's blog"
 lastmod: '2025-04-04T11:32:10.709Z'
-featureimage: "images/covers/cover_35_spring.webp"
+featureimage: "images/covers/cover_05_clouds.webp"
 ---
 参考视频：[【AgOHの算法胡扯】树上启发式合并（dsu on tree）](https://www.bilibili.com/video/BV1JE411d7tD/?spm_id_from=333.999.0.0)
 

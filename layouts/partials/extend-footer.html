@@ -3,24 +3,22 @@
   页脚扩展模板 (extend-footer.html)
   ==========================================================================
 
-  功能模块（所有脚本均使用 defer，按文档顺序执行）：
-    1. 🌸 Live2D 看板娘   → static/js/live2d.js（懒加载 oh-my-live2d@0.19.3 + 拖拽）
-    2. 🌸 页面增强        → static/js/page-enhancements.js（樱花特效 + 页脚台词 + 阅读进度条）
-    3. ✨ UI 交互特效     → static/js/ui-effects.js（点击特效 + 复制提示 + 搜索快捷键）
+  功能模块（单一 bundle，按文档顺序执行）：
+    1. 📷 GLightbox CDN — 图片灯箱库（外部依赖，需在 bundle 之前加载）
+    2. 🎯 bundle.js    — 合并自 4 个源文件：
+       - live2d.js          — Live2D 看板娘（移动端自动跳过）
+       - page-enhancements.js — 樱花特效 + 页脚台词 + 阅读进度条
+       - ui-effects.js       — 点击特效 + 复制提示 + 搜索快捷键
+       - article-enhancements.js — 图片灯箱初始化 + 移动端 TOC
 
   修改历史：
     2025-06 - 初始版本
-    2026-03 - Live2D 配置抽离为独立 JS，版本锁定，添加懒加载
-    2026-03 - 新增代码复制 toast 提示、搜索快捷键提示
-    2026-03 - 合并 8 个 JS 文件为 3 个 bundle
+    2026-03 - 合并 4 个 JS 为 bundle.js，减少 HTTP 请求
   ==========================================================================
 */}}
 
-{{/* 🌸 Live2D 看板娘（配置 + 懒加载 + 拖拽） */}}
-<script src="/js/live2d.js" defer></script>
+{{/* 📷 GLightbox - 图片灯箱库（defer 保证在 bundle.js 之前执行） */}}
+<script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js" defer></script>
 
-{{/* 🌸 页面增强（樱花飘落 + 页脚台词 + 阅读进度条） */}}
-<script src="/js/page-enhancements.js" defer></script>
-
-{{/* ✨ UI 交互特效（点击 emoji + 复制 toast + 搜索快捷键） */}}
-<script src="/js/ui-effects.js" defer></script>
+{{/* 🎯 All-in-one Bundle（包含 Live2D + 页面增强 + UI 特效 + 文章增强） */}}
+<script src="/js/bundle.js" defer></script>

@@ -9,7 +9,7 @@ title: 稳定排序与MergeSortWithoutBuffer
 slug: algo-stable-sort-without-buffer
 summary: 围绕稳定排序需求，介绍 MergeSortWithoutBuffer 的核心思想、rotate 技巧以及小 buffer 优化，讨论如何在更低额外空间下完成归并。
 commentTerm: "稳定排序与MergeSortWithoutBuffer | DogDu's blog"
-featureimage: "images/covers/cover_16_forest.webp"
+featureimage: "images/covers/cover_30_scenery.webp"
 ---
 <!--more-->
 稳定排序的关键要求，是在比较结果相同的情况下保留元素原有的相对顺序。`std::sort` 很快，但它不是稳定排序；如果又希望保持“基于比较”的通用性，又不愿意接受普通归并排序 `O(n)` 的额外空间，那么就会自然走到 **MergeSortWithoutBuffer** 这条路上。

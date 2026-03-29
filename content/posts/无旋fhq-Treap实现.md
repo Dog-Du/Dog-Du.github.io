@@ -10,7 +10,7 @@ title: 无旋fhq-Treap实现
 slug: algo-fhq-treap
 summary: 用 split / merge 视角整理无旋 fhq-Treap 的代码实现，展示它为何在模板竞赛题里兼具简洁度与扩展性。
 commentTerm: "无旋fhq-Treap实现 | DogDu's blog"
-featureimage: "images/covers/cover_28_field.webp"
+featureimage: "images/covers/cover_27_field.webp"
 series:
 - "平衡树专题"
 ---
