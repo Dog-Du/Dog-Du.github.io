@@ -1767,3 +1767,211 @@ body.max-w-7xl {
   align-items: center;
   gap: 0.5rem;
 }
+
+/* ==========================================================================
+   26. 工具箱页面 Tools Page
+   ========================================================================== */
+
+/* ---- 工具卡片网格 ---- */
+.tools-grid {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1rem 0;
+}
+
+@media (min-width: 640px) {
+  .tools-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.tool-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(var(--color-neutral-200), 0.8);
+  background: rgba(var(--color-neutral-50), 0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.tool-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(var(--color-primary-400), 0.15);
+  border-color: rgba(var(--color-primary-300), 0.6);
+}
+
+.dark .tool-card {
+  border-color: rgba(var(--color-neutral-700), 0.8);
+  background: rgba(var(--color-neutral-800), 0.5);
+}
+
+.dark .tool-card:hover {
+  box-shadow: 0 8px 24px rgba(var(--color-primary-500), 0.1);
+  border-color: rgba(var(--color-primary-600), 0.5);
+}
+
+/* TOOLS_CSS_PLACEHOLDER */
+
+.tool-card__icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tool-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tool-card__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  color: rgb(var(--color-neutral-800));
+}
+
+.dark .tool-card__title {
+  color: rgb(var(--color-neutral-100));
+}
+
+.tool-card__desc {
+  font-size: 0.85rem;
+  color: rgb(var(--color-neutral-500));
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.tool-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.tool-card__badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(var(--color-secondary-100), 0.6);
+  color: rgb(var(--color-secondary-700));
+  font-weight: 500;
+}
+
+.dark .tool-card__badge {
+  background: rgba(var(--color-secondary-900), 0.3);
+  color: rgb(var(--color-secondary-300));
+}
+
+/* ---- 工具页容器 ---- */
+.tool-container {
+  width: 100%;
+  min-height: 400px;
+}
+
+/* ---- 工具控件栏 ---- */
+.tool-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(var(--color-neutral-100), 0.6);
+  border: 1px solid rgba(var(--color-neutral-200), 0.5);
+}
+
+.dark .tool-controls {
+  background: rgba(var(--color-neutral-800), 0.6);
+  border-color: rgba(var(--color-neutral-700), 0.5);
+}
+
+/* TOOLS_CSS_PLACEHOLDER_2 */
+
+.tool-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  background: rgb(var(--color-primary-500));
+  color: #fff;
+}
+
+.tool-btn:hover {
+  background: rgb(var(--color-primary-600));
+}
+
+.tool-btn:active {
+  transform: scale(0.96);
+}
+
+.tool-btn--secondary {
+  background: transparent;
+  border: 1px solid rgba(var(--color-secondary-400), 0.6);
+  color: rgb(var(--color-secondary-600));
+}
+
+.tool-btn--secondary:hover {
+  background: rgba(var(--color-secondary-100), 0.5);
+}
+
+.dark .tool-btn--secondary {
+  border-color: rgba(var(--color-secondary-500), 0.4);
+  color: rgb(var(--color-secondary-400));
+}
+
+.dark .tool-btn--secondary:hover {
+  background: rgba(var(--color-secondary-900), 0.3);
+}
+
+.tool-select,
+.tool-input {
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(var(--color-neutral-300), 0.8);
+  background: rgba(var(--color-neutral-50), 0.8);
+  font-size: 0.8rem;
+  color: rgb(var(--color-neutral-700));
+}
+
+.dark .tool-select,
+.dark .tool-input {
+  border-color: rgba(var(--color-neutral-600), 0.8);
+  background: rgba(var(--color-neutral-700), 0.8);
+  color: rgb(var(--color-neutral-200));
+}
+
+.tool-range {
+  accent-color: rgb(var(--color-primary-500));
+}
+
+.tool-label {
+  font-size: 0.75rem;
+  color: rgb(var(--color-neutral-500));
+  white-space: nowrap;
+}
+
+/* ---- Canvas 包装 ---- */
+.tool-canvas-wrap {
+  border: 1px solid rgba(var(--color-neutral-200), 0.5);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: rgba(var(--color-neutral-50), 0.3);
+}
+
+.dark .tool-canvas-wrap {
+  border-color: rgba(var(--color-neutral-700), 0.5);
+  background: rgba(var(--color-neutral-900), 0.3);
+}
+
+.tool-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}

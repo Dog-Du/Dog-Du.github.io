@@ -1,0 +1,29 @@
+{{ define "main" }}
+  <header class="mb-10">
+    {{ if .Params.showBreadcrumbs | default true }}
+      {{ partial "breadcrumbs.html" . }}
+    {{ end }}
+    <h1 class="mt-6 text-4xl font-bold text-neutral-900 dark:text-neutral tracking-tight">
+      {{ .Title | emojify }}
+    </h1>
+    {{ with .Description }}
+      <p class="mt-2 text-base text-neutral-500 dark:text-neutral-400">{{ . }}</p>
+    {{ end }}
+  </header>
+  <section class="tools-grid">
+    {{ range .Pages.ByWeight }}
+      <a href="{{ .RelPermalink }}" class="tool-card">
+        <div class="tool-card__icon">{{ .Params.icon | default "🔧" }}</div>
+        <div class="tool-card__body">
+          <h2 class="tool-card__title">{{ .Title }}</h2>
+          <p class="tool-card__desc">{{ .Description }}</p>
+          {{ with .Params.techBadges }}
+            <div class="tool-card__badges">
+              {{ range . }}<span class="tool-card__badge">{{ . }}</span>{{ end }}
+            </div>
+          {{ end }}
+        </div>
+      </a>
+    {{ end }}
+  </section>
+{{ end }}

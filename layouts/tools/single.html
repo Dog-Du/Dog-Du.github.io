@@ -1,0 +1,25 @@
+{{ define "main" }}
+  <article class="max-w-full">
+    <header class="mb-6">
+      {{ if .Params.showBreadcrumbs | default true }}
+        {{ partial "breadcrumbs.html" . }}
+      {{ end }}
+      <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+        {{ .Title | emojify }}
+      </h1>
+      {{ with .Description }}
+        <p class="mt-2 text-base text-neutral-500 dark:text-neutral-400">{{ . }}</p>
+      {{ end }}
+    </header>
+    <section class="max-w-full mt-0">
+      {{ .Content }}
+      <div id="tool-container" class="tool-container"></div>
+    </section>
+  </article>
+  {{ with .Params.wasmPath }}
+    <script>window.__WASM_PATH__ = '/wasm/{{ . }}';</script>
+  {{ end }}
+  {{ with .Params.toolScript }}
+    <script src="/js/tools/{{ . }}" defer></script>
+  {{ end }}
+{{ end }}
