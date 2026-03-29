@@ -7,11 +7,11 @@
   // ─── Constants ───────────────────────────────────────────────────
   const NODE_R = 18;
   const LEVEL_H = 60;
-  const ANIM_MS = 500;
-  let busy = false; // prevent overlapping operations
+  const ANIM_MS = 420;
+  const VISIT_MS = 350;
+  let busy = false;
 
   function isDark() { return document.documentElement.classList.contains('dark'); }
-
   function colors() {
     const d = isDark();
     return {
@@ -20,10 +20,12 @@
       nodeText: d ? '#1a1a2e' : '#fff',
       edge: d ? 'rgba(200,180,220,0.5)' : 'rgba(100,80,140,0.35)',
       highlight: d ? '#9b7aed' : '#7c5ecf',
+      visiting: d ? '#e8a840' : '#e89020',
       red: d ? '#f06090' : '#e0446e',
       black: d ? '#888' : '#333',
     };
   }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   // ─── UI ──────────────────────────────────────────────────────────
   const controls = document.createElement('div');
@@ -48,144 +50,269 @@
   container.appendChild(canvasWrap);
   const ctx = canvas.getContext('2d');
 
+  // Status bar
+  const statusBar = document.createElement('div');
+  statusBar.className = 'tool-label';
+  statusBar.style.cssText = 'text-align:center;padding:0.5rem;min-height:1.5em;font-size:0.85rem';
+  container.appendChild(statusBar);
+
   const $ = (id) => document.getElementById(id);
 
-  // ─── AVL Tree ────────────────────────────────────────────────────
-  class AVLNode {
-    constructor(val) { this.val = val; this.left = null; this.right = null; this.h = 1; }
-  }
-
-  const AVL = {
-    height(n) { return n ? n.h : 0; },
-    bf(n) { return n ? this.height(n.left) - this.height(n.right) : 0; },
-    update(n) { if (n) n.h = 1 + Math.max(this.height(n.left), this.height(n.right)); },
-    rotateR(y) { const x = y.left; y.left = x.right; x.right = y; this.update(y); this.update(x); return x; },
-    rotateL(x) { const y = x.right; x.right = y.left; y.left = x; this.update(x); this.update(y); return y; },
-    insert(node, val) {
-      if (!node) return new AVLNode(val);
-      if (val < node.val) node.left = this.insert(node.left, val);
-      else if (val > node.val) node.right = this.insert(node.right, val);
-      else return node;
-      this.update(node);
-      const b = this.bf(node);
-      if (b > 1 && val < node.left.val) return this.rotateR(node);
-      if (b < -1 && val > node.right.val) return this.rotateL(node);
-      if (b > 1 && val > node.left.val) { node.left = this.rotateL(node.left); return this.rotateR(node); }
-      if (b < -1 && val < node.right.val) { node.right = this.rotateR(node.right); return this.rotateL(node); }
-      return node;
-    },
-    minNode(n) { while (n.left) n = n.left; return n; },
-    remove(node, val) {
-      if (!node) return null;
-      if (val < node.val) node.left = this.remove(node.left, val);
-      else if (val > node.val) node.right = this.remove(node.right, val);
-      else {
-        if (!node.left) return node.right;
-        if (!node.right) return node.left;
-        const succ = this.minNode(node.right);
-        node.val = succ.val;
-        node.right = this.remove(node.right, succ.val);
-      }
-      this.update(node);
-      const b = this.bf(node);
-      if (b > 1 && this.bf(node.left) >= 0) return this.rotateR(node);
-      if (b > 1 && this.bf(node.left) < 0) { node.left = this.rotateL(node.left); return this.rotateR(node); }
-      if (b < -1 && this.bf(node.right) <= 0) return this.rotateL(node);
-      if (b < -1 && this.bf(node.right) > 0) { node.right = this.rotateR(node.right); return this.rotateL(node); }
-      return node;
+  // ─── Tree node (shared by AVL & RB) ──────────────────────────────
+  // Each node has a unique id to track identity across rotations
+  let nodeIdCounter = 0;
+  class TNode {
+    constructor(val) {
+      this.id = ++nodeIdCounter;
+      this.val = val;
+      this.left = null;
+      this.right = null;
+      this.h = 1;        // AVL height
+      this.color = true;  // RB: true=RED, false=BLACK
     }
-  };
-
-  // ─── Red-Black Tree ──────────────────────────────────────────────
+  }
   const RED = true, BLACK = false;
 
-  class RBNode {
-    constructor(val) { this.val = val; this.left = null; this.right = null; this.color = RED; }
+  // ─── Tree cloning (for snapshots) ────────────────────────────────
+  function cloneTree(node) {
+    if (!node) return null;
+    const c = new TNode(node.val);
+    c.id = node.id; c.h = node.h; c.color = node.color;
+    c.left = cloneTree(node.left);
+    c.right = cloneTree(node.right);
+    return c;
   }
 
-  const RB = {
-    isRed(n) { return n ? n.color === RED : false; },
-    rotateL(h) { const x = h.right; h.right = x.left; x.left = h; x.color = h.color; h.color = RED; return x; },
-    rotateR(h) { const x = h.left; h.left = x.right; x.right = h; x.color = h.color; h.color = RED; return x; },
-    flip(h) { h.color = RED; if (h.left) h.left.color = BLACK; if (h.right) h.right.color = BLACK; },
-    insert(h, val) {
-      if (!h) return new RBNode(val);
-      if (val < h.val) h.left = this.insert(h.left, val);
-      else if (val > h.val) h.right = this.insert(h.right, val);
-      else return h;
-      if (this.isRed(h.right) && !this.isRed(h.left)) h = this.rotateL(h);
-      if (this.isRed(h.left) && h.left && this.isRed(h.left.left)) h = this.rotateR(h);
-      if (this.isRed(h.left) && this.isRed(h.right)) this.flip(h);
-      return h;
-    },
-    moveRedLeft(h) {
-      this.flipDel(h);
-      if (h.right && this.isRed(h.right.left)) {
-        h.right = this.rotateR(h.right);
-        h = this.rotateL(h);
-        this.flipDel(h);
-      }
-      return h;
-    },
-    moveRedRight(h) {
-      this.flipDel(h);
-      if (h.left && this.isRed(h.left.left)) {
-        h = this.rotateR(h);
-        this.flipDel(h);
-      }
-      return h;
-    },
-    flipDel(h) { h.color = !h.color; if (h.left) h.left.color = !h.left.color; if (h.right) h.right.color = !h.right.color; },
-    fixUp(h) {
-      if (this.isRed(h.right) && !this.isRed(h.left)) h = this.rotateL(h);
-      if (this.isRed(h.left) && h.left && this.isRed(h.left.left)) h = this.rotateR(h);
-      if (this.isRed(h.left) && this.isRed(h.right)) this.flip(h);
-      return h;
-    },
-    min(h) { while (h.left) h = h.left; return h; },
-    removeMin(h) {
-      if (!h.left) return null;
-      if (!this.isRed(h.left) && !(h.left && this.isRed(h.left.left))) h = this.moveRedLeft(h);
-      h.left = this.removeMin(h.left);
-      return this.fixUp(h);
-    },
-    remove(h, val) {
-      if (!h) return null;
-      if (val < h.val) {
-        if (h.left && !this.isRed(h.left) && !(h.left && this.isRed(h.left.left))) h = this.moveRedLeft(h);
-        h.left = this.remove(h.left, val);
-      } else {
-        if (this.isRed(h.left)) h = this.rotateR(h);
-        if (val === h.val && !h.right) return null;
-        if (h.right && !this.isRed(h.right) && !(h.right && this.isRed(h.right.left))) h = this.moveRedRight(h);
-        if (val === h.val) {
-          const m = this.min(h.right);
-          h.val = m.val;
-          h.right = this.removeMin(h.right);
-        } else {
-          h.right = this.remove(h.right, val);
-        }
-      }
-      return this.fixUp(h);
+  // ─── AVL helpers (pure, no side effects on steps) ─────────────────
+  function avlHeight(n) { return n ? n.h : 0; }
+  function avlBf(n) { return n ? avlHeight(n.left) - avlHeight(n.right) : 0; }
+  function avlUpdate(n) { if (n) n.h = 1 + Math.max(avlHeight(n.left), avlHeight(n.right)); }
+
+  function rotateR(y) {
+    const x = y.left; y.left = x.right; x.right = y;
+    avlUpdate(y); avlUpdate(x); return x;
+  }
+  function rotateL(x) {
+    const y = x.right; x.right = y.left; y.left = x;
+    avlUpdate(x); avlUpdate(y); return y;
+  }
+
+  // ─── BST search path ────────────────────────────────────────────
+  function findPath(node, val) {
+    const path = [];
+    while (node) {
+      path.push(node.val);
+      if (val < node.val) node = node.left;
+      else if (val > node.val) node = node.right;
+      else break; // found
     }
-  };
+    return path;
+  }
+
+  // ─── BST insert (no balancing) ───────────────────────────────────
+
+  // ─── AVL insert with steps ──────────────────────────────────────
+  function avlInsertSteps(rootNode, val) {
+    const steps = [];
+
+    // Check duplicate
+    if (rootNode) {
+      let n = rootNode;
+      while (n) {
+        if (val === n.val) return { root: rootNode, steps: [] };
+        n = val < n.val ? n.left : n.right;
+      }
+    }
+
+    // Phase 1: search path animation
+    const path = findPath(rootNode, val);
+    for (let i = 0; i < path.length; i++) {
+      steps.push({ type: 'visit', path: path.slice(0, i + 1), desc: `搜索: ${path.slice(0, i + 1).join(' → ')}` });
+    }
+
+    // Pre-assign an ID for the new node so both BST and AVL steps track the same node
+    const newId = ++nodeIdCounter;
+
+    // Phase 2: BST insert (no rotations) — show new node at leaf
+    const afterBst = bstInsertWithId(cloneTree(rootNode), val, newId);
+    steps.push({ type: 'tree', tree: cloneTree(afterBst), newNode: val, desc: `插入节点 ${val}` });
+
+    // Phase 3: full AVL insert (with rotations) — show rebalancing
+    const afterAvl = avlInsertFullWithId(cloneTree(rootNode), val, newId);
+    // Only add rebalance step if tree structure actually changed (rotation happened)
+    if (!treesEqual(afterBst, afterAvl)) {
+      steps.push({ type: 'tree', tree: cloneTree(afterAvl), desc: `AVL 重平衡` });
+    }
+
+    return { root: afterAvl, steps };
+  }
+
+  function bstInsertWithId(node, val, id) {
+    if (!node) { const n = new TNode(val); n.id = id; return n; }
+    if (val < node.val) node.left = bstInsertWithId(node.left, val, id);
+    else if (val > node.val) node.right = bstInsertWithId(node.right, val, id);
+    return node;
+  }
+
+  function avlInsertFullWithId(node, val, id) {
+    if (!node) { const n = new TNode(val); n.id = id; return n; }
+    if (val < node.val) node.left = avlInsertFullWithId(node.left, val, id);
+    else if (val > node.val) node.right = avlInsertFullWithId(node.right, val, id);
+    else return node;
+    avlUpdate(node);
+    const b = avlBf(node);
+    if (b > 1 && avlBf(node.left) >= 0) return rotateR(node);
+    if (b < -1 && avlBf(node.right) <= 0) return rotateL(node);
+    if (b > 1 && avlBf(node.left) < 0) { node.left = rotateL(node.left); return rotateR(node); }
+    if (b < -1 && avlBf(node.right) > 0) { node.right = rotateR(node.right); return rotateL(node); }
+    return node;
+  }
+
+  // Check if two trees have the same structure (by node id positions)
+  function treesEqual(a, b) {
+    if (!a && !b) return true;
+    if (!a || !b) return false;
+    if (a.id !== b.id) return false;
+    return treesEqual(a.left, b.left) && treesEqual(a.right, b.right);
+  }
+
+  // ─── AVL delete with steps ───────────────────────────────────────
+  function avlDeleteSteps(rootNode, val) {
+    const steps = [];
+    const path = findPath(rootNode, val);
+    if (!path.length || path[path.length - 1] !== val) return { root: rootNode, steps: [] };
+
+    for (let i = 0; i < path.length; i++) {
+      steps.push({ type: 'visit', path: path.slice(0, i + 1), desc: `搜索: ${path.slice(0, i + 1).join(' → ')}` });
+    }
+    steps.push({ type: 'visit', path: path, markDelete: val, desc: `找到节点 ${val}，准备删除` });
+
+    rootNode = avlDelete(rootNode, val);
+    steps.push({ type: 'tree', tree: cloneTree(rootNode), desc: `删除节点 ${val} 并重平衡` });
+
+    return { root: rootNode, steps };
+  }
+
+  function avlDelete(node, val) {
+    if (!node) return null;
+    if (val < node.val) node.left = avlDelete(node.left, val);
+    else if (val > node.val) node.right = avlDelete(node.right, val);
+    else {
+      if (!node.left) return node.right;
+      if (!node.right) return node.left;
+      let succ = node.right;
+      while (succ.left) succ = succ.left;
+      node.val = succ.val; node.id = succ.id;
+      node.right = avlDelete(node.right, succ.val);
+    }
+    avlUpdate(node);
+    const b = avlBf(node);
+    if (b > 1 && avlBf(node.left) >= 0) return rotateR(node);
+    if (b > 1 && avlBf(node.left) < 0) { node.left = rotateL(node.left); return rotateR(node); }
+    if (b < -1 && avlBf(node.right) <= 0) return rotateL(node);
+    if (b < -1 && avlBf(node.right) > 0) { node.right = rotateR(node.right); return rotateL(node); }
+    return node;
+  }
+
+
+  // ─── RB Tree with steps ──────────────────────────────────────────
+  function rbInsertSteps(rootNode, val) {
+    const steps = [];
+    // Check duplicate
+    if (rootNode) {
+      let n = rootNode;
+      while (n) {
+        if (val === n.val) return { root: rootNode, steps: [] };
+        n = val < n.val ? n.left : n.right;
+      }
+    }
+    const path = findPath(rootNode, val);
+    for (let i = 0; i < path.length; i++) {
+      steps.push({ type: 'visit', path: path.slice(0, i + 1), desc: `搜索: ${path.slice(0, i + 1).join(' → ')}` });
+    }
+
+    // Do the full RB insert, then show the result
+    const newId = ++nodeIdCounter;
+    rootNode = rbInsertFullWithId(rootNode, val, newId);
+    if (rootNode) rootNode.color = BLACK;
+    steps.push({ type: 'tree', tree: cloneTree(rootNode), newNode: val, desc: `插入 ${val} 并修复红黑性质` });
+    return { root: rootNode, steps };
+  }
+
+  function rbInsertFullWithId(h, val, id) {
+    if (!h) { const n = new TNode(val); n.id = id; n.color = RED; return n; }
+    if (val < h.val) h.left = rbInsertFullWithId(h.left, val, id);
+    else if (val > h.val) h.right = rbInsertFullWithId(h.right, val, id);
+    else return h;
+    if (isRed(h.right) && !isRed(h.left)) h = rbRotateL(h);
+    if (isRed(h.left) && h.left && isRed(h.left.left)) h = rbRotateR(h);
+    if (isRed(h.left) && isRed(h.right)) rbFlip(h);
+    return h;
+  }
+
+  function isRed(n) { return n ? n.color === RED : false; }
+  function rbRotateL(h) { const x = h.right; h.right = x.left; x.left = h; x.color = h.color; h.color = RED; return x; }
+  function rbRotateR(h) { const x = h.left; h.left = x.right; x.right = h; x.color = h.color; h.color = RED; return x; }
+  function rbFlip(h) { h.color = RED; if (h.left) h.left.color = BLACK; if (h.right) h.right.color = BLACK; }
+
+  function rbDeleteSteps(rootNode, val) {
+    const steps = [];
+    const path = findPath(rootNode, val);
+    if (!path.length || path[path.length - 1] !== val) return { root: rootNode, steps: [] };
+    for (let i = 0; i < path.length; i++) {
+      steps.push({ type: 'visit', path: path.slice(0, i + 1), desc: `搜索: ${path.slice(0, i + 1).join(' → ')}` });
+    }
+    steps.push({ type: 'visit', path, markDelete: val, desc: `找到节点 ${val}，准备删除` });
+    rootNode = rbDeleteNode(rootNode, val);
+    if (rootNode) rootNode.color = BLACK;
+    steps.push({ type: 'tree', tree: cloneTree(rootNode), desc: `删除节点 ${val} 并修复红黑性质` });
+    return { root: rootNode, steps };
+  }
+
+  // Simplified RB delete (reuse existing logic)
+  function rbDeleteNode(h, val) {
+    if (!h) return null;
+    if (val < h.val) {
+      if (h.left && !isRed(h.left) && !(h.left && isRed(h.left.left))) h = rbMoveRedLeft(h);
+      h.left = rbDeleteNode(h.left, val);
+    } else {
+      if (isRed(h.left)) h = rbRotateR(h);
+      if (val === h.val && !h.right) return null;
+      if (h.right && !isRed(h.right) && !(h.right && isRed(h.right.left))) h = rbMoveRedRight(h);
+      if (val === h.val) {
+        let m = h.right; while (m.left) m = m.left;
+        h.val = m.val; h.id = m.id;
+        h.right = rbDeleteMin(h.right);
+      } else {
+        h.right = rbDeleteNode(h.right, val);
+      }
+    }
+    return rbFixUp(h);
+  }
+  function rbMoveRedLeft(h) { rbFlipDel(h); if (h.right && isRed(h.right.left)) { h.right = rbRotateR(h.right); h = rbRotateL(h); rbFlipDel(h); } return h; }
+  function rbMoveRedRight(h) { rbFlipDel(h); if (h.left && isRed(h.left.left)) { h = rbRotateR(h); rbFlipDel(h); } return h; }
+  function rbFlipDel(h) { h.color = !h.color; if (h.left) h.left.color = !h.left.color; if (h.right) h.right.color = !h.right.color; }
+  function rbFixUp(h) { if (isRed(h.right) && !isRed(h.left)) h = rbRotateL(h); if (isRed(h.left) && h.left && isRed(h.left.left)) h = rbRotateR(h); if (isRed(h.left) && isRed(h.right)) rbFlip(h); return h; }
+  function rbDeleteMin(h) { if (!h.left) return null; if (!isRed(h.left) && !(h.left && isRed(h.left.left))) h = rbMoveRedLeft(h); h.left = rbDeleteMin(h.left); return rbFixUp(h); }
 
   // ─── Layout & Rendering ──────────────────────────────────────────
   let root = null;
   let treeType = 'avl';
-  let positions = new Map(); // val -> {x, y}
-  let targetPositions = new Map();
-  let animStart = 0;
-  let animating = false;
-  let highlightVal = null;
+  let positions = new Map();   // id -> {x, y, val, color}
+  let highlightSet = null;     // Set of vals to highlight (search path)
+  let markDeleteVal = null;
+  let newNodeVal = null;
 
   function computeLayout(node, depth, left, right, out) {
     if (!node) return;
     const mid = (left + right) / 2;
-    out.set(node.val, { x: mid, y: 40 + depth * LEVEL_H, color: node.color });
+    out.set(node.id, { x: mid, y: 40 + depth * LEVEL_H, val: node.val, color: node.color });
     computeLayout(node.left, depth + 1, left, mid, out);
     computeLayout(node.right, depth + 1, mid, right, out);
   }
+
+  function canvasW() { return canvas.width / (window.devicePixelRatio || 1); }
+  function canvasH() { return canvas.height / (window.devicePixelRatio || 1); }
 
   function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
@@ -196,19 +323,19 @@
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw(1, null, 0);
+    drawStatic();
   }
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
-  function draw(t, removedNodes, removedAlpha) {
+  // Draw the current state (no animation interpolation)
+  function drawStatic() {
     const c = colors();
-    const w = canvas.width / (window.devicePixelRatio || 1);
-    const h = canvas.height / (window.devicePixelRatio || 1);
+    const w = canvasW(), h = canvasH();
     ctx.fillStyle = c.bg;
     ctx.fillRect(0, 0, w, h);
 
-    if (!root && (!removedNodes || removedNodes.size === 0)) {
+    if (!root) {
       ctx.fillStyle = c.edge;
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
@@ -216,46 +343,37 @@
       return;
     }
 
-    // Interpolate positions for living nodes
-    const current = new Map();
-    for (const [val, target] of targetPositions) {
-      const prev = positions.get(val) || target;
-      current.set(val, {
-        x: lerp(prev.x, target.x, t),
-        y: lerp(prev.y, target.y, t),
-        color: target.color,
-      });
-    }
+    // Recompute positions for current tree
+    const posMap = new Map();
+    computeLayout(root, 0, 20, w - 20, posMap);
 
-    // Draw edges first (behind nodes)
-    if (root) drawEdges(root, current, c);
-
-    // Draw living nodes
-    for (const [val, pos] of current) {
-      drawNode(val, pos, c, 1.0);
-    }
-
-    // Draw fading removed nodes
-    if (removedNodes && removedAlpha > 0.01) {
-      for (const [val, pos] of removedNodes) {
-        drawNode(val, pos, c, removedAlpha);
-      }
+    drawEdgesFromTree(root, posMap, c);
+    for (const [id, pos] of posMap) {
+      drawNode(pos.val, pos, c, 1.0);
     }
   }
 
   function drawNode(val, pos, c, alpha) {
     ctx.globalAlpha = alpha;
-    const isRB = treeType === 'rb';
     let fillColor = c.node;
-    if (isRB) {
+    if (treeType === 'rb') {
       fillColor = pos.color === RED ? c.red : c.black;
     }
-    if (val === highlightVal) fillColor = c.highlight;
+    if (highlightSet && highlightSet.has(val)) fillColor = c.visiting;
+    if (val === markDeleteVal) fillColor = c.red;
+    if (val === newNodeVal) fillColor = c.highlight;
 
     ctx.beginPath();
     ctx.arc(pos.x, pos.y, NODE_R, 0, Math.PI * 2);
     ctx.fillStyle = fillColor;
     ctx.fill();
+
+    // Outline for highlighted nodes
+    if (highlightSet && highlightSet.has(val)) {
+      ctx.strokeStyle = c.visiting;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
 
     ctx.fillStyle = c.nodeText;
     ctx.font = 'bold 12px sans-serif';
@@ -265,67 +383,86 @@
     ctx.globalAlpha = 1.0;
   }
 
-  function drawEdges(node, posMap, c) {
+  function drawEdgesFromTree(node, posMap, c) {
     if (!node) return;
-    const p = posMap.get(node.val);
+    const p = posMap.get(node.id);
     if (!p) return;
-    if (node.left && posMap.has(node.left.val)) {
-      const lp = posMap.get(node.left.val);
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y + NODE_R);
-      ctx.lineTo(lp.x, lp.y - NODE_R);
-      ctx.strokeStyle = c.edge;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+    const children = [node.left, node.right];
+    for (const child of children) {
+      if (child && posMap.has(child.id)) {
+        const cp = posMap.get(child.id);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y + NODE_R);
+        ctx.lineTo(cp.x, cp.y - NODE_R);
+        ctx.strokeStyle = c.edge;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
     }
-    if (node.right && posMap.has(node.right.val)) {
-      const rp = posMap.get(node.right.val);
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y + NODE_R);
-      ctx.lineTo(rp.x, rp.y - NODE_R);
-      ctx.strokeStyle = c.edge;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
-    drawEdges(node.left, posMap, c);
-    drawEdges(node.right, posMap, c);
+    drawEdgesFromTree(node.left, posMap, c);
+    drawEdgesFromTree(node.right, posMap, c);
   }
 
-  function animateTo() {
+  // ─── Animated transition between two tree states ─────────────────
+  function animateTransition(oldPositions, newRoot) {
     return new Promise((resolve) => {
-      animStart = performance.now();
-      animating = true;
+      const w = canvasW();
+      const newPos = new Map();
+      computeLayout(newRoot, 0, 20, w - 20, newPos);
 
-      // For new nodes (not in old positions), start from top-center or parent
-      const w = canvas.width / (window.devicePixelRatio || 1);
-      for (const [val, target] of targetPositions) {
-        if (!positions.has(val)) {
-          // New node: start from top center, creates a "drop in" effect
-          positions.set(val, { x: w / 2, y: -NODE_R, color: target.color });
+      // Map by node id for interpolation
+      const start = performance.now();
+      const c = colors();
+
+      // For new nodes, start from top center
+      for (const [id, target] of newPos) {
+        if (!oldPositions.has(id)) {
+          oldPositions.set(id, { x: w / 2, y: -NODE_R, val: target.val, color: target.color });
         }
       }
 
-      // For removed nodes: keep them in target so they can fade
-      const removedNodes = new Map();
-      for (const [val, pos] of positions) {
-        if (!targetPositions.has(val)) {
-          removedNodes.set(val, pos);
-        }
+      // Removed nodes
+      const removed = new Map();
+      for (const [id, pos] of oldPositions) {
+        if (!newPos.has(id)) removed.set(id, pos);
       }
 
       function frame(now) {
-        const t = Math.min(1, (now - animStart) / ANIM_MS);
+        const t = Math.min(1, (now - start) / ANIM_MS);
         const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-        draw(ease, removedNodes, 1 - ease);
+
+        ctx.fillStyle = c.bg;
+        ctx.fillRect(0, 0, w, canvasH());
+
+        // Interpolate and draw edges + nodes
+        const current = new Map();
+        for (const [id, target] of newPos) {
+          const prev = oldPositions.get(id) || target;
+          current.set(id, {
+            x: lerp(prev.x, target.x, ease),
+            y: lerp(prev.y, target.y, ease),
+            val: target.val,
+            color: target.color,
+          });
+        }
+
+        // Draw edges
+        if (newRoot) drawEdgesFromTree(newRoot, current, c);
+
+        // Draw living nodes
+        for (const [id, pos] of current) {
+          drawNode(pos.val, pos, c, 1.0);
+        }
+
+        // Draw fading removed nodes
+        for (const [id, pos] of removed) {
+          drawNode(pos.val, pos, c, 1 - ease);
+        }
+
         if (t < 1) {
           requestAnimationFrame(frame);
         } else {
-          // Clean up: set positions to final targets
-          positions = new Map();
-          for (const [val, target] of targetPositions) {
-            positions.set(val, { ...target });
-          }
-          animating = false;
+          positions = newPos;
           resolve();
         }
       }
@@ -333,55 +470,82 @@
     });
   }
 
-  function updateTree() {
-    const w = canvas.width / (window.devicePixelRatio || 1);
-    targetPositions = new Map();
-    computeLayout(root, 0, 20, w - 20, targetPositions);
-    return animateTo();
+  // ─── Step replay engine ───────────────────────────────────────────
+  async function replaySteps(steps) {
+    for (const step of steps) {
+      statusBar.textContent = step.desc || '';
+
+      if (step.type === 'visit') {
+        highlightSet = new Set(step.path);
+        markDeleteVal = step.markDelete || null;
+        newNodeVal = null;
+        drawStatic();
+        await sleep(VISIT_MS);
+      } else if (step.type === 'tree') {
+        highlightSet = null;
+        markDeleteVal = null;
+        newNodeVal = step.newNode || null;
+        const oldPos = new Map();
+        computeLayout(root, 0, 20, canvasW() - 20, oldPos);
+        root = step.tree;
+        await animateTransition(oldPos, root);
+        newNodeVal = null;
+        await sleep(180);
+      } else if (step.type === 'treeNoAnim') {
+        highlightSet = null;
+        newNodeVal = step.newNode || null;
+        root = step.tree;
+        drawStatic();
+        await sleep(VISIT_MS);
+      }
+    }
+    highlightSet = null;
+    markDeleteVal = null;
+    newNodeVal = null;
+    statusBar.textContent = '';
+    drawStatic();
   }
 
-  // ─── Actions (async, queued) ─────────────────────────────────────
+  // ─── Actions ─────────────────────────────────────────────────────
   async function insertVal(val) {
     if (isNaN(val) || busy) return;
     busy = true;
-    highlightVal = val;
-    if (treeType === 'avl') {
-      root = AVL.insert(root, val);
-    } else {
-      root = RB.insert(root, val);
-      if (root) root.color = BLACK;
+    const result = treeType === 'avl'
+      ? avlInsertSteps(cloneTree(root), val)
+      : rbInsertSteps(cloneTree(root), val);
+
+    if (result.steps.length > 0) {
+      await replaySteps(result.steps);
+      root = result.root;
+      drawStatic();
     }
-    await updateTree();
-    // Keep highlight briefly after animation
-    await new Promise(r => setTimeout(r, 250));
-    highlightVal = null;
-    draw(1, null, 0);
     busy = false;
   }
 
   async function deleteVal(val) {
     if (isNaN(val) || busy) return;
     busy = true;
-    highlightVal = val;
-    draw(1, null, 0); // flash the node to be deleted
-    await new Promise(r => setTimeout(r, 300));
-    highlightVal = null;
-    if (treeType === 'avl') {
-      root = AVL.remove(root, val);
-    } else {
-      root = RB.remove(root, val);
-      if (root) root.color = BLACK;
+    const result = treeType === 'avl'
+      ? avlDeleteSteps(cloneTree(root), val)
+      : rbDeleteSteps(cloneTree(root), val);
+
+    if (result.steps.length > 0) {
+      await replaySteps(result.steps);
+      root = result.root;
+      drawStatic();
     }
-    await updateTree();
     busy = false;
   }
 
   function clearTree() {
     root = null;
     positions = new Map();
-    targetPositions = new Map();
+    highlightSet = null;
+    markDeleteVal = null;
+    newNodeVal = null;
     busy = false;
-    draw(1, null, 0);
+    statusBar.textContent = '';
+    drawStatic();
   }
 
   async function randomInsert() {
@@ -396,7 +560,6 @@
       existing.add(v);
       toInsert.push(v);
     }
-    // Insert one by one with animation
     for (const v of toInsert) {
       await insertVal(v);
     }
@@ -425,7 +588,7 @@
   });
 
   window.addEventListener('resize', resizeCanvas);
-  new MutationObserver(() => draw(1, null, 0)).observe(document.documentElement, {
+  new MutationObserver(() => drawStatic()).observe(document.documentElement, {
     attributes: true, attributeFilter: ['class']
   });
 
