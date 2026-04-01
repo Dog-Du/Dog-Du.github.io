@@ -72,6 +72,9 @@
 {{- $foldID := printf "%s-%s-%d" $label $lang $lineCount | md5 -}}
 
 {{/* ---- 输出 HTML ---- */}}
+{{- if eq (lower $lang) "mermaid" -}}
+  <pre class="not-prose mermaid">{{ $code | safeHTML }}</pre>
+{{- else -}}
 <div class="codeblock-wrapper {{ if $shouldFold }}codeblock-fold{{ end }}" {{ if $shouldFold }}style="--code-fold-lines: {{ $threshold }};"{{ end }}>
 
   {{/* 隐藏 checkbox：checked = 展开，unchecked = 折叠
@@ -103,3 +106,4 @@
     </div>
   </div>
 </div>
+{{- end -}}
