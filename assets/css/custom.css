@@ -1628,6 +1628,11 @@ body.max-w-7xl {
     transition: none !important;
   }
 
+  /* 禁用 mermaid 全屏遮罩动画 */
+  .mermaid-overlay {
+    transition: none !important;
+  }
+
   /* 禁用所有 card hover 上浮 */
   * {
     animation-duration: 0.01ms !important;
@@ -1974,4 +1979,133 @@ body.max-w-7xl {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* ==========================================================================
+   27. Mermaid 全屏查看器 Mermaid Fullscreen Viewer
+   --------------------------------------------------------------------------
+   点击 mermaid 图弹出全屏遮罩，支持滚轮缩放 + 拖拽平移
+   ========================================================================== */
+
+/* 文章内 mermaid 容器 */
+.mermaid-viewer {
+  position: relative;
+  cursor: zoom-in;
+  transition: box-shadow 0.2s ease;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.mermaid-viewer:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dark .mermaid-viewer:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* 悬停提示 */
+.mermaid-viewer__hint {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgb(var(--color-neutral-400));
+  background: rgba(var(--color-neutral-50), 0.85);
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.dark .mermaid-viewer__hint {
+  background: rgba(var(--color-neutral-800), 0.85);
+  color: rgb(var(--color-neutral-500));
+}
+
+.mermaid-viewer:hover .mermaid-viewer__hint {
+  opacity: 1;
+}
+
+/* 全屏遮罩 */
+.mermaid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  cursor: grab;
+}
+
+.mermaid-overlay--active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mermaid-overlay--dragging {
+  cursor: grabbing;
+}
+
+/* 全屏内 SVG 容器 */
+.mermaid-overlay__content {
+  transform-origin: 0 0;
+  will-change: transform;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mermaid-overlay__content svg {
+  display: block;
+  max-width: none;
+  max-height: none;
+}
+
+/* 关闭按钮 */
+.mermaid-overlay__close {
+  position: fixed;
+  top: 1rem;
+  right: 1.25rem;
+  z-index: 9999;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  backdrop-filter: blur(4px);
+}
+
+.mermaid-overlay__close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 缩放提示 */
+.mermaid-overlay__zoom {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+@media (pointer: fine) {
+  .mermaid-viewer {
+    cursor: url('/cursors/pointer.svg') 10 0, zoom-in;
+  }
 }

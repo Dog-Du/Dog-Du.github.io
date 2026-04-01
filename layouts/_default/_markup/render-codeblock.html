@@ -73,7 +73,10 @@
 
 {{/* ---- 输出 HTML ---- */}}
 {{- if eq (lower $lang) "mermaid" -}}
-  <pre class="not-prose mermaid">{{ $code | safeHTML }}</pre>
+  <div class="mermaid-viewer">
+    <pre class="not-prose mermaid">{{ $code | safeHTML }}</pre>
+    <div class="mermaid-viewer__hint">click to expand</div>
+  </div>
 {{- else -}}
 <div class="codeblock-wrapper {{ if $shouldFold }}codeblock-fold{{ end }}" {{ if $shouldFold }}style="--code-fold-lines: {{ $threshold }};"{{ end }}>
 
