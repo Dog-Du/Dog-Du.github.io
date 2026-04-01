@@ -74,21 +74,21 @@ RocksDB 不是把数据直接“原地改写”到磁盘页里，而是把写入
 
 ```mermaid
 flowchart LR
-    A[客户端 Put/Delete] --> B[DBImpl::WriteImpl]
-    B --> C[WriteToWAL]
-    B --> D[MemTable]
-    D --> E[Immutable MemTable]
-    E --> F[Flush]
-    F --> G[L0 SST]
-    G --> H[Compaction]
-    H --> I[L1~Ln SST]
+    A["客户端 Put/Delete"] --> B["DBImpl::WriteImpl"]
+    B --> C["WriteToWAL"]
+    B --> D["MemTable"]
+    D --> E["Immutable MemTable"]
+    E --> F["Flush"]
+    F --> G["L0 SST"]
+    G --> H["Compaction"]
+    H --> I["L1~Ln SST"]
 
-    J[客户端 Get/Iterator] --> K[DBImpl::GetImpl]
-    K --> L[获取 SuperVersion]
-    L --> M[mutable MemTable]
-    L --> N[immutable MemTable(s)]
-    L --> O[current Version 对应的 SST]
-    O --> P[BlockBasedTable / Block Cache / 磁盘]
+    J["客户端 Get/Iterator"] --> K["DBImpl::GetImpl"]
+    K --> L["获取 SuperVersion"]
+    L --> M["mutable MemTable"]
+    L --> N["immutable MemTable(s)"]
+    L --> O["current Version 对应的 SST"]
+    O --> P["BlockBasedTable / Block Cache / 磁盘"]
 ```
 
 再看“谁把这些状态串起来”：
