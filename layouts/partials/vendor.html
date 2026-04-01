@@ -13,6 +13,111 @@
     type="text/javascript"
     src="{{ $mermaidJS.RelPermalink }}"
     integrity="{{ $mermaidJS.Data.Integrity }}"></script>
+  {{/* Mermaid fullscreen viewer: click to expand, scroll to zoom, drag to pan */}}
+  <script defer>
+  document.addEventListener("DOMContentLoaded",function(){
+    var viewers=document.querySelectorAll(".mermaid-viewer");
+    if(!viewers.length)return;
+
+    /* ---- create overlay (once) ---- */
+    var overlay=document.createElement("div");
+    overlay.className="mermaid-overlay";
+    overlay.innerHTML='<div class="mermaid-overlay__content"></div>'
+      +'<button class="mermaid-overlay__close" aria-label="Close">&times;</button>'
+      +'<span class="mermaid-overlay__zoom">Scroll to zoom &middot; Drag to pan</span>';
+    document.body.appendChild(overlay);
+
+    var content=overlay.querySelector(".mermaid-overlay__content");
+    var closeBtn=overlay.querySelector(".mermaid-overlay__close");
+
+    var scale=1,tx=0,ty=0,dragging=false,startX=0,startY=0;
+
+    function applyTransform(){
+      content.style.transform="translate("+tx+"px,"+ty+"px) scale("+scale+")";
+    }
+
+    function open(viewer){
+      var svg=viewer.querySelector("svg");
+      if(!svg)return;
+      var clone=svg.cloneNode(true);
+      clone.removeAttribute("style");
+      clone.style.maxWidth="none";
+      clone.style.maxHeight="none";
+      content.innerHTML="";
+      content.appendChild(clone);
+
+      /* center the SVG */
+      scale=1;tx=0;ty=0;
+      overlay.classList.add("mermaid-overlay--active");
+      document.body.style.overflow="hidden";
+
+      requestAnimationFrame(function(){
+        var r=clone.getBoundingClientRect();
+        var vw=window.innerWidth,vh=window.innerHeight;
+        var fitScale=Math.min(vw*0.9/r.width,vh*0.85/r.height,1.5);
+        scale=fitScale;
+        tx=(vw-r.width*scale)/2;
+        ty=(vh-r.height*scale)/2;
+        applyTransform();
+      });
+    }
+
+    function close(){
+      overlay.classList.remove("mermaid-overlay--active");
+      overlay.classList.remove("mermaid-overlay--dragging");
+      document.body.style.overflow="";
+      dragging=false;
+    }
+
+    /* click to open */
+    viewers.forEach(function(v){
+      v.addEventListener("click",function(e){
+        e.preventDefault();
+        open(v);
+      });
+    });
+
+    /* close */
+    closeBtn.addEventListener("click",close);
+    overlay.addEventListener("click",function(e){
+      if(e.target===overlay)close();
+    });
+    document.addEventListener("keydown",function(e){
+      if(e.key==="Escape")close();
+    });
+
+    /* zoom */
+    overlay.addEventListener("wheel",function(e){
+      e.preventDefault();
+      var rect=overlay.getBoundingClientRect();
+      var mx=e.clientX-rect.left;
+      var my=e.clientY-rect.top;
+      var oldScale=scale;
+      var delta=e.deltaY>0?0.9:1.1;
+      scale=Math.min(Math.max(scale*delta,0.1),20);
+      tx=mx-(mx-tx)*(scale/oldScale);
+      ty=my-(my-ty)*(scale/oldScale);
+      applyTransform();
+    },{passive:false});
+
+    /* drag */
+    overlay.addEventListener("pointerdown",function(e){
+      if(e.target===closeBtn||e.target.closest(".mermaid-overlay__close"))return;
+      dragging=true;startX=e.clientX-tx;startY=e.clientY-ty;
+      overlay.classList.add("mermaid-overlay--dragging");
+      overlay.setPointerCapture(e.pointerId);
+    });
+    overlay.addEventListener("pointermove",function(e){
+      if(!dragging)return;
+      tx=e.clientX-startX;ty=e.clientY-startY;
+      applyTransform();
+    });
+    overlay.addEventListener("pointerup",function(){
+      dragging=false;
+      overlay.classList.remove("mermaid-overlay--dragging");
+    });
+  });
+  </script>
 {{ end }}
 
 {{/* Chart */}}
