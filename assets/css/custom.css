@@ -2053,18 +2053,14 @@ body.max-w-7xl {
   cursor: grabbing;
 }
 
-/* 全屏内 SVG 容器 */
+/* 全屏内 SVG 容器：仅用 translate 平移，缩放通过修改 SVG 尺寸实现 */
 .mermaid-overlay__content {
-  transform-origin: 0 0;
-  will-change: transform;
   user-select: none;
   -webkit-user-select: none;
 }
 
 .mermaid-overlay__content svg {
   display: block;
-  max-width: none;
-  max-height: none;
 }
 
 /* 关闭按钮 */
