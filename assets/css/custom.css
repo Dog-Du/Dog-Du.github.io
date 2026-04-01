@@ -2029,15 +2029,13 @@ body.max-w-7xl {
   opacity: 1;
 }
 
-/* 全屏遮罩 */
+/* 全屏遮罩 — 不使用 flex 居中，位置完全由 JS translate 控制 */
 .mermaid-overlay {
   position: fixed;
   inset: 0;
   z-index: 9998;
   background: rgba(0, 0, 0, 0.88);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s ease, visibility 0.25s ease;

@@ -29,7 +29,7 @@
     var content=overlay.querySelector(".mermaid-overlay__content");
     var closeBtn=overlay.querySelector(".mermaid-overlay__close");
     var scale,tx,ty,baseW,baseH;
-    var dragging=false,startX,startY;
+    var dragging=false,didDrag=false,startX,startY;
 
     function update(){
       var svg=content.querySelector("svg");
@@ -83,7 +83,7 @@
     });
 
     closeBtn.addEventListener("click",close);
-    overlay.addEventListener("click",function(e){if(e.target===overlay)close();});
+    overlay.addEventListener("click",function(e){if(!didDrag&&e.target===overlay)close();didDrag=false;});
     document.addEventListener("keydown",function(e){if(e.key==="Escape")close();});
 
     /* zoom: change SVG width/height so browser re-renders vector at new size */
@@ -102,12 +102,13 @@
     /* drag to pan */
     overlay.addEventListener("pointerdown",function(e){
       if(e.target.closest(".mermaid-overlay__close"))return;
-      dragging=true;startX=e.clientX-tx;startY=e.clientY-ty;
+      dragging=true;didDrag=false;startX=e.clientX-tx;startY=e.clientY-ty;
       overlay.classList.add("mermaid-overlay--dragging");
       overlay.setPointerCapture(e.pointerId);
     });
     overlay.addEventListener("pointermove",function(e){
       if(!dragging)return;
+      didDrag=true;
       tx=e.clientX-startX;ty=e.clientY-startY;
       update();
     });
