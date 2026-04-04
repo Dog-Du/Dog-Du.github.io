@@ -1,0 +1,5 @@
+today i want really to learn vim
+vim feels strange at first for me
+but i want to stop editing in chaos
+normal mode should be my default mode
+
