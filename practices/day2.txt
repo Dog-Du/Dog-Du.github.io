@@ -1,0 +1,4 @@
+vim motion should reduce wasted movement
+longer lines make direct navigation more important
+I want to move by word instead of drifting by character
+sometimes a wrapped line is still one real line
