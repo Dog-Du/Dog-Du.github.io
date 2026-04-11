@@ -853,3 +853,76 @@
 - 不要让索引文件承载长篇知识正文。
 - 不要把文章拆得太散，导致回看困难。
 - 每日文章是主载体，索引文件是导航和恢复工具。
+
+## 14. 复习问答闸门
+
+### 14.1 目标
+
+- 仅靠 `mastery_score`、`understanding_status` 这类字段，不足以形成真正的学习约束。
+- 每天学习结束后，必须进入一次简短的复习问答环节。
+- 如果最近一天的复习问答没有完成，下一次“继续学习”前必须先答题，不能直接推进新内容。
+
+### 14.2 阻断范围
+
+- 只阻断“最近一天未答题”或“最近一天虽已答题但仍存在关键误解”的情况。
+- 不追溯阻断所有历史未答题章节，避免每次恢复都被历史内容拖入过大的上下文。
+
+### 14.3 每日文章要求
+
+- 每日文章中的 `复习题` 是强制项，不可省略。
+- 当天文章写完后，应主动向用户发起当日复习问答。
+- 如果用户在当次 session 中没有回答，仍然保留 `复习题`，但索引中的最近一天复习状态保持为空。
+
+### 14.4 索引字段
+
+索引文件中，最近一天应额外记录以下字段：
+
+- `review_status`
+  - 默认留空
+  - 留空表示用户尚未回答最近一天的复习题
+  - 已回答时记录为 `answered`
+- `review_result`
+  - 默认留空
+  - 建议取值：`pass` / `partial` / `fail`
+- `review_answered_at`
+  - 记录答题时间
+- `review_notes`
+  - 用简短文字记录答题情况、关键误解或补充结论
+- `review_block_next`
+  - 取值：`yes` / `no`
+  - 用于恢复时快速判断能否继续下一天
+
+### 14.5 闸门判断规则
+
+- 如果最近一天 `review_status` 为空：
+  - 视为未答题
+  - `review_block_next` 应为 `yes`
+  - 下一次继续学习前，必须先答题
+- 如果最近一天 `review_status: answered` 且 `review_result: pass`：
+  - 通常 `review_block_next: no`
+  - 允许继续下一天
+- 如果最近一天 `review_status: answered` 且 `review_result: partial`：
+  - 通常 `review_block_next: no`
+  - 允许继续，但应标记 `revisit`
+- 如果最近一天 `review_status: answered` 且 `review_result: fail`：
+  - 通常 `review_block_next: yes`
+  - 必须先纠正关键误解，再决定是否继续
+
+### 14.6 与掌握度字段的关系
+
+- `review_status / review_result / review_block_next`
+  - 用来判断“当前能不能继续”
+- `understanding_status / mastery_score / weak_points`
+  - 用来记录“这一章学得怎么样”
+
+这两组字段不能互相替代。
+
+### 14.7 新 Session 的执行要求
+
+- 每次用户说“继续”“继续学习”“开始今天的学习”时，恢复流程除了检查索引和文章进度，还必须先检查最近一天的复习问答闸门。
+- 如果最近一天未答题，先答题，不推进新内容。
+- 如果最近一天已答题但仍有关键误解，先纠正和补答，不推进新内容。
+- 只有最近一天满足：
+  - `review_status: answered`
+  - 且 `review_block_next: no`
+  才允许继续学习新的章节。

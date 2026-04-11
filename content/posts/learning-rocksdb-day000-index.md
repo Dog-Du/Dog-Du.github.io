@@ -1,11 +1,11 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-09T16:00:00+08:00
+lastmod: 2026-04-11T10:00:00+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 slug: learning-rocksdb-index
-summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进度、导航每日文章以及记录关键薄弱点。
+summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进度、导航每日文章，并记录掌握度与最近一天复习问答闸门状态。
 ---
 
 ## 当前状态
@@ -15,16 +15,33 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - 当前主线阶段：`第 2 章：DB 打开流程与核心对象关系`
 - 上一篇文章写到：
   - `DB::Open -> DBImpl::Open -> Recover -> VersionSet::Recover -> WAL replay -> LogAndApplyForRecovery -> InstallSuperVersion`
-  - 已经看清打开阶段 `VersionSet`、`ColumnFamilyData`、`Version`、`MemTable`、`SuperVersion` 的连接顺序
+  - 已经梳理清楚打开阶段 `VersionSet`、`ColumnFamilyData`、`Version`、`MemTable`、`SuperVersion` 的连接顺序
   - 还没有深入 `VersionEditHandler`、manifest record 编码、best-efforts recovery 的细节
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
-- 下一步建议：`进入 Day 003：Write Path / WriteBatch / Sequence Number`
+- 下一步建议：
+  - `先回答 Day 002 复习题，再决定是否进入 Day 003：Write Path / WriteBatch / Sequence Number`
 - 当前仍需补看的关键点：
   - `VersionEditHandler` 如何逐条把 MANIFEST record 落成最终版本状态
   - best-efforts recovery 与普通 recovery 的分支差异
   - `WriteImpl` 中写线程、sequence number、WAL 与 memtable 的更细粒度协作
+
+## 最近一天复习问答闸门
+
+- latest_review_day：`Day 002`
+- latest_review_file：`learning-rocksdb-day002-2026-04-09-db-open-and-core-object-relationships.md`
+- review_status：
+- review_result：
+- review_answered_at：
+- review_notes：
+- review_block_next：`yes`
+
+说明：
+
+- `review_status` 留空，表示最近一天尚未答题。
+- 由于最近一天尚未答题，下一次“继续学习”前必须先回答 Day 002 的复习题。
+- 只检查最近一天，不追溯阻断更早历史章节。
 
 ## 默认学习主线
 
@@ -59,12 +76,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `done`
   - `revisit`
   - `next`
-- 当某天文章实际创建后，用真实文件名替换 `TBD`
-- 如果当天只是补充问答而没有开启新一天，优先更新对应日文章，而不是新增一行
+- 如果当天只是补充问答而没有开启新的一天，优先更新对应日文章和索引状态，而不是新增一行。
 
 ## 章节掌握快照
-
-每完成一天学习后，为该天记录一份轻量快照。
 
 ### Day 001
 
@@ -90,6 +104,11 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `D:\program\rocksdb\db\dbformat.h`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 DB 打开流程、Snapshot 或 MANIFEST 时回看`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：
+- review_notes：`历史章节未开启复习闸门时形成的内容，先按 partial 视为可继续，但保留 revisit。`
+- review_block_next：`no`
 
 ### Day 002
 
@@ -98,9 +117,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - understanding_status：`green`
 - mastery_score：`4/5`
 - weak_points：
-  - `VersionEditHandler` 的逐 record 回放细节还没单独拆开
+  - `VersionEditHandler` 的逐条 record 回放细节还没单独拆开
   - `TryRecover / best-efforts recovery` 分支暂时只知道骨架
-  - recovery_ctx 中 `cfds_ / edit_lists_` 的精确填充时机还可以继续细读
+  - `recovery_ctx` 中 `cfds_ / edit_lists_` 的精确填充时机还可以继续细读
 - source_anchors：
   - `D:\program\rocksdb\include\rocksdb\db.h`
   - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
@@ -112,13 +131,18 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `D:\program\rocksdb\db\column_family.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 WAL、MANIFEST / VersionEdit / VersionSet、Flush 时回看`
+- review_status：
+- review_result：
+- review_answered_at：
+- review_notes：
+- review_block_next：`yes`
 
-状态使用建议：
+## 状态使用建议
 
 - `green`
   - 通常是 `4/5` 或 `5/5`
   - 没有关键误解
-  - 可以直接进入下一章
+  - 可以进入下一章
 - `yellow`
   - 通常是 `3/5`
   - 或 `4/5` 但仍有一个关键链路没完全闭环
@@ -127,6 +151,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - 通常是 `0/5` 到 `2/5`
   - 或存在明显关键误解
   - 先不要推进，先补充学习或问答
+
+复习问答闸门说明：
+
+- `review_status / review_result / review_block_next` 用来决定“现在能不能继续”
+- `understanding_status / mastery_score / weak_points` 用来记录“这一章学得怎么样”
+- 最近一天 `review_status` 为空时，默认视为未答题，并阻断下一次继续学习
 
 ## 当前薄弱点与回看提示
 
@@ -160,7 +190,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - 索引文件不承载长篇知识正文。
 - 当结构、流程、状态迁移或模块协作适合图示时，优先在每日文章中加入 Mermaid 图。
 - `设计动机`、`横向对比`、`工程启发` 是主线文章中的可选补充模块，不是独立主线。
+- `复习题` 是每日文章中的强制项。
+- 每次完成当天文章后，应主动发起最近一天的复习问答。
 
 ## 最近更新时间
 
-- 2026-04-09T16:00:00+08:00
+- 2026-04-11T10:00:00+08:00
