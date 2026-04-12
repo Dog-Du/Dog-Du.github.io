@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-11T10:00:00+08:00
+lastmod: 2026-04-12T15:10:00+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 slug: learning-rocksdb-index
@@ -10,38 +10,39 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`2`
-- 当前最近一次学习主题：`Day 002：DB 打开流程与核心对象关系`
-- 当前主线阶段：`第 2 章：DB 打开流程与核心对象关系`
+- 当前学习总天数：`3`
+- 当前最近一次学习主题：`Day 003：Write Path / WriteBatch / Sequence Number`
+- 当前主线阶段：`第 3 章：Write Path / WriteBatch / Sequence Number`
 - 上一篇文章写到：
-  - `DB::Open -> DBImpl::Open -> Recover -> VersionSet::Recover -> WAL replay -> LogAndApplyForRecovery -> InstallSuperVersion`
-  - 已经梳理清楚打开阶段 `VersionSet`、`ColumnFamilyData`、`Version`、`MemTable`、`SuperVersion` 的连接顺序
-  - 还没有深入 `VersionEditHandler`、manifest record 编码、best-efforts recovery 的细节
+  - `DBImpl::Write -> WriteImpl -> JoinBatchGroup -> EnterAsBatchGroupLeader -> WriteGroupToWAL / ConcurrentWriteGroupToWAL -> WriteBatchInternal::InsertInto -> SetLastSequence`
+  - 已经讲清 `WriteBatch` header 中的 `sequence + count`、`WriteThread::Writer / WriteGroup`、group leader 如何挑选兼容 writer、以及 sequence 在 WAL 和 memtable 之间如何复用
+  - 还没有深入 `log::Writer::AddRecord()` 的物理格式、WAL block 切分、以及恢复时如何从 WAL record 还原 batch
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
+  - `Day 003：Write Path / WriteBatch / Sequence Number`
 - 下一步建议：
-  - `先回答 Day 002 复习题，再决定是否进入 Day 003：Write Path / WriteBatch / Sequence Number`
+  - `进入 Day 004：WAL`
 - 当前仍需补看的关键点：
-  - `VersionEditHandler` 如何逐条把 MANIFEST record 落成最终版本状态
-  - best-efforts recovery 与普通 recovery 的分支差异
-  - `WriteImpl` 中写线程、sequence number、WAL 与 memtable 的更细粒度协作
+  - `log::Writer::AddRecord()` 的物理写入格式
+  - `WAL replay` 时 batch 记录如何重新展开成 memtable 更新
+  - `SequenceNumber` 在 snapshot / 读可见性里的后续消费方式
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 002`
-- latest_review_file：`learning-rocksdb-day002-2026-04-09-db-open-and-core-object-relationships.md`
-- review_status：
-- review_result：
-- review_answered_at：
-- review_notes：
-- review_block_next：`yes`
+- latest_review_day：`Day 003`
+- latest_review_file：`learning-rocksdb-day003-2026-04-12-write-path-writebatch-sequence-number.md`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-04-12`
+- review_notes：`本轮复习问答完成。已经能说清 JoinBatchGroup / EnterAsBatchGroupLeader 的职责分工、先 WAL 后 memtable 的原因，以及 LastSequence 必须放在更靠后的位置发布。仍建议后续在 WAL 章节回看 WriteBatch header 中 sequence 的统一作用。`
+- review_block_next：`no`
 
 说明：
 
-- `review_status` 留空，表示最近一天尚未答题。
-- 由于最近一天尚未答题，下一次“继续学习”前必须先回答 Day 002 的复习题。
-- 只检查最近一天，不追溯阻断更早历史章节。
+- Day 003 的文章已完成，但复习问答还没开始。
+- 下一次如果用户说“继续”，应先回答 Day 003 的复习题，再决定是否进入 Day 004。
+- 只阻断最近一天，不追溯更早历史章节。
 
 ## 默认学习主线
 
@@ -69,6 +70,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | --- | --- | --- | --- | --- |
 | 001 | 2026-04-01 | 整体架构与 LSM-Tree | `learning-rocksdb-day001-2026-04-01-architecture-and-lsm-tree.md` | `revisit` |
 | 002 | 2026-04-09 | DB 打开流程与核心对象关系 | `learning-rocksdb-day002-2026-04-09-db-open-and-core-object-relationships.md` | `done` |
+| 003 | 2026-04-12 | Write Path / WriteBatch / Sequence Number | `learning-rocksdb-day003-2026-04-12-write-path-writebatch-sequence-number.md` | `next` |
 
 说明：
 
@@ -107,19 +109,21 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_status：`answered`
 - review_result：`partial`
 - review_answered_at：
-- review_notes：`历史章节未开启复习闸门时形成的内容，先按 partial 视为可继续，但保留 revisit。`
+- review_notes：`历史章节在复习问答闸门引入之前形成，先按 partial 视为可继续，但保留 revisit。`
 - review_block_next：`no`
 
 ### Day 002
 
 - 主题：`DB 打开流程与核心对象关系`
 - 文件：`learning-rocksdb-day002-2026-04-09-db-open-and-core-object-relationships.md`
-- understanding_status：`green`
-- mastery_score：`4/5`
+- understanding_status：`yellow`
+- mastery_score：`3/5`
 - weak_points：
   - `VersionEditHandler` 的逐条 record 回放细节还没单独拆开
   - `TryRecover / best-efforts recovery` 分支暂时只知道骨架
   - `recovery_ctx` 中 `cfds_ / edit_lists_` 的精确填充时机还可以继续细读
+  - `LogAndApplyForRecovery` 与 `WAL replay` 的职责边界还值得回看
+  - `SuperVersion` 的“发布稳定可读视图”表述后面读路径章节还要继续压实
 - source_anchors：
   - `D:\program\rocksdb\include\rocksdb\db.h`
   - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
@@ -130,12 +134,39 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `D:\program\rocksdb\db\column_family.h`
   - `D:\program\rocksdb\db\column_family.cc`
 - ready_for_next：`yes`
-- next_review_trigger：`当学习 WAL、MANIFEST / VersionEdit / VersionSet、Flush 时回看`
-- review_status：
-- review_result：
-- review_answered_at：
-- review_notes：
-- review_block_next：`yes`
+- next_review_trigger：`当学习 WAL、MANIFEST / VersionEdit / VersionSet、Flush 或读路径时回看`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-04-12`
+- review_notes：`第一次复习问答已完成。补充澄清后，已经能区分 WAL replay 与 LogAndApplyForRecovery 的职责边界；也已经能回答 SuperVersion 组织 mem / imm / SST 并为前台读提供稳定视图。整体达到 partial，可继续推进，但建议在读路径章节回看该表述。`
+- review_block_next：`no`
+
+### Day 003
+
+- 主题：`Write Path / WriteBatch / Sequence Number`
+- 文件：`learning-rocksdb-day003-2026-04-12-write-path-writebatch-sequence-number.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - `log::Writer::AddRecord()` 的物理块格式还没展开
+  - `WriteBatch` header 里的 `sequence` 在 WAL / replay / memtable 三处的统一作用还值得再压实
+  - `SequenceNumber` 在 snapshot / 可见性里的消费路径还没进入
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\db.h`
+  - `D:\program\rocksdb\include\rocksdb\write_batch.h`
+  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
+  - `D:\program\rocksdb\db\write_thread.h`
+  - `D:\program\rocksdb\db\write_thread.cc`
+  - `D:\program\rocksdb\db\write_batch_internal.h`
+  - `D:\program\rocksdb\db\write_batch.cc`
+  - `D:\program\rocksdb\db\dbformat.h`
+- ready_for_next：`yes`
+- next_review_trigger：`当学习 WAL、MemTable、Snapshot / Sequence Number / 可见性语义时回看`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-04-12`
+- review_notes：`第一次复习问答已完成。当前已经没有关键误解，可以进入 Day 004；但建议在 WAL 章节回看 WriteBatch header 中 sequence 的统一作用，以及 pipelined write 与默认路径的边界。`
+- review_block_next：`no`
 
 ## 状态使用建议
 
@@ -161,13 +192,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
+  - `log::Writer` 的 WAL 物理格式
   - `VersionEditHandler` 的 MANIFEST 回放细节
-  - `TryRecover / best-efforts recovery` 的降级策略
-  - `SequenceNumber` 在写路径中的真实分配过程
+  - `SequenceNumber` 在 snapshot / 读可见性里的精确消费方式
 - 回看触发条件：
+  - `学习 WAL`
   - `学习 Snapshot / Sequence Number / 可见性语义`
   - `学习 MANIFEST / VersionEdit / VersionSet`
-  - `学习 WAL`
 
 ## 外部资料使用原则
 
@@ -195,4 +226,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-04-11T10:00:00+08:00
+- 2026-04-12T15:10:00+08:00

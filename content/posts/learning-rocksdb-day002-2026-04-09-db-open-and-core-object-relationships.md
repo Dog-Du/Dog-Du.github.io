@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习笔记 Day 002：DB 打开流程与核心对象关系
 date: 2026-04-09T16:00:00+08:00
-lastmod: 2026-04-09T18:00:00+08:00
+lastmod: 2026-04-12T10:30:00+08:00
 tags: [RocksDB, Database, Storage, Recovery]
 categories: [数据库]
 slug: learning-rocksdb-day002-db-open-and-core-object-relationships
@@ -437,6 +437,64 @@ for (auto cfd : *impl->versions_->GetColumnFamilySet()) {
   - `VersionSet` 负责登记版本，`SuperVersion` 负责发布读视图。
 - 是否需要后续回看：
   - `否`
+
+#### 复习问答回合（2026-04-12）
+
+- 问题：
+  - `DBImpl::Open()` 为什么不能简单理解成“打开几个文件”？
+  - `VersionSet::Recover()` 和 WAL 回放分别在恢复什么？
+  - recovery 期间为什么可能调用 `WriteLevel0TableForRecovery()`？
+  - `LogAndApplyForRecovery()` 和 `InstallSuperVersion(...)` 的职责边界是什么？
+  - `SuperVersion` 为什么是数据库进入可读态的关键一步？
+- 简答：
+  - 本轮回答对 `VersionSet::Recover()`、WAL replay、recovery 期间 flush 到 L0 的理解基本正确。
+  - 关键误解在于把 `LogAndApplyForRecovery()` 说成了“回放日志恢复 memtable / cf version”。更准确地说，WAL replay 才是在恢复增量数据并重建 memtable；`LogAndApplyForRecovery()` 是把 recovery 过程中形成的新 edit 正式落入 `VersionSet / MANIFEST`。
+  - 对 `SuperVersion` 的回答也还差半步。它不只是 pin 住 memtable / SST，而是把 `mem + imm + current` 组合发布成前台读路径可消费的稳定视图。
+- 源码依据：
+  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
+  - `D:\program\rocksdb\db\version_set.cc`
+  - `D:\program\rocksdb\db\column_family.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+- 当前结论：
+  - 本次复习问答结果判定为 `fail`，原因不是细节遗漏，而是 `LogAndApplyForRecovery()` 与 WAL replay 的职责边界出现了关键混淆。
+  - 在纠正这组边界之前，暂不推进 Day 003。
+- 是否需要后续回看：
+  - `是`
+
+#### 复习问答后的补充澄清（2026-04-12）
+
+- 问题：
+  - `WAL replay` 和 `LogAndApplyForRecovery()` 分别负责什么？
+  - 为什么 `LogAndApplyForRecovery` 这个名字看起来像“回放 WAL”，但实际却不是？
+- 简答：
+  - `WAL replay` 发生在 `RecoverLogFiles(...)` 这条链上，负责读取 WAL record，把 `WriteBatch` 里的增量更新重新插回各个 Column Family 的 memtable；如果 recovery 期间 memtable 写满，还可能触发 `WriteLevel0TableForRecovery(...)`，把内容刷成 L0。
+  - `LogAndApplyForRecovery()` 并不负责“回放 WAL 内容”。它做的是把 recovery 过程中整理出来的 `VersionEdit` 列表正式交给 `versions_->LogAndApply(...)`，也就是把“这次恢复后形成的新版本元数据”登记进 `VersionSet / MANIFEST`。
+  - 可以把两者粗略理解成：
+    - `WAL replay`：恢复“数据增量”
+    - `LogAndApplyForRecovery()`：提交“版本元数据结果”
+- 源码依据：
+  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
+  - `D:\program\rocksdb\db\version_set.cc`
+- 当前结论：
+  - 名字之所以容易误导，是因为这里的 `LogAndApply` 里的 `Log` 不是“去读 WAL 日志”，而是“把 edit 记入 descriptor log / MANIFEST”，也就是 VersionSet 那套版本日志语义。
+  - 所以它如果按更直白但不贴 RocksDB 既有命名体系的方式理解，更接近 `LogRecoveredVersionEditsAndApply()`，而不是 `RecoverManifest` 或 `ReplayWAL`。
+  - `RecoverManifest` 这个名字也不准确，因为恢复 MANIFEST 的事情前面已经由 `VersionSet::Recover()` 做过了；`LogAndApplyForRecovery()` 处理的是 recovery 之后新形成的 edit，不是“再去恢复旧 MANIFEST”。
+- 是否需要后续回看：
+  - `是`
+
+#### 复习问答结果更新（2026-04-12）
+
+- 问题：
+  - 在补充澄清之后，Day 002 是否还应继续阻断？
+- 简答：
+  - 不再阻断。
+  - 原因是关键误解已经纠正：现在已经能区分 `WAL replay` 负责恢复增量数据、`LogAndApplyForRecovery()` 负责提交 recovery 形成的版本 edit。
+  - 对 `SuperVersion` 的描述虽然还可以再精确到“发布 `mem + imm + current` 的稳定可读视图”，但当前回答已经不会对下一章形成关键误导。
+- 当前结论：
+  - 本次复习问答结果从 `fail` 调整为 `partial`。
+  - Day 002 解除继续学习阻断，但保留 `revisit` 心智，建议在后续读路径章节再次回看。
+- 是否需要后续回看：
+  - `是`
 
 ### 外部高价值问题
 
