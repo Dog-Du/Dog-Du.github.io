@@ -1,7 +1,7 @@
 ---
 title: Vim 学习索引
 date: 2026-04-02T00:00:00+08:00
-lastmod: 2026-04-11T00:00:00+08:00
+lastmod: 2026-04-12T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
 slug: learning-vim-index
@@ -10,12 +10,12 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 当前状态
 
-- 当前学习总天数：`4`
-- 当前最近一次学习主题：`Day 004：文本对象，把“操作范围”从移动升级成结构`
-- 当前主线阶段：`第 4 章：文本对象`
+- 当前学习总天数：`5`
+- 当前最近一次学习主题：`Day 005：搜索 / 替换 / 可视模式，把“找到并改掉”做顺`
+- 当前主线阶段：`第 5 章：搜索 / 替换 / 可视模式`
 - 上一篇文章写到：
-  - Day 003 已经把 motion 接到 `d / c / y` 上，开始形成“先决定操作，再给范围”的编辑句式
   - Day 004 已经把范围从“移动路径”推进成“结构对象”，开始围绕 `iw / aw / i\" / a\" / i( / a(` 组织编辑
+  - Day 005 已经把搜索、替换和 Visual 选择接进编辑闭环，开始围绕 `/ ? n N * # :s :%s v V Ctrl-V` 组织操作
   - 当前本地事实锚点是 `Vim 9.2` 与 `Neovim 0.12.0`
 - 已学过主题：
   - `Day 000：总览与环境准备`
@@ -23,6 +23,7 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 002：移动，从“硬挪”到“直接到位”`
   - `Day 003：operator + motion`
   - `Day 004：文本对象`
+  - `Day 005：搜索 / 替换 / 可视模式`
 - 哪些章节是 `done`
   - `Day 000`
 - 哪些章节是 `revisit`
@@ -30,12 +31,13 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 002`
   - `Day 003`
   - `Day 004`
+  - `Day 005`
 - 当前薄弱点：
-  - 还需要把 `ciw` / `daw` / `ci"` / `ci(` 练成真实编辑里的第一反应
-  - 容易知道“文本对象是结构范围”，但落到具体场景时又退回手工找边界
-  - `iw` / `aw`、`i` / `a` 的差别还需要在真实文本里反复体会
+  - 还需要把 `/`、`*`、`n`、`:%s/.../.../gc`、`v / V / Ctrl-V` 练成真实编辑里的第一反应
+  - 容易知道“找目标再改”的流程，但落到实际场景时仍可能退回手工来回移动
+  - `Visual`、文本对象和替换三种范围表达方式还需要在真实文本里反复体会
   - 还没进入 Neovim / LazyVim 章节，当前仍在打 Vim 底层编辑语法
-- 下一步建议：`先完成 Day 004 的 5-10 分钟练习，再进入 Day 005：搜索 / 替换 / 可视模式`
+- 下一步建议：`先完成 Day 005 的 5-10 分钟练习，再进入 Day 006：buffer / window / split`
 
 ## 默认学习主线
 
@@ -64,7 +66,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 | 002 | 2026-04-07 | 移动，从“硬挪”到“直接到位” | `learning-vim-day002-2026-04-07-motions-from-drifting-to-direct-navigation.md` | `revisit` |
 | 003 | 2026-04-09 | `operator + motion` | `learning-vim-day003-2026-04-09-operator-plus-motion.md` | `revisit` |
 | 004 | 2026-04-11 | `文本对象` | `learning-vim-day004-2026-04-11-text-objects.md` | `revisit` |
-| 005 | TBD | `搜索 / 替换 / 可视模式` | TBD | `next` |
+| 005 | 2026-04-12 | `搜索 / 替换 / 可视模式` | `learning-vim-day005-2026-04-12-search-replace-and-visual-mode.md` | `revisit` |
+| 006 | TBD | `buffer / window / split` | TBD | `next` |
 
 说明：
 
@@ -170,15 +173,35 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Day 005 时，发现自己仍然会手工找引号或括号边界`
 
+### Day 005
+
+- 主题：`搜索 / 替换 / 可视模式`
+- 文件：`learning-vim-day005-2026-04-12-search-replace-and-visual-mode.md`
+- understanding_status: `yellow`
+- mastery_score: `3/5`
+- weak_points:
+  - `/` 发起搜索后继续用 `n` / `N` 维持节奏还需要巩固
+  - `:%s/.../.../gc` 的范围感和确认节奏还需要更多练习
+  - `v` / `V` / `Ctrl-V` 三种 Visual 场景切换还不够自然
+  - 文本对象、Visual 和替换三种方案之间还需要更快做出选择
+- source_anchors:
+  - `vim --version`
+  - `nvim --version`
+  - `C:\Program Files\Vim\vim92\doc\pattern.txt`
+  - `C:\Program Files\Vim\vim92\doc\change.txt`
+  - `C:\Program Files\Vim\vim92\doc\visual.txt`
+- ready_for_next: `yes`
+- next_review_trigger: `进入 Day 006 时，发现自己还不会稳定地“先找到再改”`
+
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
   - 移动仍有退回方向键或逐字符硬挪的风险
-  - “先决定操作，再给范围”刚建立，现在要继续变成“先决定操作，再选结构对象”
-  - 还没把 Vim 的移动能力、文本对象和后续搜索替换真正连成一个统一编辑模型
+  - “先决定操作，再给范围”已经扩展到“先找到目标，再决定怎么改”，但还需要练成稳定闭环
+  - 还没把 Vim 的移动能力、文本对象、搜索替换和可视选择真正连成一个统一编辑模型
 - 回看触发条件：
   - 写文本或改代码时又出现大量手工删改
-  - 学 Day 005 时发现自己虽然知道 `ciw`、`ci"`、`ci(`，但仍然不会顺手用
+  - 学 Day 006 时发现自己虽然知道 `/`、`:%s/.../.../gc`、`V`，但仍然不会顺手用
   - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回基础编辑语法
 
 ## 外部资料使用原则
@@ -196,4 +219,4 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 最近更新时间
 
-- 2026-04-11T00:00:00+08:00
+- 2026-04-12T00:00:00+08:00
