@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-12T15:10:00+08:00
+lastmod: 2026-04-13T23:10:00+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 slug: learning-rocksdb-index
@@ -10,38 +10,39 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`3`
-- 当前最近一次学习主题：`Day 003：Write Path / WriteBatch / Sequence Number`
-- 当前主线阶段：`第 3 章：Write Path / WriteBatch / Sequence Number`
+- 当前学习总天数：`4`
+- 当前最近一次学习主题：`Day 004：WAL`
+- 当前主线阶段：`第 4 章：WAL`
 - 上一篇文章写到：
-  - `DBImpl::Write -> WriteImpl -> JoinBatchGroup -> EnterAsBatchGroupLeader -> WriteGroupToWAL / ConcurrentWriteGroupToWAL -> WriteBatchInternal::InsertInto -> SetLastSequence`
-  - 已经讲清 `WriteBatch` header 中的 `sequence + count`、`WriteThread::Writer / WriteGroup`、group leader 如何挑选兼容 writer、以及 sequence 在 WAL 和 memtable 之间如何复用
-  - 还没有深入 `log::Writer::AddRecord()` 的物理格式、WAL block 切分、以及恢复时如何从 WAL record 还原 batch
+  - `WriteGroupToWAL -> WriteToWAL -> log::Writer::AddRecord -> WAL file -> log::Reader::ReadRecord -> SetContents -> InsertInto`
+  - 已经讲清 WAL 的 block / header / RecordType、`WriteBatch` 如何作为 WAL payload、以及 recovery 如何把 WAL 重新打回 memtable
+  - 还没有深入 memtable 的内部结构、`SkipList / Arena` 的实现，以及 `SequenceNumber` 在读可见性里的消费细节
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
   - `Day 003：Write Path / WriteBatch / Sequence Number`
+  - `Day 004：WAL`
 - 下一步建议：
-  - `进入 Day 004：WAL`
+  - `进入 Day 005：MemTable / SkipList / Arena`
 - 当前仍需补看的关键点：
-  - `log::Writer::AddRecord()` 的物理写入格式
-  - `WAL replay` 时 batch 记录如何重新展开成 memtable 更新
+  - `MemTable` 如何承接前台写和 recovery replay
+  - `SkipList / Arena` 的具体实现
   - `SequenceNumber` 在 snapshot / 读可见性里的后续消费方式
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 003`
-- latest_review_file：`learning-rocksdb-day003-2026-04-12-write-path-writebatch-sequence-number.md`
+- latest_review_day：`Day 004`
+- latest_review_file：`learning-rocksdb-day004-2026-04-13-wal.md`
 - review_status：`answered`
-- review_result：`pass`
-- review_answered_at：`2026-04-12`
-- review_notes：`本轮复习问答完成。已经能说清 JoinBatchGroup / EnterAsBatchGroupLeader 的职责分工、先 WAL 后 memtable 的原因，以及 LastSequence 必须放在更靠后的位置发布。仍建议后续在 WAL 章节回看 WriteBatch header 中 sequence 的统一作用。`
+- review_result：`partial`
+- review_answered_at：`2026-04-13`
+- review_notes：`Day 004 第一次复习问答已完成。WAL 主流程、RecordType 分片、recovery 回放、sequence 先由 DB 决定再写 WAL 这些主链已经答对，可以继续推进；但对 “WAL payload” 与 “WAL 外层 physical record header” 的边界仍有一点混淆，后续学习 MemTable 和 Snapshot 时建议顺手回看。`
 - review_block_next：`no`
 
 说明：
 
-- Day 003 的文章已完成，但复习问答还没开始。
-- 下一次如果用户说“继续”，应先回答 Day 003 的复习题，再决定是否进入 Day 004。
+- Day 004 的文章已完成，但复习问答还没开始。
+- 下一次如果用户说“继续”，应先回答 Day 004 的复习题，再决定是否进入 Day 005。
 - 只阻断最近一天，不追溯更早历史章节。
 
 ## 默认学习主线
@@ -70,7 +71,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | --- | --- | --- | --- | --- |
 | 001 | 2026-04-01 | 整体架构与 LSM-Tree | `learning-rocksdb-day001-2026-04-01-architecture-and-lsm-tree.md` | `revisit` |
 | 002 | 2026-04-09 | DB 打开流程与核心对象关系 | `learning-rocksdb-day002-2026-04-09-db-open-and-core-object-relationships.md` | `done` |
-| 003 | 2026-04-12 | Write Path / WriteBatch / Sequence Number | `learning-rocksdb-day003-2026-04-12-write-path-writebatch-sequence-number.md` | `next` |
+| 003 | 2026-04-12 | Write Path / WriteBatch / Sequence Number | `learning-rocksdb-day003-2026-04-12-write-path-writebatch-sequence-number.md` | `done` |
+| 004 | 2026-04-13 | WAL | `learning-rocksdb-day004-2026-04-13-wal.md` | `next` |
 
 说明：
 
@@ -87,7 +89,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - 主题：`整体架构与 LSM-Tree`
 - 文件：`learning-rocksdb-day001-2026-04-01-architecture-and-lsm-tree.md`
 - understanding_status：`yellow`
-- mastery_score：`3/5`
+- mastery_score：`4/5`
 - weak_points：
   - `VersionSet / VersionEdit / MANIFEST` 的恢复链路还没闭环
   - `SuperVersion` 的安装和回收时机还只理解到第一层
@@ -168,6 +170,33 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`第一次复习问答已完成。当前已经没有关键误解，可以进入 Day 004；但建议在 WAL 章节回看 WriteBatch header 中 sequence 的统一作用，以及 pipelined write 与默认路径的边界。`
 - review_block_next：`no`
 
+### Day 004
+
+- 主题：`WAL`
+- 文件：`learning-rocksdb-day004-2026-04-13-wal.md`
+- understanding_status：`yellow`
+- mastery_score：`3/5`
+- weak_points：
+  - `log::Writer::AddRecord()` 的压缩、recyclable WAL 与 checksum 细节还没完全压实
+  - `wal_filter` 只知道入口和作用，还没看实际使用场景
+  - `SequenceNumber` 在 recovery replay 之后如何进入读可见性判断还没进入
+- source_anchors：
+  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
+  - `D:\program\rocksdb\db\log_format.h`
+  - `D:\program\rocksdb\db\log_writer.h`
+  - `D:\program\rocksdb\db\log_writer.cc`
+  - `D:\program\rocksdb\db\log_reader.h`
+  - `D:\program\rocksdb\db\log_reader.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
+  - `D:\program\rocksdb\include\rocksdb\wal_filter.h`
+- ready_for_next：`yes`
+- next_review_trigger：`当学习 MemTable、Snapshot / Sequence Number / 可见性语义、恢复路径细节时回看`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-04-13`
+- review_notes：`第一次复习问答已完成。已经能回答 WAL 的主流程、分片类型、recovery 回放和顺序语义来源，没有关键误解；但 Q1 里仍把 “WAL payload” 和 “WAL 外层 header” 混在一起，建议在后续学习 MemTable / Snapshot 时再回看一次 payload 与 physical record 的边界。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -192,11 +221,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `log::Writer` 的 WAL 物理格式
+  - `log::Writer / log::Reader` 的 WAL 物理格式与恢复细节
+  - `MemTable` 如何承接前台写与 recovery replay
   - `VersionEditHandler` 的 MANIFEST 回放细节
   - `SequenceNumber` 在 snapshot / 读可见性里的精确消费方式
 - 回看触发条件：
-  - `学习 WAL`
+  - `学习 MemTable / SkipList / Arena`
   - `学习 Snapshot / Sequence Number / 可见性语义`
   - `学习 MANIFEST / VersionEdit / VersionSet`
 
@@ -226,4 +256,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-04-12T15:10:00+08:00
+- 2026-04-13T23:10:00+08:00
