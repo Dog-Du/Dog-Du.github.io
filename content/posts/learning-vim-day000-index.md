@@ -1,7 +1,7 @@
 ---
 title: Vim 学习索引
 date: 2026-04-02T00:00:00+08:00
-lastmod: 2026-04-14T00:00:00+08:00
+lastmod: 2026-04-16T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
 slug: learning-vim-index
@@ -10,13 +10,14 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 当前状态
 
-- 当前学习总天数：`7`
-- 当前最近一次学习主题：`Day 007：命令行模式与常用 Ex 操作，把“会切换上下文”推进到“会对编辑器下指令”`
-- 当前主线阶段：`第 7 章：命令行模式与常用 Ex 操作`
+- 当前学习总天数：`8`
+- 当前最近一次学习主题：`Day 008：Neovim 的定位与和 Vim 的实际差异，从“底层语法”过渡到“现代日常工作流”`
+- 当前主线阶段：`第 8 章：Neovim 的定位与和 Vim 的实际差异`
 - 上一篇文章写到：
   - Day 005 已经把搜索、替换和 Visual 选择接进编辑闭环，开始围绕 `/ ? n N * # :s :%s v V Ctrl-V` 组织操作
   - Day 006 已经开始区分 buffer、window、split，并把多文件切换和并排对照接进工作流
   - Day 007 已经开始建立 `:[range]command` 的心智模型，把保存、退出、范围、批量替换、命令行窗口串到一起
+  - Day 008 已经开始把前 7 天的 Vim 底层语法，接到 Neovim 的现代宿主能力上：终端、Lua 配置、LSP、Tree-sitter、`:checkhealth`
   - 当前本地事实锚点是 `Vim 9.2` 与 `Neovim 0.12.0`
 - 已学过主题：
   - `Day 000：总览与环境准备`
@@ -27,6 +28,7 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 005：搜索 / 替换 / 可视模式`
   - `Day 006：buffer / window / split`
   - `Day 007：命令行模式与常用 Ex 操作`
+  - `Day 008：Neovim 的定位与和 Vim 的实际差异`
 - 哪些章节是 `done`
   - `Day 000`
 - 哪些章节是 `revisit`
@@ -37,12 +39,13 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 005`
   - `Day 006`
   - `Day 007`
+  - `Day 008`
 - 当前薄弱点：
-  - 还需要把 `:[range]command` 练成看到范围就能直接表达，而不是只会 `:%s`
-  - `q:` 和命令行里的 `Ctrl-F` 还不是第一反应，复杂命令容易输错后重打
-  - 仍需要把 Day 005 的搜索替换、Day 006 的多文件切换，与 Day 007 的 Ex 范围真正连成一个闭环
-  - 还没进入 Neovim / LazyVim 章节，当前仍在打 Vim 底层编辑语法
-- 下一步建议：`先完成 Day 007 的 5-10 分钟练习，再进入 Day 008：Neovim 的定位与和 Vim 的实际差异`
+  - 还需要把“Vim 语法不变，Neovim 是现代宿主环境”这个判断真正稳定下来
+  - `:terminal`、`Ctrl-\ Ctrl-N`、`:checkhealth` 还没有进入第一反应
+  - 还没把本地配置入口、终端、health、LSP 这些 Neovim 能力真正接进日常动作
+  - 还没进入 LazyVim 章节，当前正处在从 Vim 底层过渡到 Neovim 实际工作流的阶段
+- 下一步建议：`先完成 Day 008 的 5-10 分钟练习，再进入 Day 009：Neovim 的终端、剪贴板、配置入口`
 
 ## 默认学习主线
 
@@ -74,7 +77,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 | 005 | 2026-04-12 | `搜索 / 替换 / 可视模式` | `learning-vim-day005-2026-04-12-search-replace-and-visual-mode.md` | `revisit` |
 | 006 | 2026-04-13 | `buffer / window / split` | `learning-vim-day006-2026-04-13-buffers-windows-and-splits.md` | `revisit` |
 | 007 | 2026-04-14 | `命令行模式与常用 Ex 操作` | `learning-vim-day007-2026-04-14-command-line-mode-and-common-ex-operations.md` | `revisit` |
-| 008 | TBD | `Neovim 的定位与和 Vim 的实际差异` | TBD | `next` |
+| 008 | 2026-04-16 | `Neovim 的定位与和 Vim 的实际差异` | `learning-vim-day008-2026-04-16-neovim-positioning-and-practical-differences-from-vim.md` | `revisit` |
+| 009 | TBD | `Neovim 的终端、剪贴板、配置入口` | TBD | `next` |
 
 说明：
 
@@ -237,16 +241,39 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Neovim 章节后，发现自己仍然只会用快捷入口，不会用 Ex 明确表达范围和批量动作`
 
+### Day 008
+
+- 主题：`Neovim 的定位与和 Vim 的实际差异`
+- 文件：`learning-vim-day008-2026-04-16-neovim-positioning-and-practical-differences-from-vim.md`
+- understanding_status: `yellow`
+- mastery_score: `3/5`
+- weak_points:
+  - 已经知道 Vim 基础语法在 Neovim 里继续有效，但还需要把“现代宿主能力”变成真实体感
+  - `:terminal`、`Ctrl-\ Ctrl-N`、`:checkhealth` 还没有形成第一反应
+  - Lua 配置、`stdpath()`、LSP / Tree-sitter / provider 目前仍处于定位理解阶段，还没真正纳入日常
+  - 容易把 Neovim 和 LazyVim 混为一谈，需要继续保持分层理解
+- source_anchors:
+  - `vim --version`
+  - `nvim --version`
+  - `nvim --headless "+checkhealth" +qa`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\vim_diff.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\lua-guide.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\terminal.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\health.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\lsp.txt`
+- ready_for_next: `yes`
+- next_review_trigger: `进入 Day 009 或 LazyVim 章节后，发现自己仍然只会把 Neovim 当作“能装插件的 Vim”，而没有把终端、health、Lua 配置当成日常入口`
+
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
   - 移动仍有退回方向键或逐字符硬挪的风险
   - “先找到目标，再决定怎么改”已经建立，现在要继续扩展成“先判断当前上下文，再决定怎么切换”
-  - 还没把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围真正连成一个统一编辑模型
+  - 还没把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围，与 Neovim 的终端 / health / Lua 配置真正连成一个统一编辑模型
 - 回看触发条件：
   - 写文本或改代码时又出现大量手工删改
   - 学 Day 007 时发现自己虽然知道 `:[range]command`、`q:`、`:%s`，但仍然不会顺手用
-  - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回基础编辑语法
+  - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回基础编辑语法，或者不会用 `:terminal` / `:checkhealth`
 
 ## 外部资料使用原则
 
@@ -263,4 +290,4 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 最近更新时间
 
-- 2026-04-14T00:00:00+08:00
+- 2026-04-16T00:00:00+08:00
