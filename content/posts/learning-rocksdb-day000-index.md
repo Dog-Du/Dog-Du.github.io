@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-13T23:10:00+08:00
+lastmod: 2026-04-16T10:45:00+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 slug: learning-rocksdb-index
@@ -10,33 +10,34 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`4`
-- 当前最近一次学习主题：`Day 004：WAL`
-- 当前主线阶段：`第 4 章：WAL`
+- 当前学习总天数：`5`
+- 当前最近一次学习主题：`Day 005：MemTable / SkipList / Arena`
+- 当前主线阶段：`第 5 章：MemTable / SkipList / Arena`
 - 上一篇文章写到：
-  - `WriteGroupToWAL -> WriteToWAL -> log::Writer::AddRecord -> WAL file -> log::Reader::ReadRecord -> SetContents -> InsertInto`
-  - 已经讲清 WAL 的 block / header / RecordType、`WriteBatch` 如何作为 WAL payload、以及 recovery 如何把 WAL 重新打回 memtable
-  - 还没有深入 memtable 的内部结构、`SkipList / Arena` 的实现，以及 `SequenceNumber` 在读可见性里的消费细节
+  - `WriteBatchInternal::InsertInto -> MemTable::Add -> MemTableRep::Allocate/Insert -> InlineSkipList -> ConcurrentArena`
+  - 已经讲清 memtable entry 的内存编码、默认 `SkipListRep / InlineSkipList` 组合，以及 `Arena / ConcurrentArena` 的生命周期和并发分配角色
+  - 还没有深入 memtable 变 immutable 的切换时机、flush 调度、以及 `SequenceNumber` 在 snapshot / 读可见性里的消费细节
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
   - `Day 003：Write Path / WriteBatch / Sequence Number`
   - `Day 004：WAL`
+  - `Day 005：MemTable / SkipList / Arena`
 - 下一步建议：
-  - `进入 Day 005：MemTable / SkipList / Arena`
+  - `进入 Day 006：Flush`
 - 当前仍需补看的关键点：
-  - `MemTable` 如何承接前台写和 recovery replay
-  - `SkipList / Arena` 的具体实现
+  - `MemTable` 何时切换为 immutable，以及 flush 任务如何接管
+  - `SkipList / Arena` 在并发插入和 iterator 路径中的细节还可继续展开
   - `SequenceNumber` 在 snapshot / 读可见性里的后续消费方式
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 004`
-- latest_review_file：`learning-rocksdb-day004-2026-04-13-wal.md`
+- latest_review_day：`Day 005`
+- latest_review_file：`learning-rocksdb-day005-2026-04-15-memtable-skiplist-arena.md`
 - review_status：`answered`
 - review_result：`partial`
-- review_answered_at：`2026-04-13`
-- review_notes：`Day 004 第一次复习问答已完成。WAL 主流程、RecordType 分片、recovery 回放、sequence 先由 DB 决定再写 WAL 这些主链已经答对，可以继续推进；但对 “WAL payload” 与 “WAL 外层 physical record header” 的边界仍有一点混淆，后续学习 MemTable 和 Snapshot 时建议顺手回看。`
+- review_answered_at：`2026-04-16`
+- review_notes：`Day 005 第一次复习问答已完成。已经能回答 memtable entry 编码、SkipListRep/InlineSkipList 职责边界、arena 生命周期适配性，以及 LookupKey/internal key 与可见性语义的关系，没有关键误解，可以继续推进；但 Q1 对 entry 字节布局的顺序还不够精确，后续学习 Flush、Read Path、Snapshot 时建议再回看 internal key 在 memtable entry 里的具体位置。`
 - review_block_next：`no`
 
 说明：
@@ -72,7 +73,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 001 | 2026-04-01 | 整体架构与 LSM-Tree | `learning-rocksdb-day001-2026-04-01-architecture-and-lsm-tree.md` | `revisit` |
 | 002 | 2026-04-09 | DB 打开流程与核心对象关系 | `learning-rocksdb-day002-2026-04-09-db-open-and-core-object-relationships.md` | `done` |
 | 003 | 2026-04-12 | Write Path / WriteBatch / Sequence Number | `learning-rocksdb-day003-2026-04-12-write-path-writebatch-sequence-number.md` | `done` |
-| 004 | 2026-04-13 | WAL | `learning-rocksdb-day004-2026-04-13-wal.md` | `next` |
+| 004 | 2026-04-13 | WAL | `learning-rocksdb-day004-2026-04-13-wal.md` | `done` |
+| 005 | 2026-04-15 | MemTable / SkipList / Arena | `learning-rocksdb-day005-2026-04-15-memtable-skiplist-arena.md` | `next` |
 
 说明：
 
@@ -119,7 +121,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - 主题：`DB 打开流程与核心对象关系`
 - 文件：`learning-rocksdb-day002-2026-04-09-db-open-and-core-object-relationships.md`
 - understanding_status：`yellow`
-- mastery_score：`3/5`
+- mastery_score：`4/5`
 - weak_points：
   - `VersionEditHandler` 的逐条 record 回放细节还没单独拆开
   - `TryRecover / best-efforts recovery` 分支暂时只知道骨架
@@ -197,6 +199,33 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`第一次复习问答已完成。已经能回答 WAL 的主流程、分片类型、recovery 回放和顺序语义来源，没有关键误解；但 Q1 里仍把 “WAL payload” 和 “WAL 外层 header” 混在一起，建议在后续学习 MemTable / Snapshot 时再回看一次 payload 与 physical record 的边界。`
 - review_block_next：`no`
 
+### Day 005
+
+- 主题：`MemTable / SkipList / Arena`
+- 文件：`learning-rocksdb-day005-2026-04-15-memtable-skiplist-arena.md`
+- understanding_status：`yellow`
+- mastery_score：`3/5`
+- weak_points：
+  - `MemTable::Get()` 里的 `SaveValue / SaveType` 路径还没有继续拆到读取判定细节
+  - `InlineSkipList` 并发插入里的 splice 复用和校验逻辑还没有展开
+  - `ConcurrentArena` 的 per-core shard 分配细节只看到框架，没继续顺着实现看完
+- source_anchors：
+  - `D:\program\rocksdb\db\memtable.h`
+  - `D:\program\rocksdb\db\memtable.cc`
+  - `D:\program\rocksdb\memtable\skiplistrep.cc`
+  - `D:\program\rocksdb\memtable\inlineskiplist.h`
+  - `D:\program\rocksdb\memory\arena.h`
+  - `D:\program\rocksdb\memory\arena.cc`
+  - `D:\program\rocksdb\memory\concurrent_arena.h`
+  - `D:\program\rocksdb\db\dbformat.h`
+- ready_for_next：`yes`
+- next_review_trigger：`当学习 Flush、Read Path、Snapshot / Sequence Number / 可见性语义时回看`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-04-16`
+- review_notes：`第一次复习问答已完成。已经理解 memtable 的主要角色、SkipListRep/InlineSkipList 的职责边界、arena 生命周期适配性，以及为什么读路径必须携带 sequence 语义；但 memtable entry 的精确字节布局仍有一点顺序混淆，需要后续再压实。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -222,11 +251,11 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 - 当前薄弱点：
   - `log::Writer / log::Reader` 的 WAL 物理格式与恢复细节
-  - `MemTable` 如何承接前台写与 recovery replay
+  - `MemTable` 如何切换为 immutable 并被 flush 接管
   - `VersionEditHandler` 的 MANIFEST 回放细节
   - `SequenceNumber` 在 snapshot / 读可见性里的精确消费方式
 - 回看触发条件：
-  - `学习 MemTable / SkipList / Arena`
+  - `学习 Flush`
   - `学习 Snapshot / Sequence Number / 可见性语义`
   - `学习 MANIFEST / VersionEdit / VersionSet`
 
@@ -256,4 +285,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-04-13T23:10:00+08:00
+- 2026-04-16T10:45:00+08:00
