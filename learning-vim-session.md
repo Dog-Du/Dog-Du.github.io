@@ -51,8 +51,8 @@
 5. 搜索 / 替换 / 可视模式
 6. buffer / window / split
 7. 命令行模式与常用 Ex 操作
-8. Neovim 的定位与和 Vim 的实际差异
-9. Neovim 的终端、剪贴板、配置入口
+8. Vim 高频进阶整合
+9. Neovim 的定位 + 终端 / 剪贴板 / 配置 / health
 10. LazyVim 总览与 leader 思维
 11. LazyVim 文件 / 搜索 / buffer 工作流
 12. LazyVim 代码导航与 LSP 基础操作
@@ -67,10 +67,12 @@
 4. 文本对象
 5. 搜索与替换
 6. 多文件和窗口
-7. Neovim 的实际日常差异
-8. LazyVim 默认工作流
-9. LazyVim 项目内搜索和导航
-10. LazyVim 代码编辑闭环
+7. 命令行模式与外部命令
+8. Vim 高频进阶整合
+9. Neovim 的实际日常差异与配置入口
+10. LazyVim 默认工作流
+11. LazyVim 项目内搜索和导航
+12. LazyVim 代码编辑闭环
 
 ## 执行规则
 

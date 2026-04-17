@@ -1,0 +1,33 @@
+dasdas'
+sadas
+
+sadasd
+asdas
+d
+
+asd
+
+:r !cat %
+
+dasdas'
+sadas
+
+sadasd
+asdas
+d
+
+asd
+
+:r !cat %
+
+dasdas'
+sadas
+
+sadasd
+asdas
+d
+
+asd
+
+:r !cat %
+

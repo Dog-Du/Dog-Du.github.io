@@ -1,7 +1,7 @@
 ---
 title: Vim 学习索引
 date: 2026-04-02T00:00:00+08:00
-lastmod: 2026-04-16T00:00:00+08:00
+lastmod: 2026-04-17T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
 slug: learning-vim-index
@@ -11,13 +11,15 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 ## 当前状态
 
 - 当前学习总天数：`8`
-- 当前最近一次学习主题：`Day 008：Neovim 的定位与和 Vim 的实际差异，从“底层语法”过渡到“现代日常工作流”`
-- 当前主线阶段：`第 8 章：Neovim 的定位与和 Vim 的实际差异`
+- 当前最近一次学习主题：`Day 008：Vim 高频进阶整合，把前 7 天的基础动作补成更稳定的编辑闭环`
+- 当前主线阶段：`第 8 章：Vim 高频进阶整合`
 - 上一篇文章写到：
   - Day 005 已经把搜索、替换和 Visual 选择接进编辑闭环，开始围绕 `/ ? n N * # :s :%s v V Ctrl-V` 组织操作
   - Day 006 已经开始区分 buffer、window、split，并把多文件切换和并排对照接进工作流
   - Day 007 已经开始建立 `:[range]command` 的心智模型，把保存、退出、范围、批量替换、命令行窗口串到一起
-  - Day 008 已经开始把前 7 天的 Vim 底层语法，接到 Neovim 的现代宿主能力上：终端、Lua 配置、LSP、Tree-sitter、`:checkhealth`
+  - Day 008 现在重新定义为 `Vim 高频进阶整合`，把插入模式高频入口、`.`、撤销、寄存器、宏、`:global`、多文件批处理系统收束起来
+  - Day 009 已重新定义为 `Neovim 的定位 + 终端 / 剪贴板 / 配置 / health`，作为 Day 008 之后的过渡层
+  - 本次额外回补了 Day 001 / 002 / 003 / 004 / 005 / 006 / 007 的实用缺口：撤销、count 与行内找字符、`.`、文本对象扩展、tab / hidden / bdelete、块选择里的 `I / A`、命令行编辑键与历史
   - 当前本地事实锚点是 `Vim 9.2` 与 `Neovim 0.12.0`
 - 已学过主题：
   - `Day 000：总览与环境准备`
@@ -28,7 +30,7 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 005：搜索 / 替换 / 可视模式`
   - `Day 006：buffer / window / split`
   - `Day 007：命令行模式与常用 Ex 操作`
-  - `Day 008：Neovim 的定位与和 Vim 的实际差异`
+  - `Day 008：Vim 高频进阶整合`
 - 哪些章节是 `done`
   - `Day 000`
 - 哪些章节是 `revisit`
@@ -41,11 +43,11 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 007`
   - `Day 008`
 - 当前薄弱点：
-  - 还需要把“Vim 语法不变，Neovim 是现代宿主环境”这个判断真正稳定下来
-  - `:terminal`、`Ctrl-\ Ctrl-N`、`:checkhealth` 还没有进入第一反应
-  - 还没把本地配置入口、终端、health、LSP 这些 Neovim 能力真正接进日常动作
-  - 还没进入 LazyVim 章节，当前正处在从 Vim 底层过渡到 Neovim 实际工作流的阶段
-- 下一步建议：`先完成 Day 008 的 5-10 分钟练习，再进入 Day 009：Neovim 的终端、剪贴板、配置入口`
+  - 插入模式入口、`.`、寄存器、宏虽然已经补回主线，但还需要通过短练习练成第一反应
+  - 还需要更快做出判断：什么时候用 `.`，什么时候用宏，什么时候该上 `:global` 或 `argdo / cfdo`
+  - 还没把系统剪贴板和 Vim 寄存器真正连成稳定手感
+  - 还没正式进入 `Neovim` 过渡日，`terminal / config / health` 这些入口尚未进入日常第一反应
+- 下一步建议：`先完成 Day 008 的 5-10 分钟练习，再进入 Day 009：Neovim 的定位 + 终端 / 剪贴板 / 配置 / health`
 
 ## 默认学习主线
 
@@ -57,8 +59,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 5. 搜索 / 替换 / 可视模式
 6. buffer / window / split
 7. 命令行模式与常用 Ex 操作
-8. Neovim 的定位与和 Vim 的实际差异
-9. Neovim 的终端、剪贴板、配置入口
+8. Vim 高频进阶整合
+9. Neovim 的定位 + 终端 / 剪贴板 / 配置 / health
 10. LazyVim 总览与 leader 思维
 11. LazyVim 文件 / 搜索 / buffer 工作流
 12. LazyVim 代码导航与 LSP 基础操作
@@ -77,8 +79,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 | 005 | 2026-04-12 | `搜索 / 替换 / 可视模式` | `learning-vim-day005-2026-04-12-search-replace-and-visual-mode.md` | `revisit` |
 | 006 | 2026-04-13 | `buffer / window / split` | `learning-vim-day006-2026-04-13-buffers-windows-and-splits.md` | `revisit` |
 | 007 | 2026-04-14 | `命令行模式与常用 Ex 操作` | `learning-vim-day007-2026-04-14-command-line-mode-and-common-ex-operations.md` | `revisit` |
-| 008 | 2026-04-16 | `Neovim 的定位与和 Vim 的实际差异` | `learning-vim-day008-2026-04-16-neovim-positioning-and-practical-differences-from-vim.md` | `revisit` |
-| 009 | TBD | `Neovim 的终端、剪贴板、配置入口` | TBD | `next` |
+| 008 | 2026-04-16 | `Vim 高频进阶整合` | `learning-vim-day008-2026-04-16-vim-high-frequency-advanced-integration.md` | `revisit` |
+| 009 | 2026-04-17 | `Neovim 的定位 + 终端 / 剪贴板 / 配置 / health` | `learning-vim-day009-2026-04-17-neovim-positioning-terminal-clipboard-config-and-health.md` | `next` |
 
 说明：
 
@@ -119,7 +121,9 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - 还没进入更高效的移动方式
 - source_anchors:
   - `vim --version`
-  - `:help`
+  - `nvim --version`
+  - `C:\Program Files\Vim\vim92\doc\undo.txt`
+  - `D:\program\Learn-Vim\ch10_undo.md`
   - Day 001 文内练习与问题讨论
 - ready_for_next: `yes`
 - next_review_trigger: `学习 Day 003 的 operator + motion 时回看`
@@ -142,6 +146,7 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `:help word-motions`
   - `:help left-right-motions`
   - `:help up-down-motions`
+  - `D:\program\Learn-Vim\ch05_moving_in_file.md`
 - ready_for_next: `yes`
 - next_review_trigger: `真正开始把移动和删除 / 修改组合到 Day 003 时`
 
@@ -162,6 +167,9 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `C:\Program Files\Vim\vim92\doc\motion.txt`
   - `C:\Program Files\Vim\vim92\doc\change.txt`
   - `C:\Program Files\Neovim\share\nvim\runtime\doc\change.txt`
+  - `C:\Program Files\Vim\vim92\doc\repeat.txt`
+  - `D:\program\Learn-Vim\ch07_the_dot_command.md`
+  - `D:\program\Learn-Vim\ch08_registers.md`
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Day 004 文本对象时，发现自己还不能稳定说出“操作 + 范围”`
 
@@ -181,6 +189,7 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `nvim --version`
   - `C:\Program Files\Vim\vim92\doc\motion.txt`
   - `C:\Program Files\Neovim\share\nvim\runtime\doc\motion.txt`
+  - `D:\program\Learn-Vim\ch04_vim_grammar.md`
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Day 005 时，发现自己仍然会手工找引号或括号边界`
 
@@ -201,6 +210,7 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `C:\Program Files\Vim\vim92\doc\pattern.txt`
   - `C:\Program Files\Vim\vim92\doc\change.txt`
   - `C:\Program Files\Vim\vim92\doc\visual.txt`
+  - `D:\program\Learn-Vim\ch11_visual_mode.md`
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Day 006 时，发现自己还不会稳定地“先找到再改”`
 
@@ -219,6 +229,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `vim --version`
   - `nvim --version`
   - `C:\Program Files\Vim\vim92\doc\windows.txt`
+  - `C:\Program Files\Vim\vim92\doc\tabpage.txt`
+  - `D:\program\Learn-Vim\ch02_buffers_windows_tabs.md`
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Day 007 时，发现自己仍然在多文件场景里频繁迷路`
 
@@ -238,42 +250,47 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `nvim --version`
   - `C:\Program Files\Vim\vim92\doc\cmdline.txt`
   - `C:\Program Files\Vim\vim92\doc\index.txt`
+  - `C:\Program Files\Vim\vim92\doc\repeat.txt`
+  - `D:\program\Learn-Vim\ch15_command-line_mode.md`
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Neovim 章节后，发现自己仍然只会用快捷入口，不会用 Ex 明确表达范围和批量动作`
 
 ### Day 008
 
-- 主题：`Neovim 的定位与和 Vim 的实际差异`
-- 文件：`learning-vim-day008-2026-04-16-neovim-positioning-and-practical-differences-from-vim.md`
+- 主题：`Vim 高频进阶整合`
+- 文件：`learning-vim-day008-2026-04-16-vim-high-frequency-advanced-integration.md`
 - understanding_status: `yellow`
 - mastery_score: `3/5`
 - weak_points:
-  - 已经知道 Vim 基础语法在 Neovim 里继续有效，但还需要把“现代宿主能力”变成真实体感
-  - `:terminal`、`Ctrl-\ Ctrl-N`、`:checkhealth` 还没有形成第一反应
-  - Lua 配置、`stdpath()`、LSP / Tree-sitter / provider 目前仍处于定位理解阶段，还没真正纳入日常
-  - 容易把 Neovim 和 LazyVim 混为一谈，需要继续保持分层理解
+  - 已经知道要把 `.`、寄存器、宏、`:global`、多文件批处理串起来，但判断切换还不够快
+  - `gi`、`Ctrl-O`、`Ctrl-R {register}` 这些插入模式高频入口还没有变成第一反应
+  - `cfdo` / `cdo`、`argdo` / `bufdo` 的使用边界还需要通过练习巩固
+  - 删除时是否保留寄存器内容、批量修改时是否升级到宏或 `:global`，还需要更稳定的判断
 - source_anchors:
   - `vim --version`
   - `nvim --version`
-  - `nvim --headless "+checkhealth" +qa`
-  - `C:\Program Files\Neovim\share\nvim\runtime\doc\vim_diff.txt`
-  - `C:\Program Files\Neovim\share\nvim\runtime\doc\lua-guide.txt`
-  - `C:\Program Files\Neovim\share\nvim\runtime\doc\terminal.txt`
-  - `C:\Program Files\Neovim\share\nvim\runtime\doc\health.txt`
-  - `C:\Program Files\Neovim\share\nvim\runtime\doc\lsp.txt`
+  - `C:\Program Files\Vim\vim92\doc\undo.txt`
+  - `C:\Program Files\Vim\vim92\doc\repeat.txt`
+  - `C:\Program Files\Vim\vim92\doc\cmdline.txt`
+  - `C:\Program Files\Vim\vim92\doc\editing.txt`
+  - `D:\program\Learn-Vim\ch06_insert_mode.md`
+  - `D:\program\Learn-Vim\ch08_registers.md`
+  - `D:\program\Learn-Vim\ch09_macros.md`
+  - `D:\program\Learn-Vim\ch13_the_global_command.md`
+  - `D:\program\Learn-Vim\ch21_multiple_file_operations.md`
 - ready_for_next: `yes`
-- next_review_trigger: `进入 Day 009 或 LazyVim 章节后，发现自己仍然只会把 Neovim 当作“能装插件的 Vim”，而没有把终端、health、Lua 配置当成日常入口`
+- next_review_trigger: `进入 Day 009 或 LazyVim 章节后，发现自己仍然不会稳定判断“单次修改 / 宏 / :global / 多文件批处理”`
 
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
   - 移动仍有退回方向键或逐字符硬挪的风险
-  - “先找到目标，再决定怎么改”已经建立，现在要继续扩展成“先判断当前上下文，再决定怎么切换”
-  - 还没把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围，与 Neovim 的终端 / health / Lua 配置真正连成一个统一编辑模型
+  - “先找到目标，再决定怎么改”已经建立，现在要继续扩展成“先判断重复粒度，再决定用 `.`、宏、`:global` 还是多文件命令”
+  - 还没把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围、寄存器、宏真正连成一个统一编辑模型
 - 回看触发条件：
   - 写文本或改代码时又出现大量手工删改
   - 学 Day 007 时发现自己虽然知道 `:[range]command`、`q:`、`:%s`，但仍然不会顺手用
-  - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回基础编辑语法，或者不会用 `:terminal` / `:checkhealth`
+  - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回 `.`、寄存器、宏、`:global`、quickfix 这些底层动作
 
 ## 外部资料使用原则
 
@@ -290,4 +307,4 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 最近更新时间
 
-- 2026-04-16T00:00:00+08:00
+- 2026-04-17T00:00:00+08:00

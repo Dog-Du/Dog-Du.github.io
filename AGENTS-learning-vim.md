@@ -289,8 +289,8 @@ Vim 学习不要求每篇都有图，但在以下情况可以使用 Mermaid：
 5. 搜索 / 替换 / 可视模式
 6. buffer / window / split
 7. 命令行模式与常用 Ex 操作
-8. Neovim 的定位与和 Vim 的实际差异
-9. Neovim 的终端、剪贴板、配置入口
+8. Vim 高频进阶整合
+9. Neovim 的定位 + 终端 / 剪贴板 / 配置 / health
 10. LazyVim 总览与 leader 思维
 11. LazyVim 文件 / 搜索 / buffer 工作流
 12. LazyVim 代码导航与 LSP 基础操作

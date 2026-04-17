@@ -1,7 +1,7 @@
 ---
 title: Vim 学习笔记 Day 004：文本对象，把“操作范围”从移动升级成结构
 date: 2026-04-11T00:00:00+08:00
-lastmod: 2026-04-11T00:00:00+08:00
+lastmod: 2026-04-17T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
 slug: learning-vim-day004-text-objects
@@ -396,9 +396,21 @@ this sentence needs a better word
 
 ### 外部高价值问题
 
-- 今日暂不引入外部问题。
-- 原因：
-  - Day 004 先把本地可验证的高频文本对象练顺。
+#### 问题 1：为什么 Day 4 主线只讲词、引号、括号，没有把更多对象一起铺开？
+
+- 问题：
+  - Learn-Vim 的 text objects 看起来比这里更多，为什么主线没有一次全讲？
+- 简答：
+  - 不是因为 Learn-Vim 没讲，而是因为主线刻意只保留最常用的一层，避免 Day 4 变成对象清单。
+- 场景：
+  - 你今天最常碰到的是改词、改字符串、改参数列表；而句子、段落、HTML tag 对象虽然有用，但没有前面几组高频。
+- 依据：
+  - 本地 `motion.txt` 的 text objects 说明。
+  - `D:\program\Learn-Vim\ch04_vim_grammar.md`。
+- 当前结论：
+  - Day 4 的主线选择是“高频优先”，不是“资料里没有所以跳过”。
+- 是否需要后续回看：
+  - `是`
 
 ## 常见误区或易混点
 
@@ -421,6 +433,12 @@ this sentence needs a better word
   - 句子对象，适合纯文本场景，但不是今天主线重点。
 - `ap` / `ip`
   - 段落对象，在写长文时有价值。
+- `at` / `it`
+  - HTML / XML tag 对象，处理标签内容时很顺手。
+- `a<` / `i<`
+  - 角括号对象，和 tag 对象相关但心智略有区别。
+- ``a` `` / ``i` ``
+  - 反引号对象，在 Markdown 或 shell 片段里会用到。
 - `ab` / `ib`
   - `a(` / `i(` 的别名写法，可后续再收。
 - `a]` / `i]`

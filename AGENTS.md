@@ -39,8 +39,8 @@ Key points:
   6. search / replace / visual mode
   7. buffers / windows / splits
   8. useful command-line mode operations
-  9. Neovim basics and practical differences from Vim
-  10. Neovim terminal / clipboard / config basics
+  9. Vim high-frequency advanced integration
+  10. Neovim positioning plus terminal / clipboard / config / health
   11. LazyVim overview and default workflow
   12. LazyVim file / search / buffer workflow
   13. LazyVim code navigation and LSP basics
