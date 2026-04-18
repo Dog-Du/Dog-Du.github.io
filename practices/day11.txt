@@ -15,4 +15,8 @@
 <space>e -> Explorer
 <space>E -> Explorer
 
+<S-h> -> prev buffers
+<S-l> -> next buffer
+[b -> prev buffer
+]b -> next buffer
 

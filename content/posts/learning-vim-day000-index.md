@@ -1,7 +1,7 @@
 ---
 title: Vim 学习索引
 date: 2026-04-02T00:00:00+08:00
-lastmod: 2026-04-17T00:00:00+08:00
+lastmod: 2026-04-18T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
 slug: learning-vim-index
@@ -10,15 +10,21 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 当前状态
 
-- 当前学习总天数：`8`
-- 当前最近一次学习主题：`Day 008：Vim 高频进阶整合，把前 7 天的基础动作补成更稳定的编辑闭环`
-- 当前主线阶段：`第 8 章：Vim 高频进阶整合`
+- 当前学习总天数：`11`
+- 当前最近一次学习主题：`Day 011：LazyVim 文件 / 搜索 / buffer 工作流，把“会看 leader 分组”推进到“会在项目里快速找、切、回”`
+- 当前主线阶段：`第 11 章：LazyVim 文件 / 搜索 / buffer 工作流`
 - 上一篇文章写到：
   - Day 005 已经把搜索、替换和 Visual 选择接进编辑闭环，开始围绕 `/ ? n N * # :s :%s v V Ctrl-V` 组织操作
   - Day 006 已经开始区分 buffer、window、split，并把多文件切换和并排对照接进工作流
   - Day 007 已经开始建立 `:[range]command` 的心智模型，把保存、退出、范围、批量替换、命令行窗口串到一起
   - Day 008 现在重新定义为 `Vim 高频进阶整合`，把插入模式高频入口、`.`、撤销、寄存器、宏、`:global`、多文件批处理系统收束起来
-  - Day 009 已重新定义为 `Neovim 的定位 + 终端 / 剪贴板 / 配置 / health`，作为 Day 008 之后的过渡层
+  - Day 009 现在已经正式推进，重点落在 `:terminal`、`"+`、`stdpath()`、`:checkhealth` 和 `vim.provider`
+  - 当前本机额外确认到：`stdpath('config') = C:\Users\86131\AppData\Local\nvim`，`has('clipboard') = 1`，当前 `'clipboard'` 选项为空值
+  - Day 010 现在已经开始进入 LazyVim 主线，重点落在 `<leader> = <space>`、`<localleader> = \`、which-key、`:Lazy`，以及 `lua/config/*.lua` 和 `lua/plugins/*.lua` 的职责边界
+  - 当前本机确认是 LazyVim starter 结构：`init.lua` 只做 `require("config.lazy")`，`lua/config/lazy.lua` 负责引入 `LazyVim/LazyVim` 和 `plugins`
+  - Day 011 现在已经正式推进，重点落在 LazyVim 默认的 `Snacks picker + buffer` 工作流：`<leader><space>`、`<leader>/`、`<leader>,`、`<leader>e`、`<S-h>` / `<S-l>`，以及 `Root Dir` 和 `cwd` 的区别
+  - 当前本机通过 `maparg()` 已经实测到：`<leader><space>` / `<leader>ff` 对应 `Find Files (Root Dir)`，`<leader>fF` 对应 `Find Files (cwd)`，`<leader>/` / `<leader>sg` 对应 `Grep (Root Dir)`，`<leader>,` 对应 `Buffers`
+  - 当前本机额外确认到：`rg 15.1.0` 与 `fd 10.4.2` 都可用，且 `nvim` 中 `executable('fd') = 1`，`:checkhealth snacks` 可以运行；Day 011 主线先以已经确认可用的默认入口为准
   - 本次额外回补了 Day 001 / 002 / 003 / 004 / 005 / 006 / 007 的实用缺口：撤销、count 与行内找字符、`.`、文本对象扩展、tab / hidden / bdelete、块选择里的 `I / A`、命令行编辑键与历史
   - 当前本地事实锚点是 `Vim 9.2` 与 `Neovim 0.12.0`
 - 已学过主题：
@@ -31,6 +37,9 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 006：buffer / window / split`
   - `Day 007：命令行模式与常用 Ex 操作`
   - `Day 008：Vim 高频进阶整合`
+  - `Day 009：Neovim 的定位 + 终端 / 剪贴板 / 配置 / health`
+  - `Day 010：LazyVim 总览与 leader 思维`
+  - `Day 011：LazyVim 文件 / 搜索 / buffer 工作流`
 - 哪些章节是 `done`
   - `Day 000`
 - 哪些章节是 `revisit`
@@ -42,12 +51,15 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 006`
   - `Day 007`
   - `Day 008`
+  - `Day 009`
+  - `Day 010`
+  - `Day 011`
 - 当前薄弱点：
-  - 插入模式入口、`.`、寄存器、宏虽然已经补回主线，但还需要通过短练习练成第一反应
-  - 还需要更快做出判断：什么时候用 `.`，什么时候用宏，什么时候该上 `:global` 或 `argdo / cfdo`
-  - 还没把系统剪贴板和 Vim 寄存器真正连成稳定手感
-  - 还没正式进入 `Neovim` 过渡日，`terminal / config / health` 这些入口尚未进入日常第一反应
-- 下一步建议：`先完成 Day 008 的 5-10 分钟练习，再进入 Day 009：Neovim 的定位 + 终端 / 剪贴板 / 配置 / health`
+  - `Root Dir` 和 `cwd` 的区别虽然已经建立，但还需要在真实项目里练到第一反应
+  - `files`、`buffers`、`recent`、`explorer` 4 组入口刚刚拆开，还没有完全形成稳定判断
+  - 仍然容易在多 buffer 场景里只会 `<S-l>` 一路轮，而不是切回 `<leader>,`
+  - 还没开始 Day 012 的代码导航与 LSP 工作流，当前正处在从“会找和切”过渡到“会在代码里定位和跳转”阶段
+- 下一步建议：`先完成 Day 011 的 5-10 分钟练习，再进入 Day 012：LazyVim 代码导航与 LSP 基础操作`
 
 ## 默认学习主线
 
@@ -80,7 +92,10 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 | 006 | 2026-04-13 | `buffer / window / split` | `learning-vim-day006-2026-04-13-buffers-windows-and-splits.md` | `revisit` |
 | 007 | 2026-04-14 | `命令行模式与常用 Ex 操作` | `learning-vim-day007-2026-04-14-command-line-mode-and-common-ex-operations.md` | `revisit` |
 | 008 | 2026-04-16 | `Vim 高频进阶整合` | `learning-vim-day008-2026-04-16-vim-high-frequency-advanced-integration.md` | `revisit` |
-| 009 | 2026-04-17 | `Neovim 的定位 + 终端 / 剪贴板 / 配置 / health` | `learning-vim-day009-2026-04-17-neovim-positioning-terminal-clipboard-config-and-health.md` | `next` |
+| 009 | 2026-04-17 | `Neovim 的定位 + 终端 / 剪贴板 / 配置 / health` | `learning-vim-day009-2026-04-17-neovim-positioning-terminal-clipboard-config-and-health.md` | `revisit` |
+| 010 | 2026-04-18 | `LazyVim 总览与 leader 思维` | `learning-vim-day010-2026-04-18-lazyvim-overview-and-leader-thinking.md` | `revisit` |
+| 011 | 2026-04-18 | `LazyVim 文件 / 搜索 / buffer 工作流` | `learning-vim-day011-2026-04-18-lazyvim-file-search-and-buffer-workflow.md` | `revisit` |
+| 012 | TBD | `LazyVim 代码导航与 LSP 基础操作` | TBD | `next` |
 
 说明：
 
@@ -281,16 +296,105 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Day 009 或 LazyVim 章节后，发现自己仍然不会稳定判断“单次修改 / 宏 / :global / 多文件批处理”`
 
+### Day 009
+
+- 主题：`Neovim 的定位 + 终端 / 剪贴板 / 配置 / health`
+- 文件：`learning-vim-day009-2026-04-17-neovim-positioning-terminal-clipboard-config-and-health.md`
+- understanding_status: `yellow`
+- mastery_score: `3/5`
+- weak_points:
+  - 已经知道 Neovim 不是新语法，但还需要把“现代宿主环境”变成真实操作手感
+  - `:terminal`、`Ctrl-\ Ctrl-N`、`:!` 的边界还需要通过真实场景巩固
+  - `"+`、`'clipboard'`、`vim.provider` 三层还需要更清楚地分开
+  - `stdpath()`、`:checkhealth vim.provider` 目前还是“知道入口”，还没完全进入排查第一反应
+- source_anchors:
+  - `vim --version`
+  - `nvim --version`
+  - `nvim --headless "+checkhealth" +qa`
+  - `nvim --headless "+lua print(vim.fn.stdpath('config'))" +qa`
+  - `nvim --headless "+lua print(vim.fn.stdpath('data'))" +qa`
+  - `nvim --headless "+lua print(vim.fn.stdpath('state'))" +qa`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\vim_diff.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\terminal.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\health.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\lua-guide.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\provider.txt`
+- ready_for_next: `yes`
+- next_review_trigger: `进入 Day 010 或 LazyVim 章节后，发现自己仍然把 Neovim 混成“插件版 Vim”，或者不会先用 terminal / provider / health 入口定位问题`
+
+### Day 010
+
+- 主题：`LazyVim 总览与 leader 思维`
+- 文件：`learning-vim-day010-2026-04-18-lazyvim-overview-and-leader-thinking.md`
+- understanding_status: `yellow`
+- mastery_score: `3/5`
+- weak_points:
+  - 已经知道 LazyVim 是默认工作流，但还需要把“分组优先”真的变成 leader 使用习惯
+  - `lua/config/*.lua` 和 `lua/plugins/*.lua` 的职责边界虽然已经知道，但还没通过实际修改巩固
+  - 还没把 `<leader>l`、`<leader>?`、which-key 弹窗这些入口真正接进第一反应
+  - 还没正式进入 Day 011 的文件 / 搜索 / buffer 高频工作流
+- source_anchors:
+  - `vim --version`
+  - `nvim --version`
+  - `C:\Users\86131\AppData\Local\nvim\init.lua`
+  - `C:\Users\86131\AppData\Local\nvim\lua\config\lazy.lua`
+  - `C:\Users\86131\AppData\Local\nvim\lua\config\keymaps.lua`
+  - `C:\Users\86131\AppData\Local\nvim\lazy-lock.json`
+  - `nvim --headless "+lua print(vim.g.mapleader == ' ' and '<space>' or vim.inspect(vim.g.mapleader))" +qa`
+  - `nvim --headless "+lua print(vim.g.maplocalleader == '\\' and '<backslash>' or vim.inspect(vim.g.maplocalleader))" +qa`
+  - `nvim --headless "+lua print(vim.fn.exists(':Lazy'))" +qa`
+  - `https://www.lazyvim.org/`
+  - `https://www.lazyvim.org/keymaps`
+  - `https://www.lazyvim.org/configuration`
+  - `https://www.lazyvim.org/configuration/general`
+  - `https://www.lazyvim.org/installation`
+  - `https://www.nerdfonts.com/`
+  - `https://github.com/ryanoasis/nerd-fonts/releases/tag/v3.4.0`
+  - `C:\Users\86131\AppData\Roaming\Zed\settings.json`
+  - `C:\Users\86131\AppData\Local\Microsoft\Windows\Fonts\Caskaydia Cove Nerd Font Complete Mono.ttf`
+  - `C:\Users\86131\AppData\Local\Microsoft\Windows\Fonts\CaskaydiaCoveNerdFontMono-Regular.ttf`
+  - `https://zed.dev/docs/configuring-zed`
+- ready_for_next: `yes`
+- next_review_trigger: `进入 Day 011 或真实项目编辑时，发现自己仍然不会先按 leader 分组思考，而是继续把 LazyVim 当成随机快捷键集合`
+
+### Day 011
+
+- 主题：`LazyVim 文件 / 搜索 / buffer 工作流`
+- 文件：`learning-vim-day011-2026-04-18-lazyvim-file-search-and-buffer-workflow.md`
+- understanding_status: `yellow`
+- mastery_score: `3/5`
+- weak_points:
+  - `Root Dir` 和 `cwd` 的区别已经知道，但还没在真实项目里练成第一反应
+  - `files`、`buffers`、`recent`、`explorer` 的职责虽然已经拆开，但切换判断还需要再巩固
+  - 仍然容易在多 buffer 场景里只会 `<S-l>` / `<S-h>` 小步轮，而不是主动切回 `<leader>,`
+  - 还没进入 Day 012 的代码导航与 LSP 工作流，当前主要还是“找得到、切得回”
+- source_anchors:
+  - `vim --version`
+  - `nvim --version`
+  - `rg --version`
+  - `fd --version`
+  - `nvim --headless "+lua print(vim.fn.executable('fd'))" +qa`
+  - `nvim --headless "+checkhealth snacks" +qa`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\config\keymaps.lua`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\plugins\extras\editor\snacks_picker.lua`
+  - `https://www.lazyvim.org/`
+  - `https://www.lazyvim.org/keymaps`
+  - `https://www.lazyvim.org/configuration`
+- ready_for_next: `yes`
+- next_review_trigger: `进入 Day 012 或真实项目编码时，发现自己仍然分不清“找文件”和“找内容”，或者在多文件上下文里继续只靠 buffer 轮切`
+
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
   - 移动仍有退回方向键或逐字符硬挪的风险
   - “先找到目标，再决定怎么改”已经建立，现在要继续扩展成“先判断重复粒度，再决定用 `.`、宏、`:global` 还是多文件命令”
-  - 还没把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围、寄存器、宏真正连成一个统一编辑模型
+  - 还没把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围、寄存器、宏，与 Neovim 的 `terminal / provider / health / stdpath()` 真正连成一个统一编辑模型
+  - 还没把 LazyVim 的 leader 分组、which-key、文件 / 搜索 / buffer 入口，真正接成一套默认工作流心智
 - 回看触发条件：
   - 写文本或改代码时又出现大量手工删改
   - 学 Day 007 时发现自己虽然知道 `:[range]command`、`q:`、`:%s`，但仍然不会顺手用
-  - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回 `.`、寄存器、宏、`:global`、quickfix 这些底层动作
+  - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回 `.`、寄存器、宏、`:global`、quickfix 这些底层动作，或者不会先用 `:terminal` / `:checkhealth vim.provider`
+  - 进入 Day 012 之后，发现自己还分不清“找文件”“找内容”“切 buffer”“回最近文件”这几种入口
 
 ## 外部资料使用原则
 
@@ -307,4 +411,4 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 最近更新时间
 
-- 2026-04-17T00:00:00+08:00
+- 2026-04-18T00:00:00+08:00
