@@ -1,7 +1,7 @@
 ---
 title: Vim 学习索引
 date: 2026-04-02T00:00:00+08:00
-lastmod: 2026-04-18T00:00:00+08:00
+lastmod: 2026-04-19T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
 slug: learning-vim-index
@@ -10,9 +10,9 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 当前状态
 
-- 当前学习总天数：`11`
-- 当前最近一次学习主题：`Day 011：LazyVim 文件 / 搜索 / buffer 工作流，把“会看 leader 分组”推进到“会在项目里快速找、切、回”`
-- 当前主线阶段：`第 11 章：LazyVim 文件 / 搜索 / buffer 工作流`
+- 当前学习总天数：`12`
+- 当前最近一次学习主题：`Day 012：LazyVim 代码导航与 LSP 基础操作，把“会搜文本”推进到“会按语义跳转”`
+- 当前主线阶段：`第 12 章：LazyVim 代码导航与 LSP 基础操作`
 - 上一篇文章写到：
   - Day 005 已经把搜索、替换和 Visual 选择接进编辑闭环，开始围绕 `/ ? n N * # :s :%s v V Ctrl-V` 组织操作
   - Day 006 已经开始区分 buffer、window、split，并把多文件切换和并排对照接进工作流
@@ -25,6 +25,9 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - Day 011 现在已经正式推进，重点落在 LazyVim 默认的 `Snacks picker + buffer` 工作流：`<leader><space>`、`<leader>/`、`<leader>,`、`<leader>e`、`<S-h>` / `<S-l>`，以及 `Root Dir` 和 `cwd` 的区别
   - 当前本机通过 `maparg()` 已经实测到：`<leader><space>` / `<leader>ff` 对应 `Find Files (Root Dir)`，`<leader>fF` 对应 `Find Files (cwd)`，`<leader>/` / `<leader>sg` 对应 `Grep (Root Dir)`，`<leader>,` 对应 `Buffers`
   - 当前本机额外确认到：`rg 15.1.0` 与 `fd 10.4.2` 都可用，且 `nvim` 中 `executable('fd') = 1`，`:checkhealth snacks` 可以运行；Day 011 主线先以已经确认可用的默认入口为准
+  - Day 012 现在已经正式推进，重点落在 LazyVim 默认的 LSP 导航入口：`gd`、`gr`、`gI`、`gy`、`gD`、`K`、`<leader>ca`、`<leader>cr`、`<leader>ss`
+  - 当前本机额外确认到：这些 LSP 键位不是全局永远存在；空会话里 `maparg()` 会得到 `<none>`，但在 `C:\Users\86131\AppData\Local\nvim\lua\config\lazy.lua` 这种挂上 `lua-language-server` 的 Lua buffer 里，会实际出现 `Goto Definition`、`References`、`Hover`、`Rename`、`LSP Symbols`
+  - 当前本机 Mason 已安装 `lua-language-server`，因此 Day 012 的最稳练习场景就是本机 `lua/config/*.lua` 这些 Lua 配置文件
   - 本次额外回补了 Day 001 / 002 / 003 / 004 / 005 / 006 / 007 的实用缺口：撤销、count 与行内找字符、`.`、文本对象扩展、tab / hidden / bdelete、块选择里的 `I / A`、命令行编辑键与历史
   - 当前本地事实锚点是 `Vim 9.2` 与 `Neovim 0.12.0`
 - 已学过主题：
@@ -40,6 +43,7 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 009：Neovim 的定位 + 终端 / 剪贴板 / 配置 / health`
   - `Day 010：LazyVim 总览与 leader 思维`
   - `Day 011：LazyVim 文件 / 搜索 / buffer 工作流`
+  - `Day 012：LazyVim 代码导航与 LSP 基础操作`
 - 哪些章节是 `done`
   - `Day 000`
 - 哪些章节是 `revisit`
@@ -54,12 +58,13 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 009`
   - `Day 010`
   - `Day 011`
+  - `Day 012`
 - 当前薄弱点：
-  - `Root Dir` 和 `cwd` 的区别虽然已经建立，但还需要在真实项目里练到第一反应
-  - `files`、`buffers`、`recent`、`explorer` 4 组入口刚刚拆开，还没有完全形成稳定判断
-  - 仍然容易在多 buffer 场景里只会 `<S-l>` 一路轮，而不是切回 `<leader>,`
-  - 还没开始 Day 012 的代码导航与 LSP 工作流，当前正处在从“会找和切”过渡到“会在代码里定位和跳转”阶段
-- 下一步建议：`先完成 Day 011 的 5-10 分钟练习，再进入 Day 012：LazyVim 代码导航与 LSP 基础操作`
+  - `grep` 和 `LSP` 的边界已经建立，但还需要在真实代码里练到第一反应
+  - `gd`、`gD`、`gI`、`gy` 这组“跳转”还没有完全拆开
+  - 还需要把“LSP 键位是 buffer / server 能力动态挂载”的事实练熟，避免误以为这是全局死键
+  - 还没开始 Day 013 的日常编辑闭环，当前正处在从“会找、会跳”过渡到“会顺手完成一整轮修改”的阶段
+- 下一步建议：`先完成 Day 012 的 5-10 分钟练习，再进入 Day 013：LazyVim 日常编辑闭环`
 
 ## 默认学习主线
 
@@ -95,7 +100,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 | 009 | 2026-04-17 | `Neovim 的定位 + 终端 / 剪贴板 / 配置 / health` | `learning-vim-day009-2026-04-17-neovim-positioning-terminal-clipboard-config-and-health.md` | `revisit` |
 | 010 | 2026-04-18 | `LazyVim 总览与 leader 思维` | `learning-vim-day010-2026-04-18-lazyvim-overview-and-leader-thinking.md` | `revisit` |
 | 011 | 2026-04-18 | `LazyVim 文件 / 搜索 / buffer 工作流` | `learning-vim-day011-2026-04-18-lazyvim-file-search-and-buffer-workflow.md` | `revisit` |
-| 012 | TBD | `LazyVim 代码导航与 LSP 基础操作` | TBD | `next` |
+| 012 | 2026-04-19 | `LazyVim 代码导航与 LSP 基础操作` | `learning-vim-day012-2026-04-19-lazyvim-code-navigation-and-lsp-basics.md` | `revisit` |
+| 013 | TBD | `LazyVim 日常编辑闭环` | TBD | `next` |
 
 说明：
 
@@ -383,18 +389,53 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Day 012 或真实项目编码时，发现自己仍然分不清“找文件”和“找内容”，或者在多文件上下文里继续只靠 buffer 轮切`
 
+### Day 012
+
+- 主题：`LazyVim 代码导航与 LSP 基础操作`
+- 文件：`learning-vim-day012-2026-04-19-lazyvim-code-navigation-and-lsp-basics.md`
+- understanding_status: `yellow`
+- mastery_score: `3/5`
+- weak_points:
+  - `grep` 和 `LSP` 的边界已经知道，但还需要在真实代码里练成第一反应
+  - `gd`、`gD`、`gI`、`gy` 这组跳转还没有完全拆开
+  - 仍然需要把“LSP 键位是 buffer / server 能力动态挂载”的事实练熟
+  - 还没进入 Day 013 的日常编辑闭环，当前主要还是“会找、会跳、会看引用”
+- source_anchors:
+  - `vim --version`
+  - `nvim --version`
+  - `nvim --headless "+checkhealth vim.lsp" +qa`
+  - `nvim --headless "+checkhealth mason" +qa`
+  - `clang --version`
+  - `clangd --version`
+  - `nvim --headless "+lua print(vim.fn.executable('clangd'))" +qa`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\lsp.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\diagnostic.txt`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\plugins\lsp\init.lua`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\plugins\lsp\keymaps.lua`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\plugins\extras\lang\clangd.lua`
+  - `C:\Users\86131\AppData\Local\nvim\lua\config\lazy.lua`
+  - `C:\Users\86131\AppData\Local\nvim\lua\plugins\example.lua`
+  - `https://www.lazyvim.org/`
+  - `https://www.lazyvim.org/keymaps`
+  - `https://www.lazyvim.org/configuration`
+  - `https://www.lazyvim.org/extras/lang/clangd`
+  - `https://clangd.llvm.org/design/compile-commands`
+- ready_for_next: `yes`
+- next_review_trigger: `进入 Day 013 或真实项目改代码时，发现自己仍然只会文本搜索，不会先按语义层去做 gd / gr / rename / symbols`
+
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
   - 移动仍有退回方向键或逐字符硬挪的风险
   - “先找到目标，再决定怎么改”已经建立，现在要继续扩展成“先判断重复粒度，再决定用 `.`、宏、`:global` 还是多文件命令”
   - 还没把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围、寄存器、宏，与 Neovim 的 `terminal / provider / health / stdpath()` 真正连成一个统一编辑模型
-  - 还没把 LazyVim 的 leader 分组、which-key、文件 / 搜索 / buffer 入口，真正接成一套默认工作流心智
+  - 还没把 LazyVim 的 leader 分组、which-key、文件 / 搜索 / buffer / LSP 入口，真正接成一套默认工作流心智
 - 回看触发条件：
   - 写文本或改代码时又出现大量手工删改
   - 学 Day 007 时发现自己虽然知道 `:[range]command`、`q:`、`:%s`，但仍然不会顺手用
   - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回 `.`、寄存器、宏、`:global`、quickfix 这些底层动作，或者不会先用 `:terminal` / `:checkhealth vim.provider`
   - 进入 Day 012 之后，发现自己还分不清“找文件”“找内容”“切 buffer”“回最近文件”这几种入口
+  - 进入 Day 013 之后，发现自己还是只会文本搜索，不会先判断当前问题该走 `grep` 还是 `LSP`
 
 ## 外部资料使用原则
 
@@ -411,4 +452,4 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 最近更新时间
 
-- 2026-04-18T00:00:00+08:00
+- 2026-04-19T00:00:00+08:00
