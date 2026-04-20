@@ -1,0 +1,52 @@
+vim find should feel direct
+visual mode helps when the range is easier to see than to describe
+
+
+
+server deadline happened once
+server deadline happened twice
+client deadline should be checked
+backend retry may hide a timeout
+'
+
+
+error timeout user=alice
+delta four
+error retry user=bob
+timeout only user=carol
+error and timeout happened again
+
+
+
+delta four
+viha one
+delta four
+epsilon five
+
+
+item_apple   price_12
+item_banana  price_08
+item_orange  price_15
+item_grape   price_11
+
+
+
+
+
+if ready:
+print("start")
+if retry:
+print("retry")
+print("done")
+
+
+
+
+
+	user_name = "alice"
+	user_role = "member"
+	user_state = "active"
+
+admin_name = "bob"
+admin_role = "member"
+admin_state = "deactive"

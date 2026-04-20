@@ -1,0 +1,18 @@
+<space><space> -> find files
+<space>fF -> find fiels (cwd)
+
+<space>/ -> search
+<space>sg -> search
+<space>sG -> search (cwd)
+<space>sw -> visual selection or word
+<space>sB -> grep open buffers
+
+<space>, -> buffers
+<space>fB -> buffers
+<space>fr -> rececnt
+<space>fR -> rececnt(cwd)
+
+<space>e -> Explorer
+<space>E -> Explorer
+
+

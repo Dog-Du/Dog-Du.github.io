@@ -3,25 +3,27 @@
   页脚扩展模板 (extend-footer.html)
   ==========================================================================
 
-  功能模块（单一 bundle，按文档顺序执行）：
-    1. 📷 GLightbox CDN — 图片灯箱库（外部依赖，需在 bundle 之前加载）
-    2. 🎯 bundle.js    — 合并自 4 个源文件：
-       - live2d.js          — Live2D 看板娘（移动端自动跳过）
-       - page-enhancements.js — 樱花特效 + 页脚台词 + 阅读进度条
-       - ui-effects.js       — 点击特效 + 复制提示 + 搜索快捷键
-       - article-enhancements.js — 图片灯箱初始化 + 移动端 TOC
+  功能模块（按顺序直接加载源脚本）：
+    1. 📷 GLightbox CDN — 图片灯箱库
+    2. 🎯 live2d.js — Live2D 看板娘
+    3. 🌸 page-enhancements.js — 樱花特效 + 页脚台词 + 阅读进度条
+    4. ✨ ui-effects.js — 复制提示 + 搜索快捷键
+    5. 📚 article-enhancements.js — 图片灯箱初始化 + 移动端 TOC
 
   修改历史：
     2025-06 - 初始版本
-    2026-03 - 合并 4 个 JS 为 bundle.js，减少 HTTP 请求
+    2026-04 - 改为直接加载源脚本，移除废弃 bundle
   ==========================================================================
 */}}
 
-{{/* 📷 GLightbox - 图片灯箱库（defer 保证在 bundle.js 之前执行） */}}
+{{/* 📷 GLightbox - 图片灯箱库 */}}
 <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js" defer></script>
 
-{{/* 🎯 All-in-one Bundle（包含 Live2D + 页面增强 + UI 特效 + 文章增强） */}}
-<script src="/js/bundle.js" defer></script>
+{{/* 🎯 Source scripts */}}
+<script src="/js/live2d.js" defer></script>
+<script src="/js/page-enhancements.js" defer></script>
+<script src="/js/ui-effects.js" defer></script>
+<script src="/js/article-enhancements.js" defer></script>
 
 {{/* 📊 不蒜子 - 轻量访问统计 */}}
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
