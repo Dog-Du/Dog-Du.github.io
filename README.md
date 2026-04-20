@@ -37,8 +37,7 @@
 │   └── 404.html                  # 自定义 404 页面
 ├── static/
 │   ├── js/                       # 前端 JS（见下文）
-│   ├── img/                      # 文章图片
-│   └── cursors/                  # 自定义光标资源
+│   └── img/                      # 文章图片
 ├── themes/blowfish/              # Blowfish 主题（子模块）
 └── tools/                        # 辅助工具
     └── postimg/                  # Rust CLI 图片管理工具
@@ -56,7 +55,6 @@
   - GLightbox 图片灯箱
   - 阅读进度条
   - 移动端 TOC 抽屉
-  - 自定义光标 & 点击特效
   - 复制成功 Toast 提示
   - 搜索快捷键（Ctrl+K）
   - 代码块折叠
@@ -118,14 +116,14 @@ commentDiscussionNumber: 42
 
 ### JS
 
-`static/js/` 下 4 个源文件，打包为 `bundle.js`：
+`static/js/` 下 4 个源文件由页脚模板直接加载：
 
 | 文件 | 职责 |
 |------|------|
 | `live2d.js` | Live2D 看板娘加载与控制 |
-| `page-enhancements.js` | 阅读进度条、移动端 TOC 抽屉、搜索快捷键 |
-| `ui-effects.js` | 樱花动画、自定义光标、点击特效、复制 Toast |
-| `article-enhancements.js` | 代码块折叠、灯箱初始化、文章页增强 |
+| `page-enhancements.js` | 樱花动画、页脚台词、阅读进度条 |
+| `ui-effects.js` | 复制 Toast、搜索快捷键 |
+| `article-enhancements.js` | 灯箱初始化、文章页增强、移动端 TOC |
 
 ### HTML 模板
 

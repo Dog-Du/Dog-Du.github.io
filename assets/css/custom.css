@@ -741,33 +741,6 @@ body.max-w-7xl {
 }
 
 /* ==========================================================================
-   13. 自定义光标 Custom Cursor
-   --------------------------------------------------------------------------
-   仅桌面端生效（pointer: fine），移动端忽略
-   ========================================================================== */
-
-@media (pointer: fine) {
-  body,
-  html {
-    cursor: url('/cursors/default.svg') 2 1, default;
-  }
-
-  a,
-  button,
-  [role="button"],
-  label[for],
-  select,
-  summary,
-  .cursor-pointer,
-  input[type="submit"],
-  input[type="button"],
-  input[type="checkbox"],
-  input[type="radio"] {
-    cursor: url('/cursors/pointer.svg') 10 0, pointer;
-  }
-}
-
-/* ==========================================================================
    14. 复制成功 Toast 提示 Copy Toast
    --------------------------------------------------------------------------
    代码块一键复制后弹出的浮动提示
@@ -2096,10 +2069,4 @@ body.max-w-7xl {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
   pointer-events: none;
-}
-
-@media (pointer: fine) {
-  .mermaid-viewer {
-    cursor: url('/cursors/pointer.svg') 10 0, zoom-in;
-  }
 }
