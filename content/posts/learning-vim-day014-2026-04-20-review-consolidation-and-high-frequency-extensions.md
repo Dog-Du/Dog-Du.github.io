@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 14
 slug: learning-vim-day014-review-consolidation-and-high-frequency-extensions
+featureimage: "images/covers/vim/day014-review-21kdox.webp"
 summary: Day 014 对前 14 天主线做回顾、巩固与高频扩展，把 motion、text objects、search、Ex、quickfix、LSP、diagnostics、health 压成一套“先判断问题，再选工具”的统一编辑模型，并给出后续项目驱动复训路径。
 ---
 

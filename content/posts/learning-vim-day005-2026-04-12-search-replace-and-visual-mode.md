@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 5
 slug: learning-vim-day005-search-replace-and-visual-mode
+featureimage: "images/covers/vim/day005-search-6lo8w6.webp"
 summary: Day 005 聚焦搜索、替换和可视模式，先掌握最常用的查找、逐个确认替换和三种 Visual 选择方式，让“找到目标并改掉”形成稳定闭环。
 ---
 

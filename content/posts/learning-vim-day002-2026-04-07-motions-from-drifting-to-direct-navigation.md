@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 2
 slug: learning-vim-day002-motions-from-drifting-to-direct-navigation
+featureimage: "images/covers/vim/day002-motions-ly9eml.webp"
 summary: Day 002 不追求背更多导航命令，而是把移动从“按字符硬挪”升级成“按词、按行、按文件位置直接到位”，为后续 operator + motion 打底。
 ---
 

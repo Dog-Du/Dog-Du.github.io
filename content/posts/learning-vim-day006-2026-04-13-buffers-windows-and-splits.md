@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 6
 slug: learning-vim-day006-buffers-windows-and-splits
+featureimage: "images/covers/vim/day006-buffers-8g37jy.webp"
 summary: Day 006 聚焦 buffer、window、split 的日常工作流，先掌握同一会话里多个文件怎么切、同屏怎么并排看、什么时候该切 buffer，什么时候该开 split。
 ---
 

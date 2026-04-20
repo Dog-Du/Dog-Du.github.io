@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 3
 slug: learning-vim-day003-operator-plus-motion
+featureimage: "images/covers/vim/day003-operator-e8z8jk.webp"
 summary: Day 003 把前一天学的 motion 真正接到编辑动作上，建立“先选操作，再给范围”的 Vim 编辑节奏，先掌握 d / c / y 和最常用的 motion 组合。
 ---
 

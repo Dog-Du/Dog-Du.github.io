@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 4
 slug: learning-vim-day004-text-objects
+featureimage: "images/covers/vim/day004-textobjects-8gxe11.webp"
 summary: Day 004 把 operator + motion 继续推进到文本对象，先掌握最常用的词、引号、括号和方括号对象，让编辑范围更贴近真实结构，而不是只靠光标硬找边界。
 ---
 

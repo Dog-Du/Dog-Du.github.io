@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 0
 slug: learning-vim-day000-overview-and-roadmap
+featureimage: "images/covers/vim/day000-overview-3qkqqv.webp"
 summary: 在正式进入 Vim 学习主线之前，先明确目标、边界、14 天路线以及从 Vim 过渡到 Neovim 和 LazyVim 的整体策略。
 ---
 

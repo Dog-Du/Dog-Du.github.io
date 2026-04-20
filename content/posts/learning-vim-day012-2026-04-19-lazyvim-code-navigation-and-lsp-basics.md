@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 12
 slug: learning-vim-day012-lazyvim-code-navigation-and-lsp-basics
+featureimage: "images/covers/vim/day012-lsp-5y5zj5.webp"
 summary: Day 012 聚焦 LazyVim 默认的代码导航与 LSP 基础操作，围绕 definition、references、hover、rename、code action、symbols 建立“语义导航”心智，并把 Day 11 的文件 / 搜索工作流接到真实代码跳转上。
 ---
 

@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 11
 slug: learning-vim-day011-lazyvim-file-search-and-buffer-workflow
+featureimage: "images/covers/vim/day011-files-w5qo2x.webp"
 summary: Day 011 聚焦 LazyVim 默认的文件、搜索和 buffer 工作流，围绕 Snacks picker 与 buffer 切换建立 root dir / cwd / files / recent / buffers 的判断，让“找文件、搜内容、切上下文”真正形成默认动作。
 ---
 

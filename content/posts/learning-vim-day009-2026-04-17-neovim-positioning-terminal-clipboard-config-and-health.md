@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 9
 slug: learning-vim-day009-neovim-positioning-terminal-clipboard-config-and-health
+featureimage: "images/covers/vim/day009-neovim-6ll6l6.webp"
 summary: Day 009 聚焦 Neovim 的定位，以及终端、剪贴板、配置入口和 :checkhealth 这四个最值得先接进日常工作流的入口，让前 8 天学过的 Vim 语法自然过渡到现代宿主环境。
 ---
 

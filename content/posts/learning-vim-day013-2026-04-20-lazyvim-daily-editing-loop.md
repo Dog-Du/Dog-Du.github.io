@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 13
 slug: learning-vim-day013-lazyvim-daily-editing-loop
+featureimage: "images/covers/vim/day013-loop-5ydmy3.webp"
 summary: Day 013 聚焦 LazyVim 的日常编辑闭环，把 files / grep / buffers、LSP 跳转与 rename、diagnostics、quickfix、jumplist、format 串成一条能反复执行的默认工作流。
 ---
 

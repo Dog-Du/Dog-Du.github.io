@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 1
 slug: learning-vim-day001-editing-mindset-and-modes
+featureimage: "images/covers/vim/day001-modes-zpxzrj.webp"
 summary: 先不追求更多命令，先把 Vim 最关键的编辑心智模型打稳：普通模式不是过渡状态，而是主工作模式；插入模式只是短暂停留的输入状态。
 ---
 

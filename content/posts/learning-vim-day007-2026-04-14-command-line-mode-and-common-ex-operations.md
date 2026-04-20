@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 7
 slug: learning-vim-day007-command-line-mode-and-common-ex-operations
+featureimage: "images/covers/vim/day007-ex-je8me5.webp"
 summary: Day 007 聚焦命令行模式与常用 Ex 操作，先掌握 :w、:q、:e、范围、命令拼接、命令行窗口，把“在文本里改”推进到“对编辑器发出明确指令”。
 ---
 

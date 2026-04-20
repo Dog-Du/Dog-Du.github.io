@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: -1
 slug: learning-vim-index
+featureimage: "images/covers/vim/day000-index-zpgp1g.webp"
 summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于恢复学习进度、导航每日文章以及记录薄弱点。
 ---
 

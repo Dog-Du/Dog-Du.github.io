@@ -8,6 +8,7 @@ series:
 - "Vim 14 天"
 series_order: 10
 slug: learning-vim-day010-lazyvim-overview-and-leader-thinking
+featureimage: "images/covers/vim/day010-lazyvim-overview-w55m8x.webp"
 summary: Day 010 聚焦 LazyVim 的定位、leader 思维和 starter 配置结构，先建立“LazyVim 是一套默认工作流而不是一堆快捷键”的判断，并学会从哪些入口开始看、从哪些文件开始改。
 ---
 
