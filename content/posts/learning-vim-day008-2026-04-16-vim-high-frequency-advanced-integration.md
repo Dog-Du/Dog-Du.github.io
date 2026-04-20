@@ -4,6 +4,9 @@ date: 2026-04-16T00:00:00+08:00
 lastmod: 2026-04-17T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: 8
 slug: learning-vim-day008-vim-high-frequency-advanced-integration
 summary: Day 008 聚焦 Vim 高频进阶整合，补齐插入模式高频入口、点命令、撤销、寄存器、宏、:global 和多文件批处理，把前 7 天的基础动作串成更稳定的日常编辑闭环。
 ---

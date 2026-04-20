@@ -1,9 +1,12 @@
 ---
 title: Vim 学习笔记 Day 010：LazyVim 总览与 leader 思维，把“会用 Neovim”推进到“会走默认工作流”
-date: 2026-04-18T00:00:00+08:00
+date: 2026-04-18T09:00:00+08:00
 lastmod: 2026-04-18T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: 10
 slug: learning-vim-day010-lazyvim-overview-and-leader-thinking
 summary: Day 010 聚焦 LazyVim 的定位、leader 思维和 starter 配置结构，先建立“LazyVim 是一套默认工作流而不是一堆快捷键”的判断，并学会从哪些入口开始看、从哪些文件开始改。
 ---

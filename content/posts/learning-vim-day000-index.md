@@ -1,18 +1,26 @@
 ---
 title: Vim 学习索引
-date: 2026-04-02T00:00:00+08:00
-lastmod: 2026-04-19T00:00:00+08:00
+date: 2026-04-02T08:00:00+08:00
+lastmod: 2026-04-20T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: -1
 slug: learning-vim-index
 summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于恢复学习进度、导航每日文章以及记录薄弱点。
 ---
 
 ## 当前状态
 
-- 当前学习总天数：`12`
-- 当前最近一次学习主题：`Day 012：LazyVim 代码导航与 LSP 基础操作，把“会搜文本”推进到“会按语义跳转”`
-- 当前主线阶段：`第 12 章：LazyVim 代码导航与 LSP 基础操作`
+- 当前学习总天数：`14`
+- 当前最近一次学习主题：`Day 014：回顾、巩固与高频扩展，把 14 天主线压成一个真正可用的编辑选择器`
+- 当前主线阶段：`第 14 章：回顾、巩固与高频扩展`
+- 当前系列：`Vim 14 天`
+- 系列整理状态：
+  - `Vim 学习索引`、`Day 000`、`Day 001` 到 `Day 014` 已整理进同一系列
+  - 其中 `Vim 学习索引` 和 `Day 000` 作为前导文档加入系列，但不计入正式 `14` 天 part 编号
+  - 同日文章的 `date` 时间已按先后顺序拆开，避免站点列表中顺序不稳定
 - 上一篇文章写到：
   - Day 005 已经把搜索、替换和 Visual 选择接进编辑闭环，开始围绕 `/ ? n N * # :s :%s v V Ctrl-V` 组织操作
   - Day 006 已经开始区分 buffer、window、split，并把多文件切换和并排对照接进工作流
@@ -28,8 +36,13 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - Day 012 现在已经正式推进，重点落在 LazyVim 默认的 LSP 导航入口：`gd`、`gr`、`gI`、`gy`、`gD`、`K`、`<leader>ca`、`<leader>cr`、`<leader>ss`
   - 当前本机额外确认到：这些 LSP 键位不是全局永远存在；空会话里 `maparg()` 会得到 `<none>`，但在 `C:\Users\86131\AppData\Local\nvim\lua\config\lazy.lua` 这种挂上 `lua-language-server` 的 Lua buffer 里，会实际出现 `Goto Definition`、`References`、`Hover`、`Rename`、`LSP Symbols`
   - 当前本机 Mason 已安装 `lua-language-server`，因此 Day 012 的最稳练习场景就是本机 `lua/config/*.lua` 这些 Lua 配置文件
+  - Day 013 现在已经正式推进，重点落在把 `files / grep / buffers`、`gd / gr / K / rename`、`diagnostics / Trouble / quickfix`、`<C-o> / <C-i>` 和 `.` / `<leader>cf` 串成一条真实可重复的编辑闭环
+  - 当前本机额外确认到：`nvim --headless "+checkhealth vim.lsp" +qa` 可以跑通；`nvim --headless` 里 `]d` / `[d` 的 desc 分别是 `Jump to the next diagnostic in the current buffer` 与 `Jump to the previous diagnostic in the current buffer`
+  - Day 014 现在已经正式推进，重点落在把 `motion / text object / search / Ex / quickfix / LSP / diagnostics / health` 压成一个统一编辑模型，并明确后续不再按天机械推进，而是转入项目驱动复训
+  - 当前本机额外确认到：`quickfix.txt` 里可以直接定位到 `:cdo` / `:cfdo`；`repeat.txt` 里可直接定位到 `.`；`motion.txt` 里可直接定位到 `text-objects`、`CTRL-O`、`CTRL-I`、`jumplist`
   - 本次额外回补了 Day 001 / 002 / 003 / 004 / 005 / 006 / 007 的实用缺口：撤销、count 与行内找字符、`.`、文本对象扩展、tab / hidden / bdelete、块选择里的 `I / A`、命令行编辑键与历史
   - 当前本地事实锚点是 `Vim 9.2` 与 `Neovim 0.12.0`
+  - 默认 `14` 天主线已经走完，后续更适合按真实项目和薄弱点回看
 - 已学过主题：
   - `Day 000：总览与环境准备`
   - `Day 001：编辑心智模型与模式`
@@ -44,6 +57,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 010：LazyVim 总览与 leader 思维`
   - `Day 011：LazyVim 文件 / 搜索 / buffer 工作流`
   - `Day 012：LazyVim 代码导航与 LSP 基础操作`
+  - `Day 013：LazyVim 日常编辑闭环`
+  - `Day 014：回顾、巩固与高频扩展`
 - 哪些章节是 `done`
   - `Day 000`
 - 哪些章节是 `revisit`
@@ -59,12 +74,14 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `Day 010`
   - `Day 011`
   - `Day 012`
+  - `Day 013`
+  - `Day 014`
 - 当前薄弱点：
-  - `grep` 和 `LSP` 的边界已经建立，但还需要在真实代码里练到第一反应
-  - `gd`、`gD`、`gI`、`gy` 这组“跳转”还没有完全拆开
-  - 还需要把“LSP 键位是 buffer / server 能力动态挂载”的事实练熟，避免误以为这是全局死键
-  - 还没开始 Day 013 的日常编辑闭环，当前正处在从“会找、会跳”过渡到“会顺手完成一整轮修改”的阶段
-- 下一步建议：`先完成 Day 012 的 5-10 分钟练习，再进入 Day 013：LazyVim 日常编辑闭环`
+  - 真实项目里仍然容易在压力下退回手工删改，而不是先判断该用 `motion`、文本对象、`.`、替换、quickfix 还是 rename
+  - `gd` / `gr` 之后的 `<C-o>` / `<C-i>` 还需要继续练，避免跳出去以后只靠 buffer 来回找
+  - diagnostics、Trouble、quickfix、location list 这几个结果层虽然已经拆开，但还没有完全固化成第一反应
+  - 遇到环境异常时，还需要更稳定地先想到 `:checkhealth`、`stdpath()`、provider / server / filetype，而不是先怀疑自己按错键
+- 下一步建议：`不再新增 Day 015；直接进入项目驱动复训，并按薄弱点回看 Day 002 / 005 / 008 / 009 / 011 / 012 / 013 / 014`
 
 ## 默认学习主线
 
@@ -101,7 +118,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 | 010 | 2026-04-18 | `LazyVim 总览与 leader 思维` | `learning-vim-day010-2026-04-18-lazyvim-overview-and-leader-thinking.md` | `revisit` |
 | 011 | 2026-04-18 | `LazyVim 文件 / 搜索 / buffer 工作流` | `learning-vim-day011-2026-04-18-lazyvim-file-search-and-buffer-workflow.md` | `revisit` |
 | 012 | 2026-04-19 | `LazyVim 代码导航与 LSP 基础操作` | `learning-vim-day012-2026-04-19-lazyvim-code-navigation-and-lsp-basics.md` | `revisit` |
-| 013 | TBD | `LazyVim 日常编辑闭环` | TBD | `next` |
+| 013 | 2026-04-20 | `LazyVim 日常编辑闭环` | `learning-vim-day013-2026-04-20-lazyvim-daily-editing-loop.md` | `revisit` |
+| 014 | 2026-04-20 | `回顾、巩固与高频扩展` | `learning-vim-day014-2026-04-20-review-consolidation-and-high-frequency-extensions.md` | `revisit` |
 
 说明：
 
@@ -111,6 +129,8 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
   - `next`
 - Day 000 作为总览与环境准备，不计入正式推进天数。
 - 正式主线从 Day 001 开始。
+- 系列显示使用 `series = Vim 14 天`。
+- `series_order = -1` 用于 `Vim 学习索引`，`series_order = 0` 用于 `Day 000`，`Day 001` 到 `Day 014` 固定为 `1-14`。
 
 ## 章节掌握快照
 
@@ -423,19 +443,74 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 - ready_for_next: `yes`
 - next_review_trigger: `进入 Day 013 或真实项目改代码时，发现自己仍然只会文本搜索，不会先按语义层去做 gd / gr / rename / symbols`
 
+### Day 013
+
+- 主题：`LazyVim 日常编辑闭环`
+- 文件：`learning-vim-day013-2026-04-20-lazyvim-daily-editing-loop.md`
+- understanding_status: `yellow`
+- mastery_score: `3/5`
+- weak_points:
+  - `gd` / `gr` 跳出去以后，`<C-o>` / `<C-i>` 还需要练成稳定反射
+  - `.`、`<leader>cr`、`:%s`、`grep + quickfix` 的切换虽然已经分层，但还没有在真实编辑里练熟
+  - `Line Diagnostics`、`Buffer Diagnostics`、`Workspace Diagnostics`、`Trouble`、`quickfix` 的层级刚刚建立，还需要更多实战
+  - 还需要把 Day 011 的入口判断、Day 012 的语义导航和更早的 Vim 编辑动作真正走成一条默认回路
+- source_anchors:
+  - `vim --version`
+  - `nvim --version`
+  - `nvim --headless "+checkhealth vim.lsp" +qa`
+  - `nvim --headless "+lua local a=vim.fn.maparg(']d','n',false,true); local b=vim.fn.maparg('[d','n',false,true); print(']d='..(a.desc or '<none>')); print('[d='..(b.desc or '<none>'))" +qa`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\motion.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\repeat.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\diagnostic.txt`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\config\keymaps.lua`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\plugins\editor.lua`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\plugins\extras\editor\snacks_picker.lua`
+  - `C:\Users\86131\AppData\Local\nvim\lua\config\lazy.lua`
+  - `C:\Users\86131\AppData\Local\nvim\lua\plugins\example.lua`
+- ready_for_next: `yes`
+- next_review_trigger: `进入 Day 014 或真实项目改代码时，发现自己仍然只会找和跳，不会稳定完成“跳转 -> 修改 -> 诊断 -> 回跳”整轮动作`
+
+### Day 014
+
+- 主题：`回顾、巩固与高频扩展`
+- 文件：`learning-vim-day014-2026-04-20-review-consolidation-and-high-frequency-extensions.md`
+- understanding_status: `yellow`
+- mastery_score: `4/5`
+- weak_points:
+  - 已经能把主线压成一个统一模型，但在真实项目压力下仍可能退回手工删改
+  - `.`、`:%s`、`:global`、quickfix / `:cdo`、`<leader>cr` 这些“升级工具”的边界仍需更多实战
+  - diagnostics、Trouble、quickfix、location list 的结果层虽然已拆开，但还没有完全自动化
+  - 环境异常时，仍需要持续训练“先查 health / provider / server / filetype”的排查反射
+- source_anchors:
+  - `vim --version`
+  - `nvim --version`
+  - `nvim --headless "+checkhealth vim.lsp" +qa`
+  - `C:\Program Files\Vim\vim92\doc\motion.txt`
+  - `C:\Program Files\Vim\vim92\doc\repeat.txt`
+  - `C:\Program Files\Vim\vim92\doc\cmdline.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\quickfix.txt`
+  - `C:\Program Files\Neovim\share\nvim\runtime\doc\diagnostic.txt`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\config\keymaps.lua`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\plugins\editor.lua`
+  - `C:\Users\86131\AppData\Local\nvim-data\lazy\LazyVim\lua\lazyvim\plugins\extras\editor\snacks_picker.lua`
+  - `C:\Users\86131\AppData\Local\nvim\lua\config\lazy.lua`
+- ready_for_next: `yes`
+- next_review_trigger: `进入真实项目后，发现自己仍然不会稳定判断“现在该用 motion / text object / search / LSP / quickfix / health 中的哪一层”`
+
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
   - 移动仍有退回方向键或逐字符硬挪的风险
-  - “先找到目标，再决定怎么改”已经建立，现在要继续扩展成“先判断重复粒度，再决定用 `.`、宏、`:global` 还是多文件命令”
-  - 还没把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围、寄存器、宏，与 Neovim 的 `terminal / provider / health / stdpath()` 真正连成一个统一编辑模型
-  - 还没把 LazyVim 的 leader 分组、which-key、文件 / 搜索 / buffer / LSP 入口，真正接成一套默认工作流心智
+  - “先找到目标，再决定怎么改”已经建立，现在要继续扩展成“先判断这次该用 `motion`、文本对象、`.`、`:s`、`:global`、quickfix、rename、宏还是多文件命令”
+  - 还需要把 Vim 的移动能力、文本对象、搜索替换、多窗口切换、Ex 范围、寄存器、宏，与 Neovim 的 `terminal / provider / health / stdpath()` 和 LazyVim 的默认入口真正压成一个统一编辑模型
+  - LazyVim 的 leader 分组、which-key、文件 / 搜索 / buffer / LSP / diagnostics 虽然已经接成闭环，但还需要在真实项目里跑顺
+  - `gd` / `gr` 之后的 jumplist 回跳，以及 diagnostics / Trouble / quickfix / location list 的结果集切换还没有完全固化
 - 回看触发条件：
   - 写文本或改代码时又出现大量手工删改
   - 学 Day 007 时发现自己虽然知道 `:[range]command`、`q:`、`:%s`，但仍然不会顺手用
   - 进入 Neovim / LazyVim 后能用工作流快捷键，却仍然不会顺手落回 `.`、寄存器、宏、`:global`、quickfix 这些底层动作，或者不会先用 `:terminal` / `:checkhealth vim.provider`
   - 进入 Day 012 之后，发现自己还分不清“找文件”“找内容”“切 buffer”“回最近文件”这几种入口
-  - 进入 Day 013 之后，发现自己还是只会文本搜索，不会先判断当前问题该走 `grep` 还是 `LSP`
+  - 进入真实项目之后，发现自己还是只会“找和跳”，不会稳定完成 `定位 -> 修改 -> diagnostics / quickfix -> 回跳 / 继续` 这一整轮动作
 
 ## 外部资料使用原则
 
@@ -452,4 +527,4 @@ summary: Vim / Neovim / LazyVim 长期学习索引与轻量状态文件，用于
 
 ## 最近更新时间
 
-- 2026-04-19T00:00:00+08:00
+- 2026-04-20T00:00:00+08:00

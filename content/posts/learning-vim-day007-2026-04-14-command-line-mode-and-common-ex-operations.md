@@ -4,6 +4,9 @@ date: 2026-04-14T00:00:00+08:00
 lastmod: 2026-04-17T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: 7
 slug: learning-vim-day007-command-line-mode-and-common-ex-operations
 summary: Day 007 聚焦命令行模式与常用 Ex 操作，先掌握 :w、:q、:e、范围、命令拼接、命令行窗口，把“在文本里改”推进到“对编辑器发出明确指令”。
 ---

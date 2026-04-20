@@ -4,6 +4,9 @@ date: 2026-04-11T00:00:00+08:00
 lastmod: 2026-04-17T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: 4
 slug: learning-vim-day004-text-objects
 summary: Day 004 把 operator + motion 继续推进到文本对象，先掌握最常用的词、引号、括号和方括号对象，让编辑范围更贴近真实结构，而不是只靠光标硬找边界。
 ---

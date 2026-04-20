@@ -1,9 +1,12 @@
 ---
 title: Vim 学习笔记 Day 000：总览与环境准备
-date: 2026-04-02T00:00:00+08:00
+date: 2026-04-02T09:00:00+08:00
 lastmod: 2026-04-17T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: 0
 slug: learning-vim-day000-overview-and-roadmap
 summary: 在正式进入 Vim 学习主线之前，先明确目标、边界、14 天路线以及从 Vim 过渡到 Neovim 和 LazyVim 的整体策略。
 ---

@@ -1,9 +1,12 @@
 ---
 title: Vim 学习笔记 Day 011：LazyVim 文件 / 搜索 / buffer 工作流，把“会看 leader 分组”推进到“会在项目里快速找、切、回”
-date: 2026-04-18T00:00:00+08:00
+date: 2026-04-18T12:00:00+08:00
 lastmod: 2026-04-18T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: 11
 slug: learning-vim-day011-lazyvim-file-search-and-buffer-workflow
 summary: Day 011 聚焦 LazyVim 默认的文件、搜索和 buffer 工作流，围绕 Snacks picker 与 buffer 切换建立 root dir / cwd / files / recent / buffers 的判断，让“找文件、搜内容、切上下文”真正形成默认动作。
 ---

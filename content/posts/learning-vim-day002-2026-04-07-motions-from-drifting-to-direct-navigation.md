@@ -4,6 +4,9 @@ date: 2026-04-07T00:00:00+08:00
 lastmod: 2026-04-17T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: 2
 slug: learning-vim-day002-motions-from-drifting-to-direct-navigation
 summary: Day 002 不追求背更多导航命令，而是把移动从“按字符硬挪”升级成“按词、按行、按文件位置直接到位”，为后续 operator + motion 打底。
 ---

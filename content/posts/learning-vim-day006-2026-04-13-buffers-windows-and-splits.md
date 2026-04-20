@@ -4,6 +4,9 @@ date: 2026-04-13T00:00:00+08:00
 lastmod: 2026-04-17T00:00:00+08:00
 tags: [Vim, Neovim, LazyVim, Editor]
 categories: [工具学习]
+series:
+- "Vim 14 天"
+series_order: 6
 slug: learning-vim-day006-buffers-windows-and-splits
 summary: Day 006 聚焦 buffer、window、split 的日常工作流，先掌握同一会话里多个文件怎么切、同屏怎么并排看、什么时候该切 buffer，什么时候该开 split。
 ---
