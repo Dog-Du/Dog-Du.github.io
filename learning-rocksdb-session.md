@@ -70,6 +70,12 @@
 - 每天以一个主主题为中心，必要时最多带一个副主题
 - 文章采用“源码驱动的学习型文章”风格
 - 当数据结构、模块关系、调用链、状态变化或流程适合图示时，优先使用 Mermaid 图辅助解释
+- `learning-rocksdb-day000-index.md` 和所有 `learning-rocksdb-dayXXX-*.md` 文章都放在同一个 `series` 中：
+  - `series: ["RocksDB 学习笔记"]`
+- `series_order` 规则固定为：
+  - 索引文件 `learning-rocksdb-day000-index.md` 使用 `series_order: -1`
+  - 每日文章使用对应 day 编号作为 `series_order`
+  - 例如 `Day 001 -> series_order: 1`，`Day 006 -> series_order: 6`
 - 每日文章应尽量包含这些部分：
   - `今日主题`
   - `学习目标`
@@ -216,6 +222,11 @@
 - 所有 RocksDB 学习文件都写入 `content/posts`
 - 新文件命名必须使用：
   - `learning-rocksdb-dayXXX-YYYY-MM-DD-<topic>.md`
+- RocksDB 学习索引和所有每日文章都必须属于同一个系列：
+  - `series: ["RocksDB 学习笔记"]`
+- `series_order` 必须按学习顺序填写：
+  - 索引文件使用 `-1`
+  - 每日文章使用对应 day 编号
 - 每日文章是知识主文档
 - 索引文件只做导航和轻量状态维护
 - Mermaid 图直接写入 Markdown，作为文章内容的一部分持久化保存

@@ -1,9 +1,12 @@
 ---
 title: RocksDB 学习笔记 Day 006：MemTable 深入：可见性、删除、范围删除与读语义
 date: 2026-04-18T20:30:00+08:00
-lastmod: 2026-04-18T21:55:00+08:00
+lastmod: 2026-04-20T15:30:09+08:00
 tags: [RocksDB, Database, Storage, MemTable, Snapshot]
 categories: [数据库]
+series:
+- "RocksDB 学习笔记"
+series_order: 6
 slug: learning-rocksdb-day006-memtable-visibility-delete-range-tombstone
 summary: 结合 LookupKey、InternalKeyComparator、MemTable::Get、SaveValue、range_del_table_ 与 WriteBatch::InsertInto 的源码，梳理 RocksDB 如何在 memtable 中实现删除、多版本可见性、范围删除覆盖以及 seq_per_batch 语义。
 ---

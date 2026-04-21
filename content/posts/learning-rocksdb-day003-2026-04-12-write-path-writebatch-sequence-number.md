@@ -1,9 +1,12 @@
 ---
 title: RocksDB 学习笔记 Day 003：Write Path / WriteBatch / Sequence Number
 date: 2026-04-12T14:30:00+08:00
-lastmod: 2026-04-12T14:30:00+08:00
+lastmod: 2026-04-20T15:30:09+08:00
 tags: [RocksDB, Database, Storage, WritePath]
 categories: [数据库]
+series:
+- "RocksDB 学习笔记"
+series_order: 3
 slug: learning-rocksdb-day003-write-path-writebatch-sequence-number
 summary: 结合 DBImpl::WriteImpl、WriteThread、WriteBatchInternal 等源码，梳理 RocksDB 写路径里写线程分组、sequence number 分配、WAL 写入与 memtable 插入的主流程。
 ---

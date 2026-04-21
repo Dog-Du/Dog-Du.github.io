@@ -1,9 +1,12 @@
 ---
 title: RocksDB 学习笔记 Day 002：DB 打开流程与核心对象关系
 date: 2026-04-09T16:00:00+08:00
-lastmod: 2026-04-12T10:30:00+08:00
+lastmod: 2026-04-20T15:30:09+08:00
 tags: [RocksDB, Database, Storage, Recovery]
 categories: [数据库]
+series:
+- "RocksDB 学习笔记"
+series_order: 2
 slug: learning-rocksdb-day002-db-open-and-core-object-relationships
 summary: 结合 DBImpl::Open、Recover、VersionSet::Recover、WAL 回放与 InstallSuperVersion 的源码，梳理 RocksDB 在启动阶段如何从磁盘元数据和 WAL 重建可服务的运行时对象图。
 ---

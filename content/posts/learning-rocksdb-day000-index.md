@@ -1,22 +1,26 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-18T21:40:00+08:00
+lastmod: 2026-04-21T12:00:16+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
+series:
+- "RocksDB 学习笔记"
+series_order: -1
 slug: learning-rocksdb-index
 summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进度、导航每日文章，并记录掌握度与最近一天复习问答闸门状态。
 ---
 
 ## 当前状态
 
-- 当前学习总天数：`6`
-- 当前最近一次学习主题：`Day 006：MemTable 深入：可见性、删除、范围删除与读语义`
-- 当前主线阶段：`第 6 章：MemTable 深入：可见性、删除、范围删除与读语义`
+- 当前学习总天数：`7`
+- 当前最近一次学习主题：`Day 007：Flush`
+- 当前主线阶段：`第 7 章：Flush`
 - 上一篇文章写到：
-  - `LookupKey -> MemTableRep::Get -> SaveValue -> HandleTypeDeletion / HandleTypeMerge`
-  - 已经讲清 memtable 点查为什么必须带 internal key 语义、删除为什么不需要物理删旧节点、`range_del_table_` 如何参与覆盖判定，以及 `seq_per_batch` 为什么能在 memtable 层保持等价语义
-  - 还没有进入 memtable 变 immutable 的切换时机、flush 任务的接管路径，以及 `SequenceNumber` 在 snapshot / read path 中的完整消费细节
+  - `ScheduleFlushes -> SwitchMemtable -> MaybeScheduleFlushOrCompaction -> BackgroundFlush -> FlushJob -> TryInstallMemtableFlushResults -> LogAndApply`
+  - 已经讲清 flush 不是单纯“把 memtable 写成 SST”，而是包含前台切换、后台刷盘、MANIFEST 提交和 WAL 保留边界推进的完整链路
+  - 已经讲清旧 memtable 变 immutable 的时机、`FlushJob` 如何把一组 immutable memtable 写成 L0、以及 `min_log_number_to_keep` 为什么在 flush 提交时推进
+  - 还没有进入 `BuildTable(...)` 内部的 SST 物理格式、各类 block 的布局，以及 `VersionEdit / VersionSet` 的 MANIFEST 写入细节
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -24,21 +28,23 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 004：WAL`
   - `Day 005：MemTable / SkipList / Arena`
   - `Day 006：MemTable 深入：可见性、删除、范围删除与读语义`
+  - `Day 007：Flush`
 - 下一步建议：
-  - `进入 Day 007：Flush`
+  - `进入 Day 008：SSTable / BlockBasedTable / 各类 Block`
 - 当前仍需补看的关键点：
-  - `MemTable` 何时切换为 immutable，以及 flush 任务如何接管
-  - `seq_per_batch` 依赖的 `kTypeNoop / 事务边界标记` 还没单独拆开
-  - `SequenceNumber` 在 snapshot / 读可见性里的后续消费方式
+  - `BuildTable(...)` 内部如何把 internal iterator 写成 SST
+  - `atomic flush` 跨 column family 的提交流程还没单独拆开
+  - `VersionEdit / VersionSet` 如何承接 flush 结果写入 MANIFEST
+  - 旧 WAL 真正删除或归档的磁盘清理路径还没单独展开
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 006`
-- latest_review_file：`learning-rocksdb-day006-2026-04-18-memtable-visibility-delete-range-tombstone.md`
+- latest_review_day：`Day 007`
+- latest_review_file：`learning-rocksdb-day007-2026-04-20-flush.md`
 - review_status：`answered`
-- review_result：`pass`
-- review_answered_at：`2026-04-18`
-- review_notes：`Day 006 复习问答已完成。已经能回答 LookupKey 与裸 user key 的区别、删除为何不需要物理删旧版本、range_del_table_ 在 Get 中的覆盖判定作用、SaveValue 如何统一 point/range tombstone 的读语义，以及 seq_per_batch 为何依赖 sequence 推进规则而非恢复原始 batch 对象边界。没有关键误解，可以继续推进；但 Q1 里对 kValueTypeForSeek 的解释仍偏概括，后续学习 Snapshot / Read Path 时建议再回看“为什么 seek 用的是最高编号 ValueType”。`
+- review_result：`partial`
+- review_answered_at：`2026-04-21`
+- review_notes：`Day 007 复习已完成。整体已经能把前台切换、后台 flush、BuildTable、LogAndApply 和 WAL 删除边界推进这条主链讲清，没有关键误解；但仍需要再压实两个边界：ScheduleFlushes 不只是后台调度器，而是包含前台 SwitchMemtable 与 enqueue；以及 PickMemTable 里真正决定 flush 输入范围的是 max_memtable_id，不是 max_next_log_number。`
 - review_block_next：`no`
 
 说明：
@@ -76,7 +82,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 003 | 2026-04-12 | Write Path / WriteBatch / Sequence Number | `learning-rocksdb-day003-2026-04-12-write-path-writebatch-sequence-number.md` | `done` |
 | 004 | 2026-04-13 | WAL | `learning-rocksdb-day004-2026-04-13-wal.md` | `done` |
 | 005 | 2026-04-15 | MemTable / SkipList / Arena | `learning-rocksdb-day005-2026-04-15-memtable-skiplist-arena.md` | `done` |
-| 006 | 2026-04-18 | MemTable 深入：可见性、删除、范围删除与读语义 | `learning-rocksdb-day006-2026-04-18-memtable-visibility-delete-range-tombstone.md` | `next` |
+| 006 | 2026-04-18 | MemTable 深入：可见性、删除、范围删除与读语义 | `learning-rocksdb-day006-2026-04-18-memtable-visibility-delete-range-tombstone.md` | `done` |
+| 007 | 2026-04-20 | Flush | `learning-rocksdb-day007-2026-04-20-flush.md` | `revisit` |
 
 说明：
 
@@ -254,6 +261,32 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 006 复习问答已完成。整体已经能把 LookupKey、删除/范围删除的读语义、以及 seq_per_batch 在 memtable 层保持等价语义的方式串起来，没有关键误解，可以进入 Day 007；但 kValueTypeForSeek 与 internal key 排序的关系仍建议后续再压实。`
 - review_block_next：`no`
 
+### Day 007
+
+- 主题：`Flush`
+- 文件：`learning-rocksdb-day007-2026-04-20-flush.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - `atomic flush` 跨多个 column family 的提交流程还没单独展开
+  - `mempurge / timestamp stripping` 这些 flush 分支目前只知道入口，没有继续深挖
+  - `BuildTable(...)` 内部的 SST 物理写入细节刻意留到 `SSTable / BlockBasedTable` 章节再展开
+- source_anchors：
+  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+  - `D:\program\rocksdb\db\flush_job.h`
+  - `D:\program\rocksdb\db\flush_job.cc`
+  - `D:\program\rocksdb\db\memtable_list.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_files.cc`
+  - `D:\program\rocksdb\db\column_family.h`
+- ready_for_next：`yes`
+- next_review_trigger：`当学习 SSTable / BlockBasedTable、MANIFEST / VersionEdit / VersionSet 或 WAL 删除路径时回看`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-04-21`
+- review_notes：`Day 007 复习问答已完成。已经理解 flush 的主链、前台/后台职责边界、LogAndApply 才是更完整的完成点，以及 DeleteWalsBefore 只是推进可删边界；但仍需再压实两个点：ScheduleFlushes 包含前台 SwitchMemtable 与 flush request 入队，而不仅是“调度后台线程”；PickMemTable 里决定 flush 输入范围的是 max_memtable_id，max_next_log_number 则用于 SetLogNumber(...) 等元数据推进。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -279,12 +312,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 - 当前薄弱点：
   - `log::Writer / log::Reader` 的 WAL 物理格式与恢复细节
-  - `MemTable` 如何切换为 immutable 并被 flush 接管
+  - `BuildTable(...)` 如何把 flush 输入流真正编码成 SST
+  - `atomic flush` 与普通 flush 的提交流程差异
   - `range tombstone / MultiGet / memtable bloom` 的组合边界
   - `VersionEditHandler` 的 MANIFEST 回放细节
+  - flush 推进 `min_log_number_to_keep` 之后，obsolete WAL 的实际删除/归档路径
   - `SequenceNumber` 在 snapshot / 读可见性里的精确消费方式
 - 回看触发条件：
-  - `学习 Flush`
+  - `学习 SSTable / BlockBasedTable`
   - `学习 Snapshot / Sequence Number / 可见性语义`
   - `学习 MANIFEST / VersionEdit / VersionSet`
 
@@ -314,4 +349,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-04-18T21:40:00+08:00
+- 2026-04-20T16:36:49+08:00
