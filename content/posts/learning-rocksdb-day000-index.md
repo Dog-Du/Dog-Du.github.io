@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-21T12:00:16+08:00
+lastmod: 2026-04-22T10:47:30+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,14 +13,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`7`
-- 当前最近一次学习主题：`Day 007：Flush`
-- 当前主线阶段：`第 7 章：Flush`
+- 当前学习总天数：`8`
+- 当前最近一次学习主题：`Day 008：SSTable / BlockBasedTable / 各类 Block`
+- 当前主线阶段：`第 8 章：SSTable / BlockBasedTable / 各类 Block`
 - 上一篇文章写到：
-  - `ScheduleFlushes -> SwitchMemtable -> MaybeScheduleFlushOrCompaction -> BackgroundFlush -> FlushJob -> TryInstallMemtableFlushResults -> LogAndApply`
-  - 已经讲清 flush 不是单纯“把 memtable 写成 SST”，而是包含前台切换、后台刷盘、MANIFEST 提交和 WAL 保留边界推进的完整链路
-  - 已经讲清旧 memtable 变 immutable 的时机、`FlushJob` 如何把一组 immutable memtable 写成 L0、以及 `min_log_number_to_keep` 为什么在 flush 提交时推进
-  - 还没有进入 `BuildTable(...)` 内部的 SST 物理格式、各类 block 的布局，以及 `VersionEdit / VersionSet` 的 MANIFEST 写入细节
+  - `BuildTable -> TableBuilder -> BlockBasedTableBuilder::Add/Flush/Finish`
+  - 已经讲清 block-based SST 不是“一个大排序数组”，而是 data/index/filter/properties/metaindex/footer 组成的分层文件
+  - 已经讲清 data block 的 prefix compression、restart array、block trailer，以及 footer 作为文件尾部入口的作用
+  - 还没有进入 reader 打开 SST 的过程、index/filter 在读路径中的消费方式，以及 block cache/table reader 的交互细节
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -29,22 +29,23 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 005：MemTable / SkipList / Arena`
   - `Day 006：MemTable 深入：可见性、删除、范围删除与读语义`
   - `Day 007：Flush`
+  - `Day 008：SSTable / BlockBasedTable / 各类 Block`
 - 下一步建议：
-  - `进入 Day 008：SSTable / BlockBasedTable / 各类 Block`
+  - `先回答 Day 008 复习题，再进入 Day 009：Read Path / Get / MultiGet / Iterator`
 - 当前仍需补看的关键点：
-  - `BuildTable(...)` 内部如何把 internal iterator 写成 SST
-  - `atomic flush` 跨 column family 的提交流程还没单独拆开
-  - `VersionEdit / VersionSet` 如何承接 flush 结果写入 MANIFEST
-  - 旧 WAL 真正删除或归档的磁盘清理路径还没单独展开
+  - `BlockBasedTableReader` 如何从 footer / metaindex / index 打开文件
+  - `partitioned index / partitioned filter / hash index` 这些变体还没单独展开
+  - `Block Cache` 与 table reader 的交互细节还没进入
+  - `VersionEdit / VersionSet` 如何在 MANIFEST 中承接新 SST 元数据还没重新接上
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 007`
-- latest_review_file：`learning-rocksdb-day007-2026-04-20-flush.md`
+- latest_review_day：`Day 008`
+- latest_review_file：`learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md`
 - review_status：`answered`
 - review_result：`partial`
-- review_answered_at：`2026-04-21`
-- review_notes：`Day 007 复习已完成。整体已经能把前台切换、后台 flush、BuildTable、LogAndApply 和 WAL 删除边界推进这条主链讲清，没有关键误解；但仍需要再压实两个边界：ScheduleFlushes 不只是后台调度器，而是包含前台 SwitchMemtable 与 enqueue；以及 PickMemTable 里真正决定 flush 输入范围的是 max_memtable_id，不是 max_next_log_number。`
+- review_answered_at：`2026-04-23`
+- review_notes：`Day 008 复习问答已完成。已经能回答 BuildTable 与 BlockBasedTableBuilder 的职责边界、尾部块写出顺序、restart point 的作用，以及为什么 block_size 只控制 data block；但 Q4 里把 block trailer 的职责说成了“记录 block data 大小”，这一点需要纠正。block trailer 记录的是 compression type + checksum，块大小来自 BlockHandle，并通过 index/metaindex/footer 等结构传播。整体没有关键误解，可以继续推进。`
 - review_block_next：`no`
 
 说明：
@@ -84,6 +85,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 005 | 2026-04-15 | MemTable / SkipList / Arena | `learning-rocksdb-day005-2026-04-15-memtable-skiplist-arena.md` | `done` |
 | 006 | 2026-04-18 | MemTable 深入：可见性、删除、范围删除与读语义 | `learning-rocksdb-day006-2026-04-18-memtable-visibility-delete-range-tombstone.md` | `done` |
 | 007 | 2026-04-20 | Flush | `learning-rocksdb-day007-2026-04-20-flush.md` | `revisit` |
+| 008 | 2026-04-22 | SSTable / BlockBasedTable / 各类 Block | `learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md` | `next` |
 
 说明：
 
@@ -287,6 +289,37 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 007 复习问答已完成。已经理解 flush 的主链、前台/后台职责边界、LogAndApply 才是更完整的完成点，以及 DeleteWalsBefore 只是推进可删边界；但仍需再压实两个点：ScheduleFlushes 包含前台 SwitchMemtable 与 flush request 入队，而不仅是“调度后台线程”；PickMemTable 里决定 flush 输入范围的是 max_memtable_id，max_next_log_number 则用于 SetLogNumber(...) 等元数据推进。`
 - review_block_next：`no`
 
+### Day 008
+
+- 主题：`SSTable / BlockBasedTable / 各类 Block`
+- 文件：`learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - `BlockBasedTableReader` 如何从 footer / metaindex / index 逐层打开文件还没进入
+  - `partitioned index / partitioned filter / hash index` 这些高级变体暂时只知道入口
+  - `Block Cache / table reader / OS Page Cache` 的交互细节留到后续读路径与磁盘 I/O 章节
+  - `BlockHandle`、block trailer 和 footer 各自承载什么信息，边界还容易混淆
+- source_anchors：
+  - `D:\program\rocksdb\db\builder.h`
+  - `D:\program\rocksdb\db\builder.cc`
+  - `D:\program\rocksdb\table\table_builder.h`
+  - `D:\program\rocksdb\table\format.h`
+  - `D:\program\rocksdb\table\format.cc`
+  - `D:\program\rocksdb\table\block_based\block_based_table_builder.h`
+  - `D:\program\rocksdb\table\block_based\block_based_table_builder.cc`
+  - `D:\program\rocksdb\table\block_based\block_builder.h`
+  - `D:\program\rocksdb\table\block_based\block_builder.cc`
+  - `D:\program\rocksdb\table\block_based\block_based_table_reader.h`
+  - `D:\program\rocksdb\include\rocksdb\table.h`
+- ready_for_next：`yes`
+- next_review_trigger：`当学习 Read Path / Iterator、Block Cache / Bloom Filter、Disk IO / Table Reader 时回看`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-04-23`
+- review_notes：`Day 008 复习问答已完成。Q1/Q2/Q3/Q5 基本正确，主链理解已经过关；但 Q4 里把 block trailer 误写成“记录 block data 大小”。需要纠正：block trailer 是 `1 byte compression type + 4 bytes checksum`，而块大小由 BlockHandle 携带，不包含 trailer。当前没有关键误解，可以进入 Day 009，但建议在读路径里再压实 footer / metaindex / index / BlockHandle 的关系。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -311,15 +344,15 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `log::Writer / log::Reader` 的 WAL 物理格式与恢复细节
-  - `BuildTable(...)` 如何把 flush 输入流真正编码成 SST
+  - `BlockBasedTableReader` 如何消费 footer / metaindex / index
+  - `partitioned index / partitioned filter / hash index` 的实际读写差异
   - `atomic flush` 与普通 flush 的提交流程差异
   - `range tombstone / MultiGet / memtable bloom` 的组合边界
   - `VersionEditHandler` 的 MANIFEST 回放细节
   - flush 推进 `min_log_number_to_keep` 之后，obsolete WAL 的实际删除/归档路径
   - `SequenceNumber` 在 snapshot / 读可见性里的精确消费方式
 - 回看触发条件：
-  - `学习 SSTable / BlockBasedTable`
+  - `学习 Read Path / Iterator`
   - `学习 Snapshot / Sequence Number / 可见性语义`
   - `学习 MANIFEST / VersionEdit / VersionSet`
 

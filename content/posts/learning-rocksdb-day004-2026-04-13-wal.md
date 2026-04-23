@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习笔记 Day 004：WAL
 date: 2026-04-13T10:30:00+08:00
-lastmod: 2026-04-20T15:30:09+08:00
+lastmod: 2026-04-22T21:49:00+08:00
 tags: [RocksDB, Database, Storage, WAL]
 categories: [数据库]
 series:
@@ -1300,6 +1300,189 @@ Status s = env_->RenameFile(fname, archived_log_name);
     - 删除旧 WAL：取决于 `min_log_number_to_keep` 和 obsolete file 清理流程
 - 是否需要后续回看
   - `yes`，后面学 flush 和多 column family 时，还要再看“为什么某个 CF flush 了，但更老 WAL 仍未必能删”。
+
+#### 问题 14：WAL 按 block 组织，但一次写完后会 `Flush`，那 block 尾端没用完的空间会怎样处理？
+- 问题
+  - `log::Writer::AddRecord()` 默认在成功追加当前逻辑 record 后会调用 `Flush()`。如果当前 `32KB block` 尾端还有一小段没用完，RocksDB 是直接浪费掉，还是继续复用？
+- 简答
+  - RocksDB 不会因为一次 `AddRecord()` 结束就直接废弃当前 block 的剩余空间。
+  - 只要剩余空间还能放下一个 physical record 的 header，它就会继续在当前 block 里写下一段 fragment。
+  - 只有当 block 尾端剩余空间连 header 都放不下时，RocksDB 才会用 `\0` 把这段尾巴补满，然后从下一个 block 重新开始。
+  - 所以被“明确浪费”的，只是每个 block 最末尾那一小段 `< header_size` 的 trailer，而不是整个剩余空间。
+  - 另外，这里的 `Flush()` 只是把已经 append 的内容刷到 `WritableFileWriter`；它不等于每次都做磁盘 `Sync()`，也不改变 block 内剩余空间的复用规则。
+- 源码依据
+
+```cpp
+// db/log_writer.h, class log::Writer
+// 文件按变长 record 组织。
+// 数据按 kBlockSize 大小的块写出。
+// 如果下一条 record 放不进当前块剩余空间，
+// 剩余空间会用 \0 填充。
+```
+
+```cpp
+// db/log_writer.cc, log::Writer::AddRecord(...)
+const int64_t leftover = kBlockSize - block_offset_;
+assert(leftover >= 0);
+if (leftover < header_size_) {
+  // 切到新 block。
+  if (leftover > 0) {
+    // 用 0 填充块尾 trailer。
+    s = dest_->Append(opts,
+                      Slice("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+                            static_cast<size_t>(leftover)),
+                      0 /* crc32c_checksum */);
+    ...
+  }
+  block_offset_ = 0;
+}
+
+// 只要还放得下 header，就继续使用当前 block 的剩余空间。
+const size_t avail = kBlockSize - block_offset_ - header_size_;
+const size_t fragment_length = (left < avail) ? left : avail;
+...
+if (!manual_flush_) {
+  s = dest_->Flush(opts);
+}
+```
+
+- 当前结论
+  - RocksDB 的 WAL block 尾端不是“写完一条逻辑 record 就整段废弃”。
+  - 它会尽量复用 block 的剩余 payload 空间；只有不足以容纳 header 的最后几个字节才会被补零浪费。
+  - 这也是为什么 WAL 需要 `Full / First / Middle / Last` 这些 fragment 类型：一个逻辑 record 可以先吃掉当前 block 的剩余可用空间，再接着写到下一个 block。
+- 是否需要后续回看
+  - `yes`，后面讲 `WritableFileWriter`、文件系统缓冲和 `SyncWAL` 时，可以再把 `Flush` / `Append` / `Sync` 的边界补完整。
+
+#### 问题 15：既然 WAL 要持久化，为什么 `Flush` 之后还可以继续利用同一个 block 的剩余空间？`Sync` 之后不是就不能再写了吗？
+- 问题
+  - `log::Writer::AddRecord()` 默认会在写完当前逻辑 record 后调用 `dest_->Flush(opts)`。如果 WAL 已经“刷出去了”，为什么还能继续在同一个 block 里追加后续 fragment？
+  - 很多文件系统又强调顺序追加 / append-only，那 `Sync` 之后这段内容不是应该固定了吗？RocksDB 难道不是按整个 block 为单位写 WAL 吗？
+- 简答
+  - 这里最容易混淆的是：`Append`、`Flush`、`Sync`、`WAL block` 不是同一个层次的概念。
+  - RocksDB 的 WAL `block` 首先是**日志格式层**的概念：它规定 record 在 `32KB` 边界上如何切 fragment、何时补零 trailer。
+  - 真正的文件 I/O 层面，RocksDB 仍然是在**同一个打开着的 WAL 文件**上持续 `Append(...)`。`Flush()` 只是把当前 writer 缓冲推进到底层文件/OS 缓冲；`Sync()` 才是把已刷出的内容进一步做 `Sync/Fsync`。
+  - 无论 `Flush` 还是 `Sync`，都不会把“当前 block 已经写到哪里”这个格式状态清零；`block_offset_` 会一直保留，后续写入继续从这个 offset 往后 append。
+  - 所以 RocksDB **不是按整个 32KB block 作为物理写入原子单位**。它是按 record/fragment 追加写文件，只是用 `block_offset_` 保证逻辑格式满足 `32KB` block 边界约束。
+  - `Sync` 之后也不是“这个文件就不能再写了”。它只是保证“截至这次 sync 之前已经 append 的那部分内容”被持久化；之后仍然可以继续 append 新内容。
+- 源码依据
+
+```cpp
+// db/log_writer.cc, log::Writer::EmitPhysicalRecord(...)
+// 每个 physical record 都是独立 append：先 header，再 payload。
+s = dest_->Append(opts, Slice(buf, header_size), 0 /* crc32c_checksum */);
+if (s.ok()) {
+  s = dest_->Append(opts, Slice(ptr, n), payload_crc);
+}
+block_offset_ += header_size + n;
+```
+
+```cpp
+// db/log_writer.cc, log::Writer::AddRecord(...)
+// 默认情况下，写完当前逻辑 record 后会 Flush。
+if (!manual_flush_) {
+  s = dest_->Flush(opts);
+}
+```
+
+```cpp
+// file/writable_file_writer.cc, WritableFileWriter::Flush(...)
+// Flush: 把 writer 缓冲写到底层文件 / OS cache。
+// 它不会把 pending_sync_ 清掉，也不会改变 WAL 自己的 block_offset_。
+s = writable_file_->Flush(io_options, nullptr);
+```
+
+```cpp
+// file/writable_file_writer.cc, WritableFileWriter::Sync(...)
+// Sync: 先 Flush，再调用真正的 Sync/Fsync。
+IOStatus s = Flush(io_options);
+...
+if (!use_direct_io() && pending_sync_) {
+  s = SyncInternal(io_options, use_fsync);
+}
+pending_sync_ = false;
+```
+
+```cpp
+// db/db_impl/db_impl_write.cc, DBImpl::WriteImpl(...)
+// 只有 write_options.sync=true 时，写路径才会进一步调用 SyncWAL。
+if (status.ok() && write_options.sync) {
+  if (manual_wal_flush_) {
+    status = FlushWAL(true);
+  } else {
+    status = SyncWAL();
+  }
+}
+```
+
+- 当前结论
+  - WAL 的 `32KB block` 是**格式单位**，不是“每次必须整块落盘”的 I/O 单位。
+  - `Flush` 不会让 block 尾部失效；只要 `block_offset_` 还在，后续写仍可继续使用当前 block 剩余空间。
+  - `Sync` 也不会封死这个文件；它只是为“已经写到当前 offset 之前的内容”建立持久化边界，之后可以继续 append。
+  - 真正不能继续利用的，仍然只有那种“小于 header 大小”的 block 尾端 trailer。
+- 是否需要后续回看
+  - `yes`，后面讲 `Env::WritableFile`、`SyncWAL`、OS page cache 和磁盘持久化语义时，可以再把“进程崩溃 / OS 崩溃 / 掉电”这三种边界分别拆开。
+
+#### 问题 16：既然 WAL 本质上是 append，为什么还要额外引入 `32KB block` 这层格式？
+- 问题
+  - 如果 WAL 最终只是往文件末尾不断 `Append(...)`，那为什么不直接做成“纯 length-prefixed record 流”？
+  - RocksDB 额外定义 `32KB block + fragment type + trailer`，它到底解决了什么问题？
+- 简答
+  - 从 `log::Writer` 和 `log::Reader` 的源码看，`block` 的意义主要不在“写的时候更像磁盘块”，而在**日志格式的可切分、可跳过、可恢复**。
+  - 第一，它给大 record 一个稳定的分片边界：一个逻辑 record 可以被切成 `Full / First / Middle / Last`，跨 block 继续写。
+  - 第二，它给 reader 一个稳定的读取/重同步单位：reader 每次就是按 `kBlockSize` 读，遇到 block 尾部 trailer 会直接跳过；如果 EOF 落在半个 block 中间，还会专门把读指针补齐到“下一个 block 起点”。
+  - 第三，它让损坏尾巴和局部坏记录的处理更简单：不是整个后续流都失去边界，而是还能依赖“下一个 block 起点 + 下一个合法 fragment header”继续解析。
+  - 所以更准确地说：WAL 文件在 I/O 上是 append-only 的，但在**格式上**不是“无结构字节流”，而是“按 32KB block 划分的 record 流”。
+- 源码依据
+
+```cpp
+// db/log_writer.h, class log::Writer
+// 数据按 kBlockSize 大小写出。
+// 如果下一条 record 放不进当前块剩余空间，剩余空间用 \0 填充。
+// 同时支持 Full/First/Middle/Last 这些 fragment 类型。
+```
+
+```cpp
+// db/log_reader.cc, Reader::ReadMore(...)
+// reader 每次固定按 kBlockSize 读取；上一轮如果读满，下一轮会把当前 trailer 跳过。
+Status status = file_->Read(kBlockSize, &buffer_, backing_store_,
+                            Env::IO_TOTAL /* rate_limiter_priority */);
+...
+// Last read was a full read, so this is a trailer to skip
+buffer_.clear();
+```
+
+```cpp
+// db/log_reader.cc, Reader::UnmarkEOFInternal()
+// ReadPhysicalRecord 只能按完整 block 工作，所以如果 EOF 落在半个 block 中间，
+// 需要把文件位置重新补齐到下一个 block 起点。
+// ... ReadPhysicalRecord can only read full blocks and expects
+// the file position indicator to be aligned to the start of a block.
+size_t remaining = kBlockSize - eof_offset_;
+```
+
+```cpp
+// db/log_reader.cc, Reader::ReadRecord(...)
+// 逻辑 record 的组装依赖 block 内 fragment 类型，而不是依赖“文件里只有一个长度前缀”。
+case kFirstType:
+...
+case kMiddleType:
+...
+case kLastType:
+```
+
+- 当前结论
+  - `block` 这层设计主要服务于：
+    - 大 record 分片
+    - reader 的顺序扫描和重同步
+    - block 尾部 trailer 的显式处理
+    - 尾部损坏 / 中间坏片段时的恢复边界控制
+  - 所以 RocksDB 在 WAL 里使用 `block`，并不是为了把 `block` 当成底层 I/O 单位；WAL 在文件层面仍然是 append-only 的顺序追加写。
+  - 更准确地说，`block` 是 WAL 的日志分帧 / 解析边界，而不是“每次必须整块写盘”的物理块。
+  - 你可以把它理解成：RocksDB 用 append-only 文件承载 WAL，但又额外在文件内容里引入 `32KB block` 这层格式，以便支持分片、跳块、重同步和损坏后的继续恢复。
+  - 所以 WAL 当然仍然是 append-only 文件，但它不是“毫无分段信息的 append 流”。
+  - 引入 block 之后，writer 和 reader 才能共享一套稳定的 framing 规则。
+- 是否需要后续回看
+  - `yes`，后面讲 Day 009 的 read path 和更底层的文件 I/O 抽象时，可以再把“日志 framing”和“SST block”做一次横向对比。
 
 ## 今日小结
 
