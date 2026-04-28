@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-22T10:47:30+08:00
+lastmod: 2026-04-26T15:23:14+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,14 +13,15 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`8`
-- 当前最近一次学习主题：`Day 008：SSTable / BlockBasedTable / 各类 Block`
-- 当前主线阶段：`第 8 章：SSTable / BlockBasedTable / 各类 Block`
+- 当前学习总天数：`9`
+- 当前最近一次学习主题：`Day 009：Read Path / Get / MultiGet / Iterator`
+- 当前主线阶段：`第 9 章：Read Path / Get / MultiGet / Iterator`
 - 上一篇文章写到：
-  - `BuildTable -> TableBuilder -> BlockBasedTableBuilder::Add/Flush/Finish`
-  - 已经讲清 block-based SST 不是“一个大排序数组”，而是 data/index/filter/properties/metaindex/footer 组成的分层文件
-  - 已经讲清 data block 的 prefix compression、restart array、block trailer，以及 footer 作为文件尾部入口的作用
-  - 还没有进入 reader 打开 SST 的过程、index/filter 在读路径中的消费方式，以及 block cache/table reader 的交互细节
+  - `DBImpl::GetImpl -> mem/imm/current Version -> Version::Get -> TableCache::Get -> BlockBasedTable::Get`
+  - 已经讲清 `SuperVersion` 固定读路径对象集合，snapshot sequence 固定可见性上界
+  - 已经讲清 `Get`、`MultiGet`、`Iterator` 的共同骨架与职责差异
+  - 已经从读侧反向接上 Day 008 的 SST 结构：filter / index / data block 最终都通过 `GetContext::SaveValue()` 处理语义
+  - 还没有系统展开 snapshot / sequence number 可见性、block cache 细节、prefix seek 与 partitioned filter/index
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -30,23 +31,24 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 006：MemTable 深入：可见性、删除、范围删除与读语义`
   - `Day 007：Flush`
   - `Day 008：SSTable / BlockBasedTable / 各类 Block`
+  - `Day 009：Read Path / Get / MultiGet / Iterator`
 - 下一步建议：
-  - `先回答 Day 008 复习题，再进入 Day 009：Read Path / Get / MultiGet / Iterator`
+  - `先回答 Day 009 复习题，再进入 Day 010：Snapshot / Sequence Number / 可见性语义`
 - 当前仍需补看的关键点：
-  - `BlockBasedTableReader` 如何从 footer / metaindex / index 打开文件
-  - `partitioned index / partitioned filter / hash index` 这些变体还没单独展开
-  - `Block Cache` 与 table reader 的交互细节还没进入
+  - `Snapshot / Sequence Number / ReadCallback / DBIter::IsVisible` 的完整可见性链路还没单独展开
+  - `Block Cache`、row cache、table cache、OS page cache 的边界还没系统拆开
+  - `partitioned index / partitioned filter / prefix seek` 这些读优化变体还没单独展开
   - `VersionEdit / VersionSet` 如何在 MANIFEST 中承接新 SST 元数据还没重新接上
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 008`
-- latest_review_file：`learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md`
-- review_status：`answered`
-- review_result：`partial`
-- review_answered_at：`2026-04-23`
-- review_notes：`Day 008 复习问答已完成。已经能回答 BuildTable 与 BlockBasedTableBuilder 的职责边界、尾部块写出顺序、restart point 的作用，以及为什么 block_size 只控制 data block；但 Q4 里把 block trailer 的职责说成了“记录 block data 大小”，这一点需要纠正。block trailer 记录的是 compression type + checksum，块大小来自 BlockHandle，并通过 index/metaindex/footer 等结构传播。整体没有关键误解，可以继续推进。`
-- review_block_next：`no`
+- latest_review_day：`Day 009`
+- latest_review_file：`learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md`
+- review_status：
+- review_result：
+- review_answered_at：
+- review_notes：`Day 009 文章已生成，等待复习问答。`
+- review_block_next：`yes`
 
 说明：
 
@@ -85,7 +87,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 005 | 2026-04-15 | MemTable / SkipList / Arena | `learning-rocksdb-day005-2026-04-15-memtable-skiplist-arena.md` | `done` |
 | 006 | 2026-04-18 | MemTable 深入：可见性、删除、范围删除与读语义 | `learning-rocksdb-day006-2026-04-18-memtable-visibility-delete-range-tombstone.md` | `done` |
 | 007 | 2026-04-20 | Flush | `learning-rocksdb-day007-2026-04-20-flush.md` | `revisit` |
-| 008 | 2026-04-22 | SSTable / BlockBasedTable / 各类 Block | `learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md` | `next` |
+| 008 | 2026-04-22 | SSTable / BlockBasedTable / 各类 Block | `learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md` | `revisit` |
+| 009 | 2026-04-26 | Read Path / Get / MultiGet / Iterator | `learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md` | `next` |
 
 说明：
 
@@ -320,6 +323,45 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 008 复习问答已完成。Q1/Q2/Q3/Q5 基本正确，主链理解已经过关；但 Q4 里把 block trailer 误写成“记录 block data 大小”。需要纠正：block trailer 是 `1 byte compression type + 4 bytes checksum`，而块大小由 BlockHandle 携带，不包含 trailer。当前没有关键误解，可以进入 Day 009，但建议在读路径里再压实 footer / metaindex / index / BlockHandle 的关系。`
 - review_block_next：`no`
 
+### Day 009
+
+- 主题：`Read Path / Get / MultiGet / Iterator`
+- 文件：`learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - `Snapshot / Sequence Number / ReadCallback / DBIter::IsVisible` 的完整可见性链路还没单独展开
+  - `Block Cache`、row cache、table cache 与 OS page cache 的边界还没系统拆开
+  - `partitioned index / partitioned filter / prefix seek` 这些读优化变体还没单独展开
+  - `MergingIterator` 与 `DBIter` 的 reverse、merge operand、range tombstone 深层细节还只是建立骨架
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\db.h`
+  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl.h`
+  - `D:\program\rocksdb\db\column_family.h`
+  - `D:\program\rocksdb\db\dbformat.cc`
+  - `D:\program\rocksdb\db\lookup_key.h`
+  - `D:\program\rocksdb\db\memtable.cc`
+  - `D:\program\rocksdb\db\memtable_list.cc`
+  - `D:\program\rocksdb\db\version_set.cc`
+  - `D:\program\rocksdb\db\version_set.h`
+  - `D:\program\rocksdb\db\table_cache.cc`
+  - `D:\program\rocksdb\table\table_reader.h`
+  - `D:\program\rocksdb\table\get_context.h`
+  - `D:\program\rocksdb\table\get_context.cc`
+  - `D:\program\rocksdb\table\multiget_context.h`
+  - `D:\program\rocksdb\table\block_based\block_based_table_reader.cc`
+  - `D:\program\rocksdb\db\arena_wrapped_db_iter.cc`
+  - `D:\program\rocksdb\db\db_iter.cc`
+  - `D:\program\rocksdb\table\merging_iterator.cc`
+- ready_for_next：`no`
+- next_review_trigger：`先完成 Day 009 复习问答；进入 Snapshot / Sequence Number / 可见性语义时回看`
+- review_status：
+- review_result：
+- review_answered_at：
+- review_notes：`Day 009 文章已生成，等待复习问答。`
+- review_block_next：`yes`
+
 ## 状态使用建议
 
 - `green`
@@ -344,16 +386,16 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `BlockBasedTableReader` 如何消费 footer / metaindex / index
-  - `partitioned index / partitioned filter / hash index` 的实际读写差异
+  - `Snapshot / Sequence Number / ReadCallback / DBIter::IsVisible` 的完整可见性链路
+  - `Block Cache`、row cache、table cache 与 OS page cache 的边界
+  - `partitioned index / partitioned filter / prefix seek` 的实际读写差异
   - `atomic flush` 与普通 flush 的提交流程差异
   - `range tombstone / MultiGet / memtable bloom` 的组合边界
   - `VersionEditHandler` 的 MANIFEST 回放细节
   - flush 推进 `min_log_number_to_keep` 之后，obsolete WAL 的实际删除/归档路径
-  - `SequenceNumber` 在 snapshot / 读可见性里的精确消费方式
 - 回看触发条件：
-  - `学习 Read Path / Iterator`
   - `学习 Snapshot / Sequence Number / 可见性语义`
+  - `学习 Block Cache / Bloom Filter / Prefix Seek`
   - `学习 MANIFEST / VersionEdit / VersionSet`
 
 ## 外部资料使用原则
@@ -382,4 +424,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-04-20T16:36:49+08:00
+- 2026-04-26T15:23:14+08:00
