@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习笔记 Day 009：Read Path / Get / MultiGet / Iterator
 date: 2026-04-26T15:23:14+08:00
-lastmod: 2026-04-26T15:23:14+08:00
+lastmod: 2026-04-29T13:41:21+08:00
 tags: [RocksDB, Database, Storage, ReadPath, Iterator]
 categories: [数据库]
 series:
@@ -47,6 +47,8 @@ Day 008 已经从写侧看清了 block-based SST 的生成过程：
 - `D:\program\rocksdb\db\db_impl\db_impl.cc`
 - `D:\program\rocksdb\db\db_impl\db_impl.h`
 - `D:\program\rocksdb\db\column_family.h`
+- `D:\program\rocksdb\db\column_family.cc`
+- `D:\program\rocksdb\db\job_context.h`
 - `D:\program\rocksdb\db\dbformat.cc`
 - `D:\program\rocksdb\db\lookup_key.h`
 - `D:\program\rocksdb\db\memtable.cc`
@@ -790,6 +792,469 @@ db_iter->SetIterUnderDBIter(internal_iter);
 - 是否需要后续回看：
   - `yes`
   - 范围扫描、`MergingIterator`、`DBIter` 的 reverse/merge 细节后续可以继续拆。
+
+#### 问题 6：memtable `Get()` 中 bloom 策略是怎样的？
+
+- 简答：
+  - memtable bloom 是一个可选的动态 bloom，只有配置打开后才存在。
+  - 写入 memtable 时，RocksDB 可以把 prefix 和 whole key 都加入同一个 `bloom_filter_`。
+  - 点查 `Get()` 时，如果 whole-key bloom 开启，优先按 whole key 查；否则在 key 落入 prefix extractor domain 时按 prefix 查。
+  - 如果 bloom 返回“不可能存在”，本 memtable 的点 key 查找可以直接跳过；如果 bloom 返回“可能存在”，还必须进入 memtable 底层表查找。
+  - bloom 本身不区分 value、delete、merge、blob index、wide column 等 value type，也不判断 sequence 可见性。它只保存过滤用的 key 或 prefix；真正的类型语义由 `SaveValue()` 解析 internal key 后处理。
+- 源码依据：
+  - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
+  - `D:\program\rocksdb\db\memtable.cc` 的 `MemTable::MemTable(...)`、`MemTable::Add(...)`、`MemTable::Get(...)`、`MemTable::MultiGet(...)`
+- 关键源码片段：
+
+```cpp
+// db/memtable.cc, MemTable::MemTable(...)
+// use bloom_filter_ for both whole key and prefix bloom filter
+if ((prefix_extractor_ || moptions_.memtable_whole_key_filtering) &&
+    moptions_.memtable_prefix_bloom_bits > 0) {
+  bloom_filter_.reset(
+      new DynamicBloom(&arena_, moptions_.memtable_prefix_bloom_bits,
+                       6 /* hard coded 6 probes */,
+                       moptions_.memtable_huge_page_size, ioptions.logger));
+}
+```
+
+```cpp
+// db/memtable.cc, MemTable::Add(...)
+if (bloom_filter_ && prefix_extractor_ &&
+    prefix_extractor_->InDomain(key_without_ts)) {
+  bloom_filter_->Add(prefix_extractor_->Transform(key_without_ts));
+}
+if (bloom_filter_ && moptions_.memtable_whole_key_filtering) {
+  bloom_filter_->Add(key_without_ts);
+}
+```
+
+这段发生在 entry 已经写入 `table_` 或 `range_del_table_` 之后，并没有按 `ValueType` 排除 delete/merge。也就是说，点删除 `kTypeDeletion`、`kTypeSingleDeletion`、`kTypeDeletionWithTimestamp` 也会让对应 key 加入 memtable bloom。范围删除 `kTypeRangeDeletion` 存在单独的 `range_del_table_`，当前 `Get()` 会先看 range tombstone，再看 bloom；`MultiGet()` 在存在 range tombstone 且没有忽略范围删除时会基本禁用 bloom 跳过逻辑。
+
+```cpp
+// db/memtable.cc, MemTable::Get(...)
+if (bloom_filter_) {
+  // 同时有 whole key 与 prefix 时，点查优先 whole key，节省 CPU。
+  if (moptions_.memtable_whole_key_filtering) {
+    may_contain = bloom_filter_->MayContain(user_key_without_ts);
+    bloom_checked = true;
+  } else {
+    assert(prefix_extractor_);
+    if (prefix_extractor_->InDomain(user_key_without_ts)) {
+      may_contain = bloom_filter_->MayContain(
+          prefix_extractor_->Transform(user_key_without_ts));
+      bloom_checked = true;
+    }
+  }
+}
+
+if (bloom_filter_ && !may_contain) {
+  PERF_COUNTER_ADD(bloom_memtable_miss_count, 1);
+  *seq = kMaxSequenceNumber;
+} else {
+  GetFromTable(...);
+}
+```
+
+这段是读侧关键：`!may_contain` 可以跳过 memtable rep；`may_contain == true` 只是“可能有”，仍然要进 `GetFromTable()`。所以 memtable bloom 不是用来确认 memtable 中到底有这个 key，而是用来快速确认“这个 memtable 不值得查”。
+
+```cpp
+// include/rocksdb/advanced_options.h, ColumnFamilyOptions
+// * If prefix_extractor is set, the filter includes prefixes.
+// * If memtable_whole_key_filtering, the filter includes whole keys.
+// * If both, the filter includes both.
+// * If neither, the feature is disabled.
+double memtable_prefix_bloom_size_ratio = 0.0;
+
+// Enable whole key bloom filter in memtable.
+// ... can potentially reduce CPU usage for point-look-ups.
+bool memtable_whole_key_filtering = false;
+```
+
+prefix bloom 和 whole-key bloom 的区别是过滤粒度不同：
+
+- prefix bloom 存的是 `prefix_extractor->Transform(user_key_without_ts)`。
+  - 它回答的是“这个 memtable 里是否可能有某个 key 带这个 prefix”。
+  - 对 prefix seek / prefix iterator 有用。
+  - 对点查不够精确：如果 memtable 里有 `user:1`，查询 `user:999`，只要 prefix 都是 `user:`，prefix bloom 仍可能放行。
+- whole-key bloom 存的是完整 `user_key_without_ts`。
+  - 它回答的是“这个 memtable 里是否可能有这个完整 user key 的某个 internal entry”。
+  - 对点查更精确，源码里 `Get()` 在 prefix 与 whole-key 都启用时优先 whole-key，以减少无意义查找。
+  - 它仍然不说明这个 entry 是 value 还是 delete，也不说明它对当前 snapshot 是否可见。
+
+prefix 的原理来自 `SliceTransform`，也就是用户配置的“从 key 提取过滤键”的函数：
+
+```cpp
+// include/rocksdb/slice_transform.h, SliceTransform
+class SliceTransform : public Customizable {
+ public:
+  // 从 key 中提取 prefix。只有 InDomain(key) 为 true 的 key
+  // 才应该被加入或查询 prefix bloom。
+  virtual Slice Transform(const Slice& key) const = 0;
+  virtual bool InDomain(const Slice& key) const = 0;
+};
+```
+
+常见内置实现有两个：
+
+```cpp
+// util/slice.cc, FixedPrefixTransform
+Slice Transform(const Slice& src) const override {
+  assert(InDomain(src));
+  return Slice(src.data(), prefix_len_);
+}
+
+bool InDomain(const Slice& src) const override {
+  return (src.size() >= prefix_len_);
+}
+```
+
+```cpp
+// util/slice.cc, CappedPrefixTransform
+Slice Transform(const Slice& src) const override {
+  assert(InDomain(src));
+  return Slice(src.data(), std::min(cap_len_, src.size()));
+}
+
+bool InDomain(const Slice& /*src*/) const override { return true; }
+```
+
+举例说，如果 key 设计为 `tenant_id + ":" + object_id`，并配置一个能把 `tenant_id + ":"` 提出来的 extractor，那么：
+
+- 写入 `tenantA:001`、`tenantA:002` 时，prefix bloom 里加入的是 `tenantA:`，而不是两个完整 key。
+- 查询 `tenantA:999` 时，prefix bloom 会说“这个 memtable 可能有 `tenantA:` 这个 prefix”，所以不能跳过。
+- 查询 `tenantB:001` 时，如果 Bloom 判断 `tenantB:` 不存在，就可以跳过这个 memtable。
+
+所以 prefix bloom 的收益来自“按业务前缀成组过滤”：它不能精确判断某个点 key 是否存在，但能快速判断“这个 memtable 是否可能包含某一组前缀的 key”。
+
+这里还有一个重要约束：`prefix_extractor` 必须和 comparator 配合，保证同一 prefix 的 key 在排序上是连续的一组。`include/rocksdb/options.h` 对 `ColumnFamilyOptions::prefix_extractor` 的注释要求：如果 `k1 <= k2 <= k3` 且 `k1`、`k3` 有同一个 prefix，那么中间的 `k2` 也必须在 domain 内且有同一个 prefix。否则 prefix seek / prefix filter 可能把本该看到的 key 错误过滤掉。
+
+- 当前结论：
+  - bloom 在 memtable 层只能做“快速否定”，不能做“确认存在”。
+  - delete 也会加入 bloom，因为 bloom 只按 user key / prefix 过滤，不承载 value type 语义；delete 的最终语义由 `SaveValue()` 里的 `kTypeDeletion / kTypeSingleDeletion / kTypeDeletionWithTimestamp` 分支处理。
+  - `Get()` 的 whole-key bloom 比 prefix bloom 更精准；源码里当二者都存在时，点查优先 whole-key。
+  - prefix bloom 的优势不在精确点查，而在 prefix seek / prefix iterator 这类按前缀访问的场景。
+  - `MultiGet()` 还有一个重要限制：只要存在 range tombstone 且没有忽略 range deletion，就基本禁用 memtable bloom 跳过逻辑，避免漏掉“点 key 不存在但被范围删除覆盖”的语义。
+
+```cpp
+// db/memtable.cc, MemTable::MultiGet(...)
+// 当前只要存在 range tombstone，memtable Bloom 基本禁用。
+bool no_range_del = read_options.ignore_range_deletions ||
+                    is_range_del_table_empty_.LoadRelaxed();
+if (bloom_filter_ && no_range_del) {
+  ...
+  bloom_filter_->MayContain(num_keys, bloom_keys.data(), may_match.data());
+  ...
+}
+```
+
+- 是否需要后续回看：
+  - `yes`
+  - 到 Bloom filter / prefix seek 章节时，需要把 memtable bloom 与 SST filter 对比。
+
+#### 问题 7：如果一个 key 不存在，最坏情况下是否要查 L0 所有文件 + L1 到 Ln 各层 SST？
+
+- 简答：
+  - 更准确的说法是：最坏情况下会先查 mem/imm，然后在 SST 层查所有可能覆盖该 key 的候选文件。
+  - 对 L0 来说，由于文件可能重叠，确实可能检查多个甚至所有 L0 文件。
+  - 对 L1+ 来说，leveled compaction 正常情况下同一层文件 key range 不重叠，所以通常每层最多命中一个候选文件；不是扫描该层所有 SST。
+  - 但如果存在 merge operand、range tombstone、异常重叠文件或特殊 compaction/ingestion 场景，源码注释也承认“重叠可能出现在任意 level”，只是非 L0 的常规点查会用二分和文件索引缩小范围。
+- 源码依据：
+  - `D:\program\rocksdb\db\version_set.cc` 的 `FilePicker::GetNextFile()`、`FilePicker::PrepareNextLevel()`
+- 关键源码片段：
+
+```cpp
+// db/version_set.cc, FilePicker::PrepareNextLevel()
+// 有些文件可能互相重叠。找出所有与 user_key 重叠的文件，并按从新到旧处理。
+// 在 merge operator 场景，这可能发生在任意 level。
+// 否则通常只发生在 Level-0。
+if (curr_level_ == 0) {
+  // L0 需要遍历检查重叠文件。
+  start_index = 0;
+} else {
+  // Ln(n>=1) 文件有序，用二分找到 largest key >= ikey 的最早文件。
+  start_index =
+      FindFileInRange(*internal_comparator_, *curr_file_level_, ikey_,
+                      static_cast<uint32_t>(search_left_bound_),
+                      static_cast<uint32_t>(search_right_bound_) + 1);
+  if (start_index == search_right_bound_ + 1) {
+    // 当前层不可能包含这个 key，跳过该层。
+    search_left_bound_ = 0;
+    search_right_bound_ = FileIndexer::kLevelMaxIndex;
+    curr_level_++;
+    continue;
+  }
+}
+```
+
+- 当前结论：
+  - 不存在 key 的“最坏”不是简单等于“扫全库所有 SST”。
+  - 更贴近源码的模型是：
+    - memtable：按当前 mem/imm 查
+    - L0：可能检查多个候选文件，最坏接近全部 L0 文件
+    - L1+：每层通过范围判断与二分定位候选文件，常规 leveled 情况下每层最多查一个候选文件
+    - 每个候选 SST 内部还会再经过 filter / index / data block；filter 能快速否定时不会读 data block
+  - 所以不存在 key 的成本大致受这些因素影响：
+    - L0 文件数量
+    - 各层是否有重叠
+    - Bloom filter 是否可用且命中快速否定
+    - table reader / index / filter / data block 是否在 cache
+- 是否需要后续回看：
+  - `yes`
+  - 到 Compaction 与 Bloom filter 章节时回看：compaction 降低重叠，filter 降低无效 I/O。
+
+#### 问题 8：`TableCache`、`BlockBasedTable`、`ReadTier` 和 `kBlockCacheTier` 分别是什么意思？
+
+- 简答：
+  - `TableCache` 是 RocksDB 管理 SST table reader 的缓存/打开层。
+  - `BlockBasedTable` 是一种具体 table reader / table format，实现 block-based SST 的读写逻辑。
+  - `ReadTier` 表示一次读允许访问哪些层级的数据。
+  - `kBlockCacheTier` 是一种 no-IO 读模式：只读 memtable 和 block cache 中已有的数据，不从 OS cache 或磁盘把数据读进来。
+- 源码依据：
+  - `D:\program\rocksdb\include\rocksdb\options.h`
+  - `D:\program\rocksdb\table\table_reader.h`
+  - `D:\program\rocksdb\db\table_cache.cc`
+  - `D:\program\rocksdb\table\block_based\block_based_table_reader.h`
+- 关键源码片段：
+
+```cpp
+// include/rocksdb/options.h, ReadTier
+enum ReadTier {
+  kReadAllTier = 0x0,     // memtable、block cache、OS cache 或 storage
+  kBlockCacheTier = 0x1,  // memtable 或 block cache
+  kPersistedTier = 0x2,   // 持久化数据；WAL disabled 时会跳过 memtable
+  kMemtableTier = 0x3     // memtable；用于 memtable-only iterators
+};
+```
+
+```cpp
+// table/table_reader.h, TableReader
+// Table readers are used for reading various types of table formats supported
+// by rocksdb including BlockBasedTable, PlainTable and CuckooTable format.
+class TableReader {
+ public:
+  virtual InternalIterator* NewIterator(...) = 0;
+  virtual Status Get(const ReadOptions& readOptions, const Slice& key,
+                     GetContext* get_context,
+                     const SliceTransform* prefix_extractor,
+                     bool skip_filters = false) = 0;
+};
+```
+
+```cpp
+// db/table_cache.cc, TableCache::FindTable(...)
+*handle = cache_.Lookup(key);
+if (*handle == nullptr) {
+  if (no_io) {
+    return Status::Incomplete("Table not found in table_cache, no_io is set");
+  }
+  ...
+  Status s = GetTableReader(..., &table_reader, ...);
+  ...
+  s = cache_.Insert(key, table_reader.get(), 1, handle);
+}
+```
+
+```cpp
+// db/table_cache.cc, TableCache::Get(...)
+if (t == nullptr) {
+  s = FindTable(...,
+                options.read_tier == kBlockCacheTier /* no_io */,
+                ...);
+}
+...
+if (s.ok()) {
+  s = t->Get(options, k, get_context, prefix_extractor, skip_filters);
+} else if (options.read_tier == kBlockCacheTier && s.IsIncomplete()) {
+  get_context->MarkKeyMayExist();
+  done = true;
+}
+```
+
+- 当前结论：
+  - “`TableCache` 不是 `BlockBasedTable` 自己”意思是：
+    - `TableCache` 负责用 file number 找/开 `TableReader`，并缓存这个 reader 对象
+    - `BlockBasedTable` 是 `TableReader` 的一种具体实现，负责 filter/index/data block 的格式语义
+    - 两者是“缓存/分发层”和“具体表格式实现层”的关系
+  - “`kBlockCacheTier` 不是确认不存在”意思是：
+    - 如果 table reader、index、filter 或 data block 不在 cache，no-IO 模式不会去磁盘补读
+    - 此时返回 `Incomplete` 并调用 `MarkKeyMayExist()`
+    - 所以它只能回答“cache 中能确认的结果”，不能把 cache miss 解释成 key 不存在
+  - `Tier` 在这里就是“读允许触达的数据层级”，不是 LSM 的 level。
+- 是否需要后续回看：
+  - `yes`
+  - 到 Block Cache / OS Page Cache / Disk I/O 章节时，把 table cache、block cache、row cache 和 OS page cache 分开画图。
+
+#### 问题 9：`SuperVersion` 是怎么 pin 住 SST / imm / mem 的？多个 `SuperVersion` 又如何维护这些元数据？
+
+- 简答：
+  - `SuperVersion` 不是把 SST、immutable memtable、mutable memtable 复制一份，而是用引用计数把一组读路径对象的生命周期 pin 住。
+  - 它直接持有并 `Ref()`：
+    - `mem`：当前 mutable memtable 的只读视图指针
+    - `imm`：当前 immutable memtable list version
+    - `current`：当前 `Version`，也就是当前 SST 文件元数据集合
+    - `cfd`：对应的 column family 元数据对象
+  - SST 的 pin 是间接发生的：`SuperVersion -> Version -> FileMetaData refs`。只要旧 `Version` 还被旧 `SuperVersion` 引用，相关 SST 元数据不会被释放，物理文件也不会被当成可安全删除文件清掉。
+  - 多个 `SuperVersion` 可以同时存在：`ColumnFamilyData::super_version_` 指向最新的；旧的被正在执行的 Get、Iterator、thread-local cache 或 cleanup handle 引用，引用数归零后才 cleanup/delete。
+- 源码依据：
+  - `D:\program\rocksdb\db\column_family.h` 的 `SuperVersion`
+  - `D:\program\rocksdb\db\column_family.cc` 的 `SuperVersion::Init(...)`、`SuperVersion::Cleanup()`、`ColumnFamilyData::InstallSuperVersion(...)`
+  - `D:\program\rocksdb\db\db_impl\db_impl.cc` 的 `GetAndRefSuperVersion(...)`、`ReturnAndCleanupSuperVersion(...)`、`DBImpl::NewInternalIterator(...)`
+  - `D:\program\rocksdb\db\version_set.cc` 的 `Version::Ref()`、`Version::Unref()`、`Version::~Version()`、`VersionStorageInfo::AddFile(...)`
+  - `D:\program\rocksdb\db\memtable_list.cc` 的 `MemTableListVersion::Ref()`、`MemTableListVersion::Unref(...)`
+  - `D:\program\rocksdb\db\memtable.h` 的 `MemTable::Ref()`、`MemTable::Unref()`
+- 关键源码片段：
+
+```cpp
+// db/column_family.h, SuperVersion
+// holds references to memtable, all immutable memtables and version
+struct SuperVersion {
+  ColumnFamilyData* cfd;
+  ReadOnlyMemTable* mem;
+  MemTableListVersion* imm;
+  Version* current;
+  MutableCFOptions mutable_cf_options;
+  uint64_t version_number;
+  ...
+};
+```
+
+这段定义先把语义说死了：`SuperVersion` pin 的核心对象就是 `mem / imm / current Version`。它是读路径对象集合的稳定入口，不是 snapshot 本身，也不是 SST 文件内容的拷贝。
+
+```cpp
+// db/column_family.cc, SuperVersion::Init(...)
+cfd = new_cfd;
+mem = new_mem;
+imm = new_imm;
+current = new_current;
+...
+cfd->Ref();
+mem->Ref();
+imm->Ref();
+current->Ref();
+refs.store(1, std::memory_order_relaxed);
+```
+
+```cpp
+// db/column_family.cc, SuperVersion::Cleanup()
+assert(refs.load(std::memory_order_relaxed) == 0);
+imm->Unref(&to_delete);
+ReadOnlyMemTable* m = mem->Unref();
+if (m != nullptr) {
+  ...
+  to_delete.push_back(m);
+}
+current->Unref();
+cfd->UnrefAndTryDelete();
+```
+
+`Init()` 是 pin 的入口，`Cleanup()` 是 release 的出口。注意这里不是只 pin 一个 `Version`，而是把当前 memtable、immutable memtable list version、SST metadata version、column family 都绑在同一个引用生命周期里。
+
+```cpp
+// db/version_set.cc, VersionStorageInfo::AddFile(...)
+void VersionStorageInfo::AddFile(int level, FileMetaData* f) {
+  auto& level_files = files_[level];
+  level_files.push_back(f);
+
+  f->refs++;
+}
+```
+
+```cpp
+// db/version_set.cc, Version::~Version()
+for (int level = 0; level < storage_info_.num_levels_; level++) {
+  for (size_t i = 0; i < storage_info_.files_[level].size(); i++) {
+    FileMetaData* f = storage_info_.files_[level][i];
+    assert(f->refs > 0);
+    f->refs--;
+    if (f->refs <= 0) {
+      vset_->obsolete_files_.emplace_back(...);
+    }
+  }
+}
+```
+
+这两段说明 SST 侧不是由 `SuperVersion` 直接 pin 物理文件句柄，而是通过 `Version` 维护 `FileMetaData` 引用。旧 `Version` 未析构时，相关文件元数据仍然被视为 live；等最后一个引用释放，才进入 obsolete file 后续清理流程。
+
+```cpp
+// db/column_family.cc, ColumnFamilyData::InstallSuperVersion(...)
+new_superversion->Init(this, mem_, imm_.current(), current_, ...);
+SuperVersion* old_superversion = super_version_;
+super_version_ = new_superversion;
+...
+if (old_superversion != nullptr) {
+  ResetThreadLocalSuperVersions();
+  ...
+  if (old_superversion->Unref()) {
+    old_superversion->Cleanup();
+    sv_context->superversions_to_free.push_back(old_superversion);
+  }
+}
+++super_version_number_;
+super_version_->version_number = super_version_number_;
+```
+
+安装新 `SuperVersion` 时，`ColumnFamilyData` 只把当前指针切到新的对象。旧对象不会被强行破坏：先清理 thread-local 里的缓存指针，再对旧对象 `Unref()`；如果还有读者或 iterator 拿着它，引用数不会归零，它就继续活着。
+
+```cpp
+// db/column_family.cc, ColumnFamilyData::GetThreadLocalSuperVersion(...)
+void* ptr = local_sv_->Swap(SuperVersion::kSVInUse);
+SuperVersion* sv = static_cast<SuperVersion*>(ptr);
+if (sv == SuperVersion::kSVObsolete) {
+  db->mutex()->Lock();
+  sv = super_version_->Ref();
+  db->mutex()->Unlock();
+}
+```
+
+```cpp
+// db/column_family.cc, ColumnFamilyData::ReturnThreadLocalSuperVersion(...)
+void* expected = SuperVersion::kSVInUse;
+if (local_sv_->CompareAndSwap(static_cast<void*>(sv), expected)) {
+  return true;
+}
+return false;
+```
+
+普通读路径会优先复用 thread-local 的 `SuperVersion`，避免每次 Get 都抢 DB mutex。新 `SuperVersion` 安装后，后台会把 TLS 中的旧指针 scrape 成 `kSVObsolete`；读者归还时如果发现已经过期，就走 cleanup，而不是继续放回 TLS。
+
+```cpp
+// db/db_impl/db_impl.cc, DBImpl::NewInternalIterator(...)
+SuperVersionHandle* cleanup = new SuperVersionHandle(
+    this, &mutex_, super_version,
+    read_options.background_purge_on_iterator_cleanup ||
+        immutable_db_options_.avoid_unnecessary_blocking_io);
+internal_iter->RegisterCleanup(CleanupSuperVersionHandle, cleanup, nullptr);
+```
+
+Iterator 的生命周期比一次 `Get()` 长，所以它把 `SuperVersion` 引用交给 `SuperVersionHandle`，注册到 internal iterator cleanup 里。用户 iterator 还活着时，旧 `mem/imm/current Version` 就不能被释放。
+
+```mermaid
+flowchart TD
+    A[ColumnFamilyData::super_version_] --> B[latest SuperVersion]
+    B --> C[mem Ref]
+    B --> D[MemTableListVersion imm Ref]
+    B --> E[Version current Ref]
+    E --> F[FileMetaData refs]
+    F --> G[SST obsolete/delete deferred]
+
+    H[old Get / Iterator] --> I[old SuperVersion Ref]
+    I --> J[old mem / old imm / old Version]
+    K[Install new SuperVersion] --> A
+    K --> L[ResetThreadLocalSuperVersions]
+    L --> M[old SV waits until refs drop to zero]
+```
+
+- 当前结论：
+  - `SuperVersion` 的 pin 是生命周期 pin，不是内容冻结。
+  - 对 mutable memtable 来说，`SuperVersion` 固定的是“这次读使用哪个 memtable 对象”；这个 memtable 仍可能并发接受更新，最终可见性还要靠 snapshot sequence / read sequence 判断。
+  - 对 immutable memtable 来说，`MemTableListVersion` 把当时那组 imm memtable 固定住，旧 list version 被读者引用时不会释放。
+  - 对 SST 来说，`Version` 固定的是当时的 SST 元数据集合，`FileMetaData::refs` 进一步推迟元数据释放和物理文件删除。
+  - `version_number` 是每次安装新 `SuperVersion` 递增的序号，主要用于判断 iterator refresh 时当前视图是否变了；它不是 `VersionSet` 的 MANIFEST 版本号，也不是 sequence number。
+- 是否需要后续回看：
+  - `yes`
+  - 到 MANIFEST / VersionSet 章节时，需要把 `VersionEdit -> VersionSet::LogAndApply -> current Version -> SuperVersion` 这条元数据发布链路完整接上。
+  - 到 Snapshot / Sequence Number 章节时，需要再把“对象生命周期稳定”和“读可见性稳定”严格区分开。
 
 ### 外部高价值问题
 

@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-26T15:23:14+08:00
+lastmod: 2026-04-29T14:03:46+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -21,6 +21,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - 已经讲清 `SuperVersion` 固定读路径对象集合，snapshot sequence 固定可见性上界
   - 已经讲清 `Get`、`MultiGet`、`Iterator` 的共同骨架与职责差异
   - 已经从读侧反向接上 Day 008 的 SST 结构：filter / index / data block 最终都通过 `GetContext::SaveValue()` 处理语义
+  - 已补充 memtable bloom 策略、prefix/whole-key bloom 区别与 `SliceTransform` 原理、`FilePicker` 最坏查找范围、`TableCache / BlockBasedTable / ReadTier` 边界，以及 `SuperVersion` 如何 pin 住 mem/imm/SST 的问答
   - 还没有系统展开 snapshot / sequence number 可见性、block cache 细节、prefix seek 与 partitioned filter/index
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
@@ -33,7 +34,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 008：SSTable / BlockBasedTable / 各类 Block`
   - `Day 009：Read Path / Get / MultiGet / Iterator`
 - 下一步建议：
-  - `先回答 Day 009 复习题，再进入 Day 010：Snapshot / Sequence Number / 可见性语义`
+  - `进入 Day 010：Snapshot / Sequence Number / 可见性语义`
 - 当前仍需补看的关键点：
   - `Snapshot / Sequence Number / ReadCallback / DBIter::IsVisible` 的完整可见性链路还没单独展开
   - `Block Cache`、row cache、table cache、OS page cache 的边界还没系统拆开
@@ -44,11 +45,11 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 - latest_review_day：`Day 009`
 - latest_review_file：`learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md`
-- review_status：
-- review_result：
-- review_answered_at：
-- review_notes：`Day 009 文章已生成，等待复习问答。`
-- review_block_next：`yes`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-04-29T14:03:46+08:00`
+- review_notes：`Day 009 复习问答已完成。整体能区分 SuperVersion 的对象生命周期 pin 与 snapshot 的可见性职责，能说明 Get 的 mem/imm/current 顺序、FilePicker 的 L0 与 L1+ 差异、SaveValue 继续查找的 merge/base value 场景、MultiGet 批量处理收益，以及 MergingIterator 与 DBIter 的职责边界。需保留两点细化：L1+ 不重叠是常规 leveled 情况下成立；MergingIterator 输出的是 internal key 流，DBIter 再做用户可见语义。`
+- review_block_next：`no`
 
 说明：
 
@@ -88,7 +89,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 006 | 2026-04-18 | MemTable 深入：可见性、删除、范围删除与读语义 | `learning-rocksdb-day006-2026-04-18-memtable-visibility-delete-range-tombstone.md` | `done` |
 | 007 | 2026-04-20 | Flush | `learning-rocksdb-day007-2026-04-20-flush.md` | `revisit` |
 | 008 | 2026-04-22 | SSTable / BlockBasedTable / 各类 Block | `learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md` | `revisit` |
-| 009 | 2026-04-26 | Read Path / Get / MultiGet / Iterator | `learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md` | `next` |
+| 009 | 2026-04-26 | Read Path / Get / MultiGet / Iterator | `learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md` | `done` |
 
 说明：
 
@@ -339,6 +340,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `D:\program\rocksdb\db\db_impl\db_impl.cc`
   - `D:\program\rocksdb\db\db_impl\db_impl.h`
   - `D:\program\rocksdb\db\column_family.h`
+  - `D:\program\rocksdb\db\column_family.cc`
+  - `D:\program\rocksdb\db\job_context.h`
   - `D:\program\rocksdb\db\dbformat.cc`
   - `D:\program\rocksdb\db\lookup_key.h`
   - `D:\program\rocksdb\db\memtable.cc`
@@ -354,13 +357,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `D:\program\rocksdb\db\arena_wrapped_db_iter.cc`
   - `D:\program\rocksdb\db\db_iter.cc`
   - `D:\program\rocksdb\table\merging_iterator.cc`
-- ready_for_next：`no`
-- next_review_trigger：`先完成 Day 009 复习问答；进入 Snapshot / Sequence Number / 可见性语义时回看`
-- review_status：
-- review_result：
-- review_answered_at：
-- review_notes：`Day 009 文章已生成，等待复习问答。`
-- review_block_next：`yes`
+- ready_for_next：`yes`
+- next_review_trigger：`进入 Snapshot / Sequence Number / 可见性语义时回看`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-04-29T14:03:46+08:00`
+- review_notes：`Day 009 复习问答已完成。整体能区分 SuperVersion 的对象生命周期 pin 与 snapshot 的可见性职责，能说明 Get 的 mem/imm/current 顺序、FilePicker 的 L0 与 L1+ 差异、SaveValue 继续查找的 merge/base value 场景、MultiGet 批量处理收益，以及 MergingIterator 与 DBIter 的职责边界。需保留两点细化：L1+ 不重叠是常规 leveled 情况下成立；MergingIterator 输出的是 internal key 流，DBIter 再做用户可见语义。`
+- review_block_next：`no`
 
 ## 状态使用建议
 
@@ -424,4 +427,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-04-26T15:23:14+08:00
+- 2026-04-29T14:03:46+08:00
