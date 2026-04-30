@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-29T14:03:46+08:00
+lastmod: 2026-04-30T16:56:18+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,16 +13,19 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`9`
-- 当前最近一次学习主题：`Day 009：Read Path / Get / MultiGet / Iterator`
-- 当前主线阶段：`第 9 章：Read Path / Get / MultiGet / Iterator`
+- 当前学习总天数：`10`
+- 当前最近一次学习主题：`Day 010：Snapshot / Sequence Number / 可见性语义`
+- 当前主线阶段：`第 10 章：Snapshot / Sequence Number / 可见性语义`
 - 上一篇文章写到：
-  - `DBImpl::GetImpl -> mem/imm/current Version -> Version::Get -> TableCache::Get -> BlockBasedTable::Get`
-  - 已经讲清 `SuperVersion` 固定读路径对象集合，snapshot sequence 固定可见性上界
-  - 已经讲清 `Get`、`MultiGet`、`Iterator` 的共同骨架与职责差异
-  - 已经从读侧反向接上 Day 008 的 SST 结构：filter / index / data block 最终都通过 `GetContext::SaveValue()` 处理语义
-  - 已补充 memtable bloom 策略、prefix/whole-key bloom 区别与 `SliceTransform` 原理、`FilePicker` 最坏查找范围、`TableCache / BlockBasedTable / ReadTier` 边界，以及 `SuperVersion` 如何 pin 住 mem/imm/SST 的问答
-  - 还没有系统展开 snapshot / sequence number 可见性、block cache 细节、prefix seek 与 partitioned filter/index
+  - `WriteImpl / WriteBatchInternal::InsertInto / MemTableInserter` 如何分配并消费 sequence
+  - `InternalKey = user key + sequence/type`，同一 user key 下按 sequence 降序排列
+  - `SnapshotImpl::number_` 是读可见性上界，不是数据副本，也不是对象生命周期 pin
+  - `DBImpl::GetImpl` 先拿 `SuperVersion` 再确定 explicit/implicit snapshot sequence
+  - `GetContext::SaveValue()` 与 `DBIter::IsVisible()` 分别在点查和迭代器路径中过滤可见版本
+  - `ReadCallback` 是事务、timestamp 等高级可见性的扩展点
+  - snapshot 释放会推进 oldest snapshot，影响 compaction 清理旧版本与 tombstone 的边界
+  - 已补充 snapshot 产生/释放时机、为什么需要 `SnapshotList`、flush 与 snapshot 的实现关系、“不能按任意旧 sequence 保证读取历史”的边界，以及 implicit snapshot 不进 list 时如何靠 `SuperVersion / Version / FileMetaData refs` 保护正在读的 SST
+  - 还没有系统展开磁盘读写抽象、TableReader 打开/Block 读取、Block Cache / OS Page Cache 边界
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -33,22 +36,22 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 007：Flush`
   - `Day 008：SSTable / BlockBasedTable / 各类 Block`
   - `Day 009：Read Path / Get / MultiGet / Iterator`
+  - `Day 010：Snapshot / Sequence Number / 可见性语义`
 - 下一步建议：
-  - `进入 Day 010：Snapshot / Sequence Number / 可见性语义`
+  - `进入 Day 011：磁盘管理 / 文件读写抽象 / Table Reader / Block 读取 / OS Page Cache`
 - 当前仍需补看的关键点：
-  - `Snapshot / Sequence Number / ReadCallback / DBIter::IsVisible` 的完整可见性链路还没单独展开
   - `Block Cache`、row cache、table cache、OS page cache 的边界还没系统拆开
   - `partitioned index / partitioned filter / prefix seek` 这些读优化变体还没单独展开
   - `VersionEdit / VersionSet` 如何在 MANIFEST 中承接新 SST 元数据还没重新接上
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 009`
-- latest_review_file：`learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md`
+- latest_review_day：`Day 010`
+- latest_review_file：`learning-rocksdb-day010-2026-04-30-snapshot-sequence-number-visibility.md`
 - review_status：`answered`
 - review_result：`pass`
-- review_answered_at：`2026-04-29T14:03:46+08:00`
-- review_notes：`Day 009 复习问答已完成。整体能区分 SuperVersion 的对象生命周期 pin 与 snapshot 的可见性职责，能说明 Get 的 mem/imm/current 顺序、FilePicker 的 L0 与 L1+ 差异、SaveValue 继续查找的 merge/base value 场景、MultiGet 批量处理收益，以及 MergingIterator 与 DBIter 的职责边界。需保留两点细化：L1+ 不重叠是常规 leveled 情况下成立；MergingIterator 输出的是 internal key 流，DBIter 再做用户可见语义。`
+- review_answered_at：`2026-04-30T16:56:18+08:00`
+- review_notes：`Day 010 复习问答已完成。整体能说明 sequence 写入 internal key、snapshot 是 sequence 可见性上界、InternalKeyComparator 按新到旧排序、GetImpl 先 pin SuperVersion 再取 implicit snapshot sequence 的原因、ReadCallback 的事务扩展语义，以及长 snapshot 对 compaction/空间放大的影响。后续可再压实两点：WriteBatchInternal::InsertInto -> MemTableInserter -> mem->Add(...) 的精确链路；GetContext::SaveValue 是点查状态机，DBIter::IsVisible 是 iterator internal key 流过滤入口。`
 - review_block_next：`no`
 
 说明：
@@ -90,6 +93,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 007 | 2026-04-20 | Flush | `learning-rocksdb-day007-2026-04-20-flush.md` | `revisit` |
 | 008 | 2026-04-22 | SSTable / BlockBasedTable / 各类 Block | `learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md` | `revisit` |
 | 009 | 2026-04-26 | Read Path / Get / MultiGet / Iterator | `learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md` | `done` |
+| 010 | 2026-04-30 | Snapshot / Sequence Number / 可见性语义 | `learning-rocksdb-day010-2026-04-30-snapshot-sequence-number-visibility.md` | `done` |
 
 说明：
 
@@ -191,8 +195,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 - 主题：`WAL`
 - 文件：`learning-rocksdb-day004-2026-04-13-wal.md`
-- understanding_status：`yellow`
-- mastery_score：`3/5`
+- understanding_status：`green`
+- mastery_score：`4/5`
 - weak_points：
   - `log::Writer::AddRecord()` 的压缩、recyclable WAL 与 checksum 细节还没完全压实
   - `wal_filter` 只知道入口和作用，还没看实际使用场景
@@ -365,6 +369,47 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 009 复习问答已完成。整体能区分 SuperVersion 的对象生命周期 pin 与 snapshot 的可见性职责，能说明 Get 的 mem/imm/current 顺序、FilePicker 的 L0 与 L1+ 差异、SaveValue 继续查找的 merge/base value 场景、MultiGet 批量处理收益，以及 MergingIterator 与 DBIter 的职责边界。需保留两点细化：L1+ 不重叠是常规 leveled 情况下成立；MergingIterator 输出的是 internal key 流，DBIter 再做用户可见语义。`
 - review_block_next：`no`
 
+### Day 010
+
+- 主题：`Snapshot / Sequence Number / 可见性语义`
+- 文件：`learning-rocksdb-day010-2026-04-30-snapshot-sequence-number-visibility.md`
+- understanding_status：`yellow`
+- mastery_score：`3/5`
+- weak_points：
+  - `ReadCallback` 在 write-prepared / write-unprepared 事务中的完整提交可见性还没展开
+  - `CompactionIterator` 如何按 snapshot 边界丢弃旧版本还只是建立入口
+  - `timestamped snapshot / user-defined timestamp` 与普通 sequence snapshot 的组合语义暂时只点到入口
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\db.h`
+  - `D:\program\rocksdb\include\rocksdb\options.h`
+  - `D:\program\rocksdb\include\rocksdb\snapshot.h`
+  - `D:\program\rocksdb\db\snapshot_impl.h`
+  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl.h`
+  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
+  - `D:\program\rocksdb\db\write_batch.cc`
+  - `D:\program\rocksdb\db\write_batch_internal.h`
+  - `D:\program\rocksdb\db\version_set.h`
+  - `D:\program\rocksdb\db\dbformat.h`
+  - `D:\program\rocksdb\db\dbformat.cc`
+  - `D:\program\rocksdb\db\lookup_key.h`
+  - `D:\program\rocksdb\table\get_context.h`
+  - `D:\program\rocksdb\table\get_context.cc`
+  - `D:\program\rocksdb\db\db_iter.h`
+  - `D:\program\rocksdb\db\db_iter.cc`
+  - `D:\program\rocksdb\db\read_callback.h`
+  - `D:\program\rocksdb\utilities\transactions\write_prepared_txn_db.h`
+  - `D:\program\rocksdb\utilities\transactions\write_unprepared_txn.h`
+  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_iterator.cc`
+- ready_for_next：`yes`
+- next_review_trigger：`学习事务、Compaction 或 VersionSet/obsolete file 删除路径时回看`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-04-30T16:56:18+08:00`
+- review_notes：`Day 010 复习问答已完成。整体能说明 sequence 写入 internal key、snapshot 是 sequence 可见性上界、InternalKeyComparator 按新到旧排序、GetImpl 先 pin SuperVersion 再取 implicit snapshot sequence 的原因、ReadCallback 的事务扩展语义，以及长 snapshot 对 compaction/空间放大的影响。后续可再压实两点：WriteBatchInternal::InsertInto -> MemTableInserter -> mem->Add(...) 的精确链路；GetContext::SaveValue 是点查状态机，DBIter::IsVisible 是 iterator internal key 流过滤入口。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -389,15 +434,17 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `Snapshot / Sequence Number / ReadCallback / DBIter::IsVisible` 的完整可见性链路
   - `Block Cache`、row cache、table cache 与 OS page cache 的边界
   - `partitioned index / partitioned filter / prefix seek` 的实际读写差异
   - `atomic flush` 与普通 flush 的提交流程差异
   - `range tombstone / MultiGet / memtable bloom` 的组合边界
+  - `ReadCallback` 在事务 DB 中的完整提交可见性
+  - `CompactionIterator` 按 snapshot 边界清理旧版本的细节
   - `VersionEditHandler` 的 MANIFEST 回放细节
   - flush 推进 `min_log_number_to_keep` 之后，obsolete WAL 的实际删除/归档路径
 - 回看触发条件：
-  - `学习 Snapshot / Sequence Number / 可见性语义`
+  - `学习事务与并发控制`
+  - `学习 Compaction`
   - `学习 Block Cache / Bloom Filter / Prefix Seek`
   - `学习 MANIFEST / VersionEdit / VersionSet`
 
@@ -427,4 +474,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-04-29T14:03:46+08:00
+- 2026-04-30T16:56:18+08:00
