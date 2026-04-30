@@ -1,5 +1,15 @@
 # Database Industry Learning Workflow Implementation Plan
 
+> **2026-04-30 status note:** This is a historical implementation plan for the initial scaffold. It is no longer the authoritative source for the learning sequence. The current rules are `AGENTS-learning-database-industry.md` and `content/posts/learning-database-industry-day000-index.md`.
+>
+> Current structural decision:
+>
+> - `Topic` is a problem-domain phase, not one article.
+> - `Day` is one article.
+> - `Topic 1` is organized by previews of later topics, not by individual database systems.
+> - `Topic 2+` expands each topic into a topic opening, one article per重点 database system, and a topic wrap-up.
+> - Do not use this historical plan to infer that Topic 1 should be marked done after Day 001, or that Day 002 should be PostgreSQL.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add durable repository scaffolding for a storage-first database industry learning and research workflow.
