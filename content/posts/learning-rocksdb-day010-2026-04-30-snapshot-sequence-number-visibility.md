@@ -691,6 +691,9 @@ CompactionIterator c_iter(
 - 当前结论：
   - flush 的主职责不是“删除旧数据”，但 flush 实现复用了 compaction iterator 这套处理 internal key 的工具，因此仍需要 snapshot 上下文。
   - 这是实现层面的边界：概念上 flush 是落盘；实现上 flush 也可能做有限整理，不能无视 snapshot。
+- 补充澄清：
+  - 更精确地说，flush 这里用到 snapshot，不是因为 flush 完整等同于 compaction，而是因为它在合并 memtable 迭代器、处理 internal key 流时，复用了 `CompactionIterator` / `CompactionRangeDelAggregator` / `MergeHelper` 这套语义整理机制。
+  - 一旦涉及 `range delete`、`delete tombstone`、merge 或 compaction filter，就必须知道活跃 snapshot 的边界，才能决定哪些历史版本可以过滤、哪些还必须保留。
 - 是否需要后续回看：
   - `yes`
   - 到 Day 011/Compaction 时再细看 `FlushJob` 的 mempurge、range tombstone 和 merge 行为。

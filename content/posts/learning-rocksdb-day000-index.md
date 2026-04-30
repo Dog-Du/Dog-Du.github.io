@@ -24,7 +24,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `GetContext::SaveValue()` 与 `DBIter::IsVisible()` 分别在点查和迭代器路径中过滤可见版本
   - `ReadCallback` 是事务、timestamp 等高级可见性的扩展点
   - snapshot 释放会推进 oldest snapshot，影响 compaction 清理旧版本与 tombstone 的边界
-  - 已补充 snapshot 产生/释放时机、为什么需要 `SnapshotList`、flush 与 snapshot 的实现关系、“不能按任意旧 sequence 保证读取历史”的边界，以及 implicit snapshot 不进 list 时如何靠 `SuperVersion / Version / FileMetaData refs` 保护正在读的 SST
+  - 已补充 snapshot 产生/释放时机、为什么需要 `SnapshotList`、flush 复用 `CompactionIterator` 处理 range tombstone/delete/merge 时为何需要 snapshot、“不能按任意旧 sequence 保证读取历史”的边界，以及 implicit snapshot 不进 list 时如何靠 `SuperVersion / Version / FileMetaData refs` 保护正在读的 SST
   - 还没有系统展开磁盘读写抽象、TableReader 打开/Block 读取、Block Cache / OS Page Cache 边界
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
