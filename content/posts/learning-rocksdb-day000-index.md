@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-04-30T16:56:18+08:00
+lastmod: 2026-05-03T13:27:15+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,19 +13,21 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`10`
-- 当前最近一次学习主题：`Day 010：Snapshot / Sequence Number / 可见性语义`
-- 当前主线阶段：`第 10 章：Snapshot / Sequence Number / 可见性语义`
+- 当前学习总天数：`11`
+- 当前最近一次学习主题：`Day 011：磁盘 I/O / TableReader / Block 读取 / OS Page Cache`
+- 当前主线阶段：`第 11 章：磁盘管理 / 文件读写抽象 / Table Reader / Block 读取 / OS Page Cache`
 - 上一篇文章写到：
-  - `WriteImpl / WriteBatchInternal::InsertInto / MemTableInserter` 如何分配并消费 sequence
-  - `InternalKey = user key + sequence/type`，同一 user key 下按 sequence 降序排列
-  - `SnapshotImpl::number_` 是读可见性上界，不是数据副本，也不是对象生命周期 pin
-  - `DBImpl::GetImpl` 先拿 `SuperVersion` 再确定 explicit/implicit snapshot sequence
-  - `GetContext::SaveValue()` 与 `DBIter::IsVisible()` 分别在点查和迭代器路径中过滤可见版本
-  - `ReadCallback` 是事务、timestamp 等高级可见性的扩展点
-  - snapshot 释放会推进 oldest snapshot，影响 compaction 清理旧版本与 tombstone 的边界
-  - 已补充 snapshot 产生/释放时机、为什么需要 `SnapshotList`、flush 复用 `CompactionIterator` 处理 range tombstone/delete/merge 时为何需要 snapshot、“不能按任意旧 sequence 保证读取历史”的边界，以及 implicit snapshot 不进 list 时如何靠 `SuperVersion / Version / FileMetaData refs` 保护正在读的 SST
-  - 还没有系统展开磁盘读写抽象、TableReader 打开/Block 读取、Block Cache / OS Page Cache 边界
+  - `Env / FileSystem` 提供文件读写抽象，SST 点查主要依赖 `FSRandomAccessFile`
+  - `TableCache` 缓存并复用 `TableReader`，不是 `BlockBasedTable` 本身，也不是 block cache
+  - `Version::Get -> TableCache::Get -> BlockBasedTable::Get` 把候选 SST 查找推进到 filter/index/data block
+  - data block 读取链路是 `BlockBasedTable -> BlockFetcher -> RandomAccessFileReader -> FSRandomAccessFile`
+  - `TableCache / RowCache / BlockCache / FilePrefetchBuffer / OS Page Cache` 的缓存或缓冲对象不同，不能混用 hit/miss 含义
+  - `kBlockCacheTier` 是 no-IO read tier，典型用途是 `KeyMayExist()` 这类内存内 non-blocking may-exist 判断；cache miss 或 table miss 不能确认 key 不存在，只能返回 `Incomplete` 或 `MarkKeyMayExist`
+  - 每个 CF 都有 `TableCache` 包装器，但底层 table-reader cache 是 DB 级共享池，通常可理解为“一个 SST 一个共享的 table-reader cache entry”
+  - `FileMetaData` 记录了 SST 的 file number、范围键、seqno、file size 等信息；它持久化在 MANIFEST，恢复后驻留于 `Version / VersionStorageInfo`
+  - 一个 SST 的 `data block` 不会在 open 时全量加载；`index/filter` 是否整体驻留取决于是否 partitioned，以及 `cache_index_and_filter_blocks`、pin、prefetch 等选项
+  - 普通 buffered I/O 会受 OS page cache 影响；`use_direct_reads` 尽量绕过 OS page cache；`allow_mmap_reads` 是另一种文件访问方式
+  - 还没有展开 block cache 的淘汰策略、partitioned index/filter、以及 VersionSet/MANIFEST 如何维护 SST 元数据
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -37,21 +39,23 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 008：SSTable / BlockBasedTable / 各类 Block`
   - `Day 009：Read Path / Get / MultiGet / Iterator`
   - `Day 010：Snapshot / Sequence Number / 可见性语义`
+  - `Day 011：磁盘 I/O / TableReader / Block 读取 / OS Page Cache`
 - 下一步建议：
-  - `进入 Day 011：磁盘管理 / 文件读写抽象 / Table Reader / Block 读取 / OS Page Cache`
+  - `进入 Day 012：MANIFEST / VersionEdit / VersionSet`
 - 当前仍需补看的关键点：
-  - `Block Cache`、row cache、table cache、OS page cache 的边界还没系统拆开
+  - `Block Cache` 的具体 key、charge、淘汰策略、压缩/非压缩 block 边界还没展开
+  - `FilePrefetchBuffer / readahead / direct I/O / mmap` 的性能取舍还只是建立主线
   - `partitioned index / partitioned filter / prefix seek` 这些读优化变体还没单独展开
   - `VersionEdit / VersionSet` 如何在 MANIFEST 中承接新 SST 元数据还没重新接上
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 010`
-- latest_review_file：`learning-rocksdb-day010-2026-04-30-snapshot-sequence-number-visibility.md`
+- latest_review_day：`Day 011`
+- latest_review_file：`learning-rocksdb-day011-2026-05-01-disk-io-table-reader-block-read.md`
 - review_status：`answered`
-- review_result：`pass`
-- review_answered_at：`2026-04-30T16:56:18+08:00`
-- review_notes：`Day 010 复习问答已完成。整体能说明 sequence 写入 internal key、snapshot 是 sequence 可见性上界、InternalKeyComparator 按新到旧排序、GetImpl 先 pin SuperVersion 再取 implicit snapshot sequence 的原因、ReadCallback 的事务扩展语义，以及长 snapshot 对 compaction/空间放大的影响。后续可再压实两点：WriteBatchInternal::InsertInto -> MemTableInserter -> mem->Add(...) 的精确链路；GetContext::SaveValue 是点查状态机，DBIter::IsVisible 是 iterator internal key 流过滤入口。`
+- review_result：`partial`
+- review_answered_at：`2026-05-03T13:27:15+08:00`
+- review_notes：`Day 011 复习问答已完成。整体主链正确：能说明 Version::Get -> TableCache -> BlockBasedTable 的骨架，以及 kBlockCacheTier 不能推出 key 不存在。但仍有三处边界需要纠偏：TableReader/BlockBasedTable 不是文件句柄，也不负责写；FilePrefetchBuffer 不是只缓存 footer/tail，而是通用文件 offset 预读缓冲；allow_mmap_reads 改变的是 SST table file 的读取方式之一，不只是 SST 尾部读取。当前判定 partial，可继续进入 Day 012。`
 - review_block_next：`no`
 
 说明：
@@ -94,6 +98,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 008 | 2026-04-22 | SSTable / BlockBasedTable / 各类 Block | `learning-rocksdb-day008-2026-04-22-sstable-blockbasedtable-and-blocks.md` | `revisit` |
 | 009 | 2026-04-26 | Read Path / Get / MultiGet / Iterator | `learning-rocksdb-day009-2026-04-26-read-path-get-multiget-iterator.md` | `done` |
 | 010 | 2026-04-30 | Snapshot / Sequence Number / 可见性语义 | `learning-rocksdb-day010-2026-04-30-snapshot-sequence-number-visibility.md` | `done` |
+| 011 | 2026-05-01 | 磁盘 I/O / TableReader / Block 读取 / OS Page Cache | `learning-rocksdb-day011-2026-05-01-disk-io-table-reader-block-read.md` | `revisit` |
 
 说明：
 
@@ -373,8 +378,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 - 主题：`Snapshot / Sequence Number / 可见性语义`
 - 文件：`learning-rocksdb-day010-2026-04-30-snapshot-sequence-number-visibility.md`
-- understanding_status：`yellow`
-- mastery_score：`3/5`
+- understanding_status：`green`
+- mastery_score：`4/5`
 - weak_points：
   - `ReadCallback` 在 write-prepared / write-unprepared 事务中的完整提交可见性还没展开
   - `CompactionIterator` 如何按 snapshot 边界丢弃旧版本还只是建立入口
@@ -410,6 +415,43 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 010 复习问答已完成。整体能说明 sequence 写入 internal key、snapshot 是 sequence 可见性上界、InternalKeyComparator 按新到旧排序、GetImpl 先 pin SuperVersion 再取 implicit snapshot sequence 的原因、ReadCallback 的事务扩展语义，以及长 snapshot 对 compaction/空间放大的影响。后续可再压实两点：WriteBatchInternal::InsertInto -> MemTableInserter -> mem->Add(...) 的精确链路；GetContext::SaveValue 是点查状态机，DBIter::IsVisible 是 iterator internal key 流过滤入口。`
 - review_block_next：`no`
 
+### Day 011
+
+- 主题：`磁盘 I/O / TableReader / Block 读取 / OS Page Cache`
+- 文件：`learning-rocksdb-day011-2026-05-01-disk-io-table-reader-block-read.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - `TableReader / BlockBasedTable / RandomAccessFileReader / FSRandomAccessFile` 的对象边界还需要继续压实
+  - `FilePrefetchBuffer / readahead / async_io / direct I/O / mmap` 的组合取舍还需要后续压实
+  - `partitioned index / partitioned filter` 如何改变 index/filter block 读取路径还没有进入
+  - `BlockCache` 对 data/index/filter block 的覆盖范围与 charge 细节还没展开
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\env.h`
+  - `D:\program\rocksdb\include\rocksdb\file_system.h`
+  - `D:\program\rocksdb\include\rocksdb\options.h`
+  - `D:\program\rocksdb\file\random_access_file_reader.h`
+  - `D:\program\rocksdb\file\random_access_file_reader.cc`
+  - `D:\program\rocksdb\file\file_prefetch_buffer.h`
+  - `D:\program\rocksdb\file\file_prefetch_buffer.cc`
+  - `D:\program\rocksdb\db\version_set.cc`
+  - `D:\program\rocksdb\db\table_cache.h`
+  - `D:\program\rocksdb\db\table_cache.cc`
+  - `D:\program\rocksdb\table\table_reader.h`
+  - `D:\program\rocksdb\table\format.h`
+  - `D:\program\rocksdb\table\format.cc`
+  - `D:\program\rocksdb\table\block_fetcher.h`
+  - `D:\program\rocksdb\table\block_fetcher.cc`
+  - `D:\program\rocksdb\table\block_based\block_based_table_reader.h`
+  - `D:\program\rocksdb\table\block_based\block_based_table_reader.cc`
+- ready_for_next：`yes`
+- next_review_trigger：`学习 Block Cache / Bloom Filter / Prefix Bloom / Partition Index 时回看`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-05-03T13:27:15+08:00`
+- review_notes：`Day 011 复习问答已完成。整体主链正确：能说明 Version::Get -> TableCache -> BlockBasedTable 的骨架，以及 kBlockCacheTier 不能推出 key 不存在。但仍有三处边界需要纠偏：TableReader/BlockBasedTable 不是文件句柄，也不负责写；FilePrefetchBuffer 不是只缓存 footer/tail，而是通用文件 offset 预读缓冲；allow_mmap_reads 改变的是 SST table file 的读取方式之一，不只是 SST 尾部读取。当前判定 partial，可继续进入 Day 012。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -434,7 +476,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `Block Cache`、row cache、table cache 与 OS page cache 的边界
+  - `Block Cache` 内部 key、charge、压缩/非压缩 block 与淘汰策略
+  - `FilePrefetchBuffer / readahead / direct I/O / mmap` 的性能取舍
   - `partitioned index / partitioned filter / prefix seek` 的实际读写差异
   - `atomic flush` 与普通 flush 的提交流程差异
   - `range tombstone / MultiGet / memtable bloom` 的组合边界
@@ -474,4 +517,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-04-30T16:56:18+08:00
+- 2026-05-03T13:27:15+08:00
