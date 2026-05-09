@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-04T19:32:50+08:00
+lastmod: 2026-05-09T21:05:57+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,28 +13,31 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`12`
-- 当前最近一次学习主题：`Day 012：MANIFEST / VersionEdit / VersionSet`
-- 当前主线阶段：`第 12 章：版本管理与元数据：MANIFEST / VersionEdit / VersionSet`
+- 当前学习总天数：`13`
+- 当前最近一次学习主题：`Day 013：Compaction 基础机制与主流程`
+- 当前主线阶段：`第 13 章：Compaction 基础机制、调度、执行与版本提交`
 - 上一篇文章写到：
-  - `CURRENT` 只是 active MANIFEST 的指针文件，本身不承载版本内容
-  - `SetCurrentFile(...)` 不是原地改写旧 `CURRENT`，而是先写并 sync 临时文件，再 rename 覆盖正式 `CURRENT`，可用时还会 fsync 目录
-  - `SetCurrentFile(...)` 本身不是并发控制层；正常路径由 `VersionSet::LogAndApply(...)` 的 DB mutex 和 `manifest_writers_` 队列保证 MANIFEST/CURRENT 提交串行化
-  - RocksDB 可以通过 `FileSystem` 抽象接入远程文件系统，但 `CURRENT` 切换仍要求 `RenameFile(...)` 提供等价的原子替换语义；普通 S3 rename 通常是 copy + delete，S3 Express One Zone directory bucket 的 `RenameObject` 是特例
-  - RocksDB 不能简化为 `SST + MANIFEST + VersionSet`；`VersionSet` 聚集的是版本相关元数据，不是全部架构或全部元数据
-  - 若只看恢复用户数据所需的核心持久状态，应理解为 `CURRENT + MANIFEST + SST + WAL`；`VersionSet` 是由 MANIFEST 重建出来的内存管理器
-  - 即使把 WAL/SST/OPTIONS/blob/log 当作状态文件而不算元数据，`VersionSet/MANIFEST` 也只能称为版本元数据中心，不是所有持久化元数据的唯一归宿
-  - MANIFEST 提交确实会 sync，但发生在 flush/compaction/CF 操作等版本提交点，不是每次用户写入；RocksDB 通过批量提交、顺序追加、预分配和 rollover 控制降低影响
-  - `CURRENT` 不保证磁盘上只有一个 MANIFEST，它只指向 active MANIFEST；旧 MANIFEST 会先进入 obsolete 列表，再由 purge 路径后续删除
-  - `VersionEdit` 是 tag-based 元数据增量记录，不是完整快照；它能表达 SST 增删、WAL 增删、log number、next file number、last sequence 等边界推进
-  - `VersionSet` 是全库唯一的版本元数据管理器；`Version` 则是某个 CF 的具体文件集合快照
-  - `VersionBuilder` 用来把一串 `VersionEdit` 应用到某个 base version 上，而不需要创建中间完整 `Version`
-  - `VersionSet::LogAndApply()` 会先进入 `manifest_writers_` 队列，再统一做 builder apply、MANIFEST 追加写、必要时切换新 MANIFEST、最后安装新的 current version
-  - 新 MANIFEST 不是空白起步；`WriteCurrentStateToManifest(...)` 会先把 DB ID、WAL 状态、每个 CF 的文件集合和 log/sequence 边界写成一份完整基线
-  - `VersionSet::Recover()` 的主链是 `CURRENT -> MANIFEST -> VersionEditHandler::Iterate -> VersionBuilder -> AppendVersion`
-  - 正常恢复并不会为每条 MANIFEST record 创建一个 `Version`；它是先持续 apply edits，最后再 materialize 最终 end version
-  - Day 007 里“flush 真正完成点是 LogAndApply”与 Day 011 里“FileMetaData 持久化在 MANIFEST”两条线，已经在 Day 012 闭环
-  - `VersionSet` 更新的是某个 CF 的 `current Version`；真正给读路径发布稳定视图，还要靠 `SuperVersion`
+  - Compaction 是 LSM 的后台整理器：用额外写入换取更可控的读放大、写放大和空间放大
+  - `VersionStorageInfo::ComputeCompactionScore(...)` 是自动 compaction 的基础信号；L0 主要看 sorted runs / 文件数，L1+ 主要看层大小与目标大小
+  - 本次问答进一步明确：`sorted run` 是 compaction / read amplification 视角下的逻辑有序段；leveled 下一个 L0 SST 基本就是一个 sorted run，universal 下每个 L0 SST 和每个非空 L1+ level 都可能作为 sorted run
+  - 本次问答进一步明确：`ComputeCompactionScore(...)` 只计算 compaction debt / priority，不负责后台调度和具体选文件
+  - `ColumnFamilyData::NeedsCompaction()` 会把 score、TTL、periodic、marked-for-compaction、forced blob GC 等触发统一成布尔判断
+  - 安装新 `SuperVersion` 后，`InstallSuperVersionAndScheduleWork(...)` 会重新入队 pending compaction 并调用 `MaybeScheduleFlushOrCompaction(...)`
+  - compaction 先按 CF 入 `compaction_queue_`，再由 `MaybeScheduleFlushOrCompaction(...)` 根据后台线程额度投递到 Env LOW priority 线程池
+  - 本次问答进一步明确：不是任何 `Version` 变化都会真正触发 compaction；Version/SuperVersion 更新通常只是一次检查机会，真正入队仍要满足 `NeedsCompaction()`
+  - compaction 检查/调度入口可以分为：新 Version 计算 score、新 SuperVersion 安装后入队、pick 出一次 compaction 后再次检查同 CF、snapshot 释放、periodic compaction、SuggestCompactRange、错误恢复、后台工作恢复和已有 pending job 的重新调度
+  - 同一个 CF 并不全局限制为一个 compaction；pick 出一次 compaction 后，RocksDB 会把这些输入文件标成 `being_compacted`，再重新检查剩余文件是否还需要并行 compaction
+  - 同 CF 并发 compaction 的安全边界主要是：输入文件不能共享，输出 level / proximal level 的 key range 不能和正在运行的 compaction 重叠，pick/install 在 DB mutex 下串行，重 I/O 阶段释放锁并依赖 SST 不可变
+  - `CompactionPicker` 负责判断和选择，`Compaction` 是一次计划对象，`CompactionJob` 是实际执行器
+  - 本次问答进一步明确：`SubcompactionState` 不是独立 compaction，而是同一个 `CompactionJob` 内按 user key range 切分出的并行执行分片
+  - subcompaction 要求输出 key range 不重叠，不要求输入 SST 集合完全不相交；多个 subcompaction 可以读取同一个不可变 SST，再通过边界和 `ClippingIterator` 限制各自范围
+  - L0 文件过多且重叠时，RocksDB 会优先尝试 L0 trivial move；若 L0 -> LBase 写放大过高或被阻塞，则可能先做 intra-L0 compaction 来减少 L0 文件数和读放大
+  - L0 写入堆积继续恶化时，`level0_slowdown_writes_trigger` / `level0_stop_writes_trigger` 会通过降速或停止写入保护后台整理
+  - 普通 compaction 会在 DB mutex 下 pick 计划，释放 DB mutex 跑 `CompactionJob::Run()` 做重 I/O，重新拿锁后 `Install()` 提交结果；成功后重新安装 `SuperVersion` 并可能触发下一轮 compaction
+  - `CompactionJob::Run()` 生成和校验输出 SST，但只有 `InstallCompactionResults(...) -> VersionSet::LogAndApply(...)` 成功后，新文件集合才进入 current `Version`
+  - compaction 的结果通过 `VersionEdit` 表达：输入旧文件 `DeleteFile(...)`，输出新文件 `AddFile(...)`
+  - trivial move 是 metadata-only compaction：可以只通过 MANIFEST 把文件从旧 level 移到新 level，不重写 SST data
+  - Day 012 的 `VersionEdit / LogAndApply / SuperVersion` 边界已经在 compaction 主链中重新闭环
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -48,9 +51,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 010：Snapshot / Sequence Number / 可见性语义`
   - `Day 011：磁盘 I/O / TableReader / Block 读取 / OS Page Cache`
   - `Day 012：MANIFEST / VersionEdit / VersionSet`
+  - `Day 013：Compaction 基础机制与主流程`
 - 下一步建议：
-  - `Day 012 复习题已回答；下一步进入 Day 013：Compaction 及其策略与三大放大权衡`
+  - `进入 Day 014：Leveled Compaction 的层级目标、L0 特殊性和文件选择细节`
 - 当前仍需补看的关键点：
+  - `Leveled Compaction` 的 base level、L0 -> LBase、overlap expansion、clean cut 还没细拆
+  - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出，还没展开
+  - `Universal / FIFO Compaction` 目前只建立 picker 边界，还没讲策略细节
   - `VersionEditHandlerPointInTime / best-efforts recovery` 如何在 MANIFEST 缺损时找回一个仍然有效的旧版本，还没单独展开
   - `manifest_writers_ / atomic group / multi-CF group commit` 只走通了主链，还没细拆并发与原子组细节
   - `CURRENT 切换失败 / MANIFEST rollover / obsolete manifest cleanup` 已补过主结论，但 DB open/recovery 里的异常细节还需要后续压实
@@ -58,12 +65,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 012`
-- latest_review_file：`learning-rocksdb-day012-2026-05-03-manifest-versionedit-versionset.md`
+- latest_review_day：`Day 013`
+- latest_review_file：`learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md`
 - review_status：`answered`
-- review_result：`partial`
-- review_answered_at：`2026-05-04T17:20:52+08:00`
-- review_notes：`Day 012 复习问答已完成。整体能说明 CURRENT 指向 active MANIFEST、VersionEdit 是增量记录、Recover 不为每条 record 创建完整 Version，以及 VersionBuilder 用来累积应用 edits。需要纠偏两点：MANIFEST rollover 的“完整状态”仍是通过 VersionEdit 编码，不是直接 dump VersionSet；LogAndApply 只安装 current Version 和更新版本元数据，不负责发布 SuperVersion，SuperVersion 由更外层 ColumnFamilyData/DBImpl 路径安装，用于 pin mem/imm/current Version 的读视图。当前判定 partial，可继续进入 Day 013，但后续学习 Compaction 时要回看 LogAndApply 与 SuperVersion 发布边界。`
+- review_result：`pass`
+- review_answered_at：`2026-05-09T21:05:57+08:00`
+- review_notes：`Day 013 复习问答已完成。整体能说明 compaction 用额外写入换取读放大和空间放大的控制，能区分 L0 score 和 L1+ score 的来源，也能把 Run 写 SST 与 LogAndApply 安装 Version 的边界讲清楚。需校正两点表述：compaction 是在读放大、空间放大、写放大之间做权衡，写放大不是被消除而是被控制在可接受范围；Compaction 更准确是计划对象，CompactionJob 才是执行器。当前无关键误解，可以进入 Day 014。`
 - review_block_next：`no`
 
 说明：
@@ -108,6 +115,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 010 | 2026-04-30 | Snapshot / Sequence Number / 可见性语义 | `learning-rocksdb-day010-2026-04-30-snapshot-sequence-number-visibility.md` | `done` |
 | 011 | 2026-05-01 | 磁盘 I/O / TableReader / Block 读取 / OS Page Cache | `learning-rocksdb-day011-2026-05-01-disk-io-table-reader-block-read.md` | `revisit` |
 | 012 | 2026-05-03 | MANIFEST / VersionEdit / VersionSet | `learning-rocksdb-day012-2026-05-03-manifest-versionedit-versionset.md` | `revisit` |
+| 013 | 2026-05-04 | Compaction 基础机制与主流程 | `learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md` | `revisit` |
 
 说明：
 
@@ -136,6 +144,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
   - `D:\program\rocksdb\db\db_impl\db_impl.cc`
   - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_experimental.cc`
   - `D:\program\rocksdb\db\column_family.h`
   - `D:\program\rocksdb\db\memtable.h`
   - `D:\program\rocksdb\db\memtable_list.h`
@@ -237,7 +248,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - 主题：`MemTable / SkipList / Arena`
 - 文件：`learning-rocksdb-day005-2026-04-15-memtable-skiplist-arena.md`
 - understanding_status：`yellow`
-- mastery_score：`3/5`
+- mastery_score：`4/5`
 - weak_points：
   - `MemTable::Get()` 里的 `SaveValue` 路径还没有继续拆到读取判定细节
   - `InlineSkipList` 并发插入里的 splice 复用和校验逻辑还没有展开
@@ -495,6 +506,46 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 012 复习问答已完成。整体能说明 CURRENT 指向 active MANIFEST、VersionEdit 是增量记录、Recover 不为每条 record 创建完整 Version，以及 VersionBuilder 用来累积应用 edits。需要纠偏两点：MANIFEST rollover 的“完整状态”仍是通过 VersionEdit 编码，不是直接 dump VersionSet；LogAndApply 只安装 current Version 和更新版本元数据，不负责发布 SuperVersion，SuperVersion 由更外层 ColumnFamilyData/DBImpl 路径安装，用于 pin mem/imm/current Version 的读视图。当前判定 partial，可继续进入 Day 013，但后续学习 Compaction 时要回看 LogAndApply 与 SuperVersion 发布边界。`
 - review_block_next：`no`
 
+### Day 013
+
+- 主题：`Compaction 基础机制与主流程`
+- 文件：`learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md`
+- understanding_status：`yellow`
+- mastery_score：`3/5`
+- weak_points：
+  - `Leveled Compaction` 的 base level、L0 -> LBase、overlap expansion、clean cut 还没细拆
+  - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出，还没展开
+  - `Universal / FIFO Compaction` 目前只建立 picker 边界，还没讲策略细节
+- source_anchors：
+  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+  - `D:\program\rocksdb\db\column_family.h`
+  - `D:\program\rocksdb\db\column_family.cc`
+  - `D:\program\rocksdb\db\version_set.h`
+  - `D:\program\rocksdb\db\version_set.cc`
+  - `D:\program\rocksdb\db\compaction\compaction.h`
+  - `D:\program\rocksdb\db\compaction\compaction.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_picker.h`
+  - `D:\program\rocksdb\db\compaction\compaction_picker.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_picker_level.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_picker_universal.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_picker_fifo.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_job.h`
+  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_state.h`
+  - `D:\program\rocksdb\db\compaction\compaction_state.cc`
+  - `D:\program\rocksdb\db\compaction\clipping_iterator.h`
+  - `D:\program\rocksdb\db\compaction\subcompaction_state.cc`
+  - `D:\program\rocksdb\db\compaction\subcompaction_state.h`
+  - `D:\program\rocksdb\db\compaction\compaction_outputs.cc`
+  - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
+- ready_for_next：`yes`
+- next_review_trigger：`学习 Day 014 Leveled Compaction 时回看 L0 -> LBase、overlap expansion、clean cut 与并发 compaction 安全边界`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-05-09T21:05:57+08:00`
+- review_notes：`Day 013 复习问答已完成。整体能说明 compaction 用额外写入换取读放大和空间放大的控制，能区分 L0 score 和 L1+ score 的来源，也能把 Run 写 SST 与 LogAndApply 安装 Version 的边界讲清楚。需校正两点表述：compaction 是在读放大、空间放大、写放大之间做权衡，写放大不是被消除而是被控制在可接受范围；Compaction 更准确是计划对象，CompactionJob 才是执行器。当前无关键误解，可以进入 Day 014。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -519,6 +570,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
+  - `Leveled Compaction` 的 base level、L0 -> LBase、overlap expansion、clean cut 还没细拆
+  - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出，还没展开
+  - `Universal / FIFO Compaction` 目前只建立 picker 边界，还没讲策略细节
   - `VersionSet` 与 `DBImpl / ColumnFamilyData / SuperVersion / Cache` 的整体架构边界还需要后续章节反复压实
   - `LogAndApply` 安装 `current Version` 与 `SuperVersion` 发布读视图的职责边界需要在 Compaction 中回看
   - MANIFEST sync 对频繁 flush/compaction、写停顿和小 SST 放大的影响需要在 Compaction/Write Stall 章节回看
@@ -570,4 +624,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-05-04T19:32:50+08:00
+- 2026-05-09T21:05:57+08:00
