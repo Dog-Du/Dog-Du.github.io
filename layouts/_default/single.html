@@ -1,6 +1,10 @@
 {{ define "main" }}
   {{ .Scratch.Set "scope" "single" }}
-  <article>
+  {{ $enableToc := site.Params.article.showTableOfContents | default false }}
+  {{ $enableToc = .Params.showTableOfContents | default $enableToc }}
+  {{ $showToc := and $enableToc (in .TableOfContents "<ul") }}
+  {{ $topClass := cond (hasPrefix site.Params.header.layout "fixed") "lg:top-[140px]" "lg:top-10" }}
+  <article class="post-single {{ if $showToc }}post-single--with-toc{{ end }}">
     {{/* Hero */}}
     {{ if .Params.showHero | default (site.Params.article.showHero | default false) }}
       {{ $heroStyle := .Params.heroStyle }}
@@ -14,7 +18,7 @@
     {{ end }}
 
     {{/* Header */}}
-    <header id="single_header" class="mt-5 max-w-prose">
+    <header id="single_header" class="post-reading-header mt-5 max-w-prose">
       {{ if .Params.showBreadcrumbs | default (site.Params.article.showBreadcrumbs | default false) }}
         {{ partial "breadcrumbs.html" . }}
       {{ end }}
@@ -36,13 +40,9 @@
     </header>
 
     {{/* Body */}}
-    <section class="flex flex-col max-w-full mt-0 prose dark:prose-invert lg:flex-row">
-      {{ $enableToc := site.Params.article.showTableOfContents | default false }}
-      {{ $enableToc = .Params.showTableOfContents | default $enableToc }}
-      {{ $showToc := and $enableToc (in .TableOfContents "<ul") }}
-      {{ $topClass := cond (hasPrefix site.Params.header.layout "fixed") "lg:top-[140px]" "lg:top-10" }}
+    <section class="post-reading-layout {{ if $showToc }}post-reading-layout--with-toc{{ end }} flex flex-col max-w-full mt-0 prose dark:prose-invert lg:flex-row">
       {{ if $showToc }}
-        <div class="order-first lg:ms-auto px-0 lg:order-last lg:ps-8 lg:max-w-2xs">
+        <div class="post-reading-toc order-first lg:ms-auto px-0 lg:order-last lg:ps-8 lg:max-w-2xs">
           <div class="toc ps-5 print:hidden lg:sticky {{ $topClass }}">
             {{ partial "toc.html" . }}
           </div>
@@ -50,7 +50,7 @@
       {{ end }}
 
 
-      <div class="min-w-0 min-h-0 max-w-fit">
+      <div class="post-reading-main min-w-0 min-h-0 max-w-fit">
         {{ partial "series/series.html" . }}
         <div class="article-content max-w-prose mb-20">
           {{ .Content }}
@@ -84,7 +84,7 @@
     </section>
 
     {{/* Footer */}}
-    <footer class="pt-8 max-w-prose print:hidden">
+    <footer class="post-reading-footer pt-8 max-w-prose print:hidden">
       {{ partial "article-pagination.html" . }}
       {{ if .Params.showComments | default (site.Params.article.showComments | default false) }}
         {{ if templates.Exists "partials/comments.html" }}

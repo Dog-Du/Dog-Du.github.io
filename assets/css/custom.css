@@ -348,16 +348,25 @@ pre.chroma,
    使用 !important 覆盖 Tailwind 工具类（.max-w-prose 等）
    ========================================================================== */
 
-/* 文章内容宽度：90ch 为中文阅读舒适区间（约 45 个汉字/行） */
+/* 文章内容宽度：48rem 保持长文阅读舒适，同时给代码/表格更多呼吸感 */
 .article-content.max-w-prose,
 #single_header.max-w-prose,
 footer.max-w-prose {
-  max-width: 72ch !important;
+  max-width: var(--post-content-width, 48rem) !important;
 }
 
 /* 页面容器 */
 body.max-w-7xl {
   max-width: 100rem !important;
+}
+
+.post-single {
+  --post-content-width: 48rem;
+  --post-toc-width: clamp(14rem, 18vw, 16rem);
+  --post-layout-gap: clamp(1.5rem, 3vw, 3.5rem);
+  --post-layout-width: calc(
+    var(--post-content-width) + var(--post-toc-width) + var(--post-layout-gap)
+  );
 }
 
 @media (min-width: 1024px) {
@@ -366,15 +375,49 @@ body.max-w-7xl {
     padding-right: 4rem !important;
   }
 
-  /* TOC 侧边栏 —— 用 clamp 自适应间距替代固定 margin */
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs {
-    padding-left: 1rem !important;
-    margin-left: clamp(2rem, 4vw, 6rem) !important;
-    max-width: 16rem !important;
+  .post-reading-layout {
+    margin-inline: auto;
+    max-width: var(--post-content-width);
   }
 
-  .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
-    width: 16rem !important;
+  .post-reading-header,
+  .post-reading-footer {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .post-reading-layout--with-toc {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) var(--post-toc-width);
+    column-gap: var(--post-layout-gap);
+    align-items: start;
+    max-width: min(100%, var(--post-layout-width));
+  }
+
+  .post-single--with-toc .post-reading-header,
+  .post-single--with-toc .post-reading-footer {
+    margin-left: max(0px, calc((100% - var(--post-layout-width)) / 2));
+    margin-right: auto;
+  }
+
+  .post-reading-main {
+    width: 100%;
+    max-width: var(--post-content-width) !important;
+  }
+
+  /* TOC 侧边栏 */
+  .post-reading-toc {
+    align-self: stretch;
+    width: var(--post-toc-width);
+    max-width: var(--post-toc-width) !important;
+    margin-left: 0 !important;
+    margin-inline-start: 0 !important;
+    padding-left: 0 !important;
+    padding-inline-start: 0 !important;
+  }
+
+  .post-reading-toc .toc {
+    width: var(--post-toc-width) !important;
     background: rgba(var(--color-neutral-50), 0.6);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -386,7 +429,7 @@ body.max-w-7xl {
 
 /* TOC 暗色模式背景 */
 @media (min-width: 1024px) {
-  .dark .order-first.lg\:ms-auto.px-0.lg\:order-last.lg\:ps-8.lg\:max-w-2xs .toc {
+  .dark .post-reading-toc .toc {
     background: rgba(var(--color-neutral-900), 0.5);
     border-color: rgba(var(--color-neutral-700), 0.4);
   }

@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-09T21:05:57+08:00
+lastmod: 2026-05-13T16:25:25+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,31 +13,30 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`13`
-- 当前最近一次学习主题：`Day 013：Compaction 基础机制与主流程`
-- 当前主线阶段：`第 13 章：Compaction 基础机制、调度、执行与版本提交`
+- 当前学习总天数：`14`
+- 当前最近一次学习主题：`Day 014：Compaction 策略与 Write Stall`
+- 当前主线阶段：`第 14 章：Level / Universal / FIFO Compaction、Tiering Compaction 与写入背压`
 - 上一篇文章写到：
-  - Compaction 是 LSM 的后台整理器：用额外写入换取更可控的读放大、写放大和空间放大
-  - `VersionStorageInfo::ComputeCompactionScore(...)` 是自动 compaction 的基础信号；L0 主要看 sorted runs / 文件数，L1+ 主要看层大小与目标大小
-  - 本次问答进一步明确：`sorted run` 是 compaction / read amplification 视角下的逻辑有序段；leveled 下一个 L0 SST 基本就是一个 sorted run，universal 下每个 L0 SST 和每个非空 L1+ level 都可能作为 sorted run
-  - 本次问答进一步明确：`ComputeCompactionScore(...)` 只计算 compaction debt / priority，不负责后台调度和具体选文件
-  - `ColumnFamilyData::NeedsCompaction()` 会把 score、TTL、periodic、marked-for-compaction、forced blob GC 等触发统一成布尔判断
-  - 安装新 `SuperVersion` 后，`InstallSuperVersionAndScheduleWork(...)` 会重新入队 pending compaction 并调用 `MaybeScheduleFlushOrCompaction(...)`
-  - compaction 先按 CF 入 `compaction_queue_`，再由 `MaybeScheduleFlushOrCompaction(...)` 根据后台线程额度投递到 Env LOW priority 线程池
-  - 本次问答进一步明确：不是任何 `Version` 变化都会真正触发 compaction；Version/SuperVersion 更新通常只是一次检查机会，真正入队仍要满足 `NeedsCompaction()`
-  - compaction 检查/调度入口可以分为：新 Version 计算 score、新 SuperVersion 安装后入队、pick 出一次 compaction 后再次检查同 CF、snapshot 释放、periodic compaction、SuggestCompactRange、错误恢复、后台工作恢复和已有 pending job 的重新调度
-  - 同一个 CF 并不全局限制为一个 compaction；pick 出一次 compaction 后，RocksDB 会把这些输入文件标成 `being_compacted`，再重新检查剩余文件是否还需要并行 compaction
-  - 同 CF 并发 compaction 的安全边界主要是：输入文件不能共享，输出 level / proximal level 的 key range 不能和正在运行的 compaction 重叠，pick/install 在 DB mutex 下串行，重 I/O 阶段释放锁并依赖 SST 不可变
-  - `CompactionPicker` 负责判断和选择，`Compaction` 是一次计划对象，`CompactionJob` 是实际执行器
-  - 本次问答进一步明确：`SubcompactionState` 不是独立 compaction，而是同一个 `CompactionJob` 内按 user key range 切分出的并行执行分片
-  - subcompaction 要求输出 key range 不重叠，不要求输入 SST 集合完全不相交；多个 subcompaction 可以读取同一个不可变 SST，再通过边界和 `ClippingIterator` 限制各自范围
-  - L0 文件过多且重叠时，RocksDB 会优先尝试 L0 trivial move；若 L0 -> LBase 写放大过高或被阻塞，则可能先做 intra-L0 compaction 来减少 L0 文件数和读放大
-  - L0 写入堆积继续恶化时，`level0_slowdown_writes_trigger` / `level0_stop_writes_trigger` 会通过降速或停止写入保护后台整理
-  - 普通 compaction 会在 DB mutex 下 pick 计划，释放 DB mutex 跑 `CompactionJob::Run()` 做重 I/O，重新拿锁后 `Install()` 提交结果；成功后重新安装 `SuperVersion` 并可能触发下一轮 compaction
-  - `CompactionJob::Run()` 生成和校验输出 SST，但只有 `InstallCompactionResults(...) -> VersionSet::LogAndApply(...)` 成功后，新文件集合才进入 current `Version`
-  - compaction 的结果通过 `VersionEdit` 表达：输入旧文件 `DeleteFile(...)`，输出新文件 `AddFile(...)`
-  - trivial move 是 metadata-only compaction：可以只通过 MANIFEST 把文件从旧 level 移到新 level，不重写 SST data
-  - Day 012 的 `VersionEdit / LogAndApply / SuperVersion` 边界已经在 compaction 主链中重新闭环
+  - `compaction_style` 主要分为 `Level`、`Universal`、`FIFO`；三者复用大体相同的 `CompactionJob / VersionEdit` 执行提交框架，核心差异在 picker 选文件策略
+  - Level compaction 是默认策略：L0 允许重叠 sorted runs，L1+ 通常同层不重叠；它用更高写放大换取更低读放大和空间放大
+  - Universal compaction 是 RocksDB 中最接近 tiering compaction 的策略：以 sorted run 为核心单位，延迟归并以降低写放大，但读放大、空间放大和 I/O 峰值可能更高
+  - FIFO compaction 更像文件队列淘汰：按 TTL、`max_table_files_size` 或温度变化处理旧 SST，适合 cache/log/time-window 数据，不适合必须保留全量历史的业务
+  - `Tiering Compaction` 不是本地源码里的独立枚举；在 RocksDB 语境里主要对应 `Universal`，而 `Level` 可以理解为 L0 tiered + L1+ leveled 的混合
+  - `LevelCompactionBuilder::PickCompaction()` 主链是 `SetupInitialFiles -> SetupOtherL0FilesIfNeeded -> SetupOtherInputsIfNeeded -> GetCompaction`
+  - `base_level` 是 leveled compaction 中 L0 数据应该 compact 到的第一个非空层级；静态 leveled 下通常是 L1，默认动态 leveled 下会随当前非 L0 层数据量在最后一层到 L1 之间重新计算
+  - Level 里的 `PickSizeBasedIntraL0Compaction()` 不是独立 compaction style，而是在 L0 文件多且 LBase 相对 L0 过大时，先做 L0->L0 来减少 L0 run 数量并避免昂贵 L0->LBase 写放大的优化
+  - 普通 L0->LBase 不会无条件全选 L0，而是扩展与本次 key range 重叠的 L0；size-based intra-L0 满足条件后会选择一段未 compacting 的 L0 前缀，常见情况下可能接近全部 L0，但输出仍在 L0
+  - L1+ 的普通 `PickFileToCompact()` 通常从一个优先级最高的文件开始，再按 clean-cut、输出层 overlap 和冲突检查做必要扩展；`kRoundRobin` 可能扩展连续文件，但也受 `max_compaction_bytes` 等约束
+  - L0 过多且重叠时，RocksDB 不只有 L0->LBase：还会尝试 trivial move、intra-L0 compaction、按低 overlap ratio 选文件，并最终通过 write stall 保护后台整理
+  - `UniversalCompactionBuilder::CalculateSortedRuns(...)` 会把每个 L0 文件视为 sorted run，也会把每个非空 L1+ level 作为一个 sorted run
+  - `FIFOCompactionPicker::PickCompaction(...)` 会按 TTL、大小、温度变化依次尝试；默认 `allow_compaction=false`，主要价值是旧文件淘汰而非普通合并
+  - Write stall 是当前台写入超过 flush/compaction 能力时的背压机制；触发源包括 unflushed memtable、L0 文件数、pending compaction bytes 和 WriteBufferManager 内存压力
+  - `ColumnFamilyData::GetWriteStallConditionAndCause(...)` 区分 `kDelayed` 和 `kStopped`；delay 会 sleep 限速，stop 会等待后台条件解除
+  - `WriteController` 用 stop token、delay token、compaction pressure token 表达 DB 级写入背压；CF 触发条件会传导到 DB 写路径
+  - `WriteController::GetDelay(...)` 是 credit-based 限速，按 `delayed_write_rate` 补充可写字节额度，额度不够则返回需要 sleep 的时间
+  - `RateLimiter` 和 write stall 不是一回事：RateLimiter 主要限制文件 I/O token，write stall 主要控制前台写入速度；flush/compaction 在 delay/stop 时会提升 I/O priority 以尽快解除压力
+  - RocksDB 的核心后台执行模型是 `Env::Schedule(...)` 投递到优先级线程池：DB open 会根据 `max_background_jobs` 补足 `HIGH/LOW` 线程池；flush 主要走 `HIGH`，普通 compaction 走 `LOW`，bottom-priority compaction 在配置了 `BOTTOM` 线程时走 `BOTTOM`，purge 也会投递到 `HIGH`
+  - flush/compaction 之外，还有 `PeriodicTaskScheduler` 的全局单线程 `Timer` 负责 dump/persist stats、flush info log、record seqno-time、trigger periodic compaction；subcompaction、错误自动恢复、Follower DB、delete scheduler、SstFileManager、persistent cache、backup engine 等功能也可能直接创建线程
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -52,12 +51,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 011：磁盘 I/O / TableReader / Block 读取 / OS Page Cache`
   - `Day 012：MANIFEST / VersionEdit / VersionSet`
   - `Day 013：Compaction 基础机制与主流程`
+  - `Day 014：Compaction 策略与 Write Stall`
 - 下一步建议：
-  - `进入 Day 014：Leveled Compaction 的层级目标、L0 特殊性和文件选择细节`
+  - `进入 Day 015：CompactionIterator 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出`
 - 当前仍需补看的关键点：
-  - `Leveled Compaction` 的 base level、L0 -> LBase、overlap expansion、clean cut 还没细拆
   - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出，还没展开
-  - `Universal / FIFO Compaction` 目前只建立 picker 边界，还没讲策略细节
+  - `LevelCompactionBuilder` 的 clean cut、grandparent overlap、base level 动态计算还可以后续结合更细源码再压实
+  - `Universal` 的 `max_read_amp` 自动调节、incremental universal compaction、delete-triggered compaction 细节还没完全展开
+  - `Write Stall` 与 `WriteThread` group、pipelined write、two write queues 的组合边界还没细拆
   - `VersionEditHandlerPointInTime / best-efforts recovery` 如何在 MANIFEST 缺损时找回一个仍然有效的旧版本，还没单独展开
   - `manifest_writers_ / atomic group / multi-CF group commit` 只走通了主链，还没细拆并发与原子组细节
   - `CURRENT 切换失败 / MANIFEST rollover / obsolete manifest cleanup` 已补过主结论，但 DB open/recovery 里的异常细节还需要后续压实
@@ -65,12 +66,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 013`
-- latest_review_file：`learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md`
+- latest_review_day：`Day 014`
+- latest_review_file：`learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md`
 - review_status：`answered`
 - review_result：`pass`
-- review_answered_at：`2026-05-09T21:05:57+08:00`
-- review_notes：`Day 013 复习问答已完成。整体能说明 compaction 用额外写入换取读放大和空间放大的控制，能区分 L0 score 和 L1+ score 的来源，也能把 Run 写 SST 与 LogAndApply 安装 Version 的边界讲清楚。需校正两点表述：compaction 是在读放大、空间放大、写放大之间做权衡，写放大不是被消除而是被控制在可接受范围；Compaction 更准确是计划对象，CompactionJob 才是执行器。当前无关键误解，可以进入 Day 014。`
+- review_answered_at：`2026-05-13T16:25:25+08:00`
+- review_notes：`Day 014 复习问答已完成。整体能把 Level / Universal / FIFO 的读写空间放大取舍、Universal 与 tiered compaction 的关系、L0 score 与 L1+ score 的差异、trivial move 与 intra-L0 的目标、RateLimiter 与 write stall 的职责边界讲清楚。需校正一个表述：memtable、L0 文件数、pending compaction bytes 三类 CF 级触发源都可能先 delayed 再 stopped，分别由 soft/slowdown 与 hard/stop 阈值控制，不是简单分成某类只 delay 或只 stop。另需记住 compaction pressure token 是进入 compaction 追赶/低优先级写限流状态，不是直接执行某个 compaction job。当前无阻断，可以进入 Day 015。`
 - review_block_next：`no`
 
 说明：
@@ -116,6 +117,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 011 | 2026-05-01 | 磁盘 I/O / TableReader / Block 读取 / OS Page Cache | `learning-rocksdb-day011-2026-05-01-disk-io-table-reader-block-read.md` | `revisit` |
 | 012 | 2026-05-03 | MANIFEST / VersionEdit / VersionSet | `learning-rocksdb-day012-2026-05-03-manifest-versionedit-versionset.md` | `revisit` |
 | 013 | 2026-05-04 | Compaction 基础机制与主流程 | `learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md` | `revisit` |
+| 014 | 2026-05-09 | Compaction 策略与 Write Stall | `learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md` | `next` |
 
 说明：
 
@@ -546,6 +548,57 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 013 复习问答已完成。整体能说明 compaction 用额外写入换取读放大和空间放大的控制，能区分 L0 score 和 L1+ score 的来源，也能把 Run 写 SST 与 LogAndApply 安装 Version 的边界讲清楚。需校正两点表述：compaction 是在读放大、空间放大、写放大之间做权衡，写放大不是被消除而是被控制在可接受范围；Compaction 更准确是计划对象，CompactionJob 才是执行器。当前无关键误解，可以进入 Day 014。`
 - review_block_next：`no`
 
+### Day 014
+
+- 主题：`Compaction 策略与 Write Stall`
+- 文件：`learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md`
+- understanding_status：`yellow`
+- mastery_score：`3/5`
+- weak_points：
+  - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出还没展开
+  - `LevelCompactionBuilder` 的 clean cut、grandparent overlap 还可以继续压实
+  - `Write Stall` 与 `WriteThread`、two write queues、pipelined write、事务写入优先级的组合边界还没细拆
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
+  - `D:\program\rocksdb\include\rocksdb\universal_compaction.h`
+  - `D:\program\rocksdb\include\rocksdb\options.h`
+  - `D:\program\rocksdb\db\version_set.cc`
+  - `D:\program\rocksdb\db\version_set.h`
+  - `D:\program\rocksdb\db\compaction\compaction_picker_level.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_picker_universal.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_picker_fifo.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_picker.cc`
+  - `D:\program\rocksdb\db\column_family.cc`
+  - `D:\program\rocksdb\db\write_controller.h`
+  - `D:\program\rocksdb\db\write_controller.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
+  - `D:\program\rocksdb\include\rocksdb\write_buffer_manager.h`
+  - `D:\program\rocksdb\include\rocksdb\rate_limiter.h`
+  - `D:\program\rocksdb\file\writable_file_writer.cc`
+  - `D:\program\rocksdb\file\random_access_file_reader.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
+  - `D:\program\rocksdb\db\flush_job.cc`
+  - `D:\program\rocksdb\include\rocksdb\env.h`
+  - `D:\program\rocksdb\env\env_posix.cc`
+  - `D:\program\rocksdb\util\threadpool_imp.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
+  - `D:\program\rocksdb\db\periodic_task_scheduler.h`
+  - `D:\program\rocksdb\db\periodic_task_scheduler.cc`
+  - `D:\program\rocksdb\util\timer.h`
+  - `D:\program\rocksdb\db\error_handler.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_follower.cc`
+  - `D:\program\rocksdb\file\delete_scheduler.cc`
+  - `D:\program\rocksdb\file\sst_file_manager_impl.cc`
+- ready_for_next：`yes`
+- next_review_trigger：`学习 Day 015 CompactionIterator 时回看 picker 选择出来的输入如何真正过滤、合并、写出`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-05-13T16:25:25+08:00`
+- review_notes：`Day 014 复习问答已完成。整体能把 Level / Universal / FIFO 的读写空间放大取舍、Universal 与 tiered compaction 的关系、L0 score 与 L1+ score 的差异、trivial move 与 intra-L0 的目标、RateLimiter 与 write stall 的职责边界讲清楚。需校正一个表述：memtable、L0 文件数、pending compaction bytes 三类 CF 级触发源都可能先 delayed 再 stopped，分别由 soft/slowdown 与 hard/stop 阈值控制，不是简单分成某类只 delay 或只 stop。另需记住 compaction pressure token 是进入 compaction 追赶/低优先级写限流状态，不是直接执行某个 compaction job。当前无阻断，可以进入 Day 015。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -570,12 +623,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `Leveled Compaction` 的 base level、L0 -> LBase、overlap expansion、clean cut 还没细拆
   - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出，还没展开
-  - `Universal / FIFO Compaction` 目前只建立 picker 边界，还没讲策略细节
+  - `Leveled Compaction` 的 clean cut、grandparent overlap 还可以结合更细源码继续压实
+  - `Universal` 的 `max_read_amp`、incremental universal compaction、delete-triggered compaction 细节还没完全展开
+  - `Write Stall` 与 `WriteThread`、pipelined write、two write queues、事务写入优先级的组合边界还没细拆
   - `VersionSet` 与 `DBImpl / ColumnFamilyData / SuperVersion / Cache` 的整体架构边界还需要后续章节反复压实
   - `LogAndApply` 安装 `current Version` 与 `SuperVersion` 发布读视图的职责边界需要在 Compaction 中回看
-  - MANIFEST sync 对频繁 flush/compaction、写停顿和小 SST 放大的影响需要在 Compaction/Write Stall 章节回看
+  - MANIFEST sync 对频繁 flush/compaction、写停顿和小 SST 放大的影响已经在 Write Stall 中建立入口，但异常与恢复细节仍需回看
   - MANIFEST rollover、`CURRENT` rename 失败、非本地 FS 返回不确定状态、obsolete MANIFEST purge 的主结论已补充；DB open/recovery 里的异常恢复细节还需要回看
   - `CURRENT / MANIFEST / SST / WAL / OPTIONS / Blob` 在持久化状态中的职责边界还需要在 DB open 和 recovery 章节回看
   - SST 内部 index/filter/properties、blob 文件内部元数据、compaction progress 等非 MANIFEST 元数据还没有单独展开
@@ -592,7 +646,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - flush 推进 `min_log_number_to_keep` 之后，obsolete WAL 的实际删除/归档路径
 - 回看触发条件：
   - `学习事务与并发控制`
-  - `学习 Compaction`
+  - `学习 CompactionIterator`
   - `学习 Column Family`
   - `学习 DB 打开/恢复路径`
   - `学习 Block Cache / Bloom Filter / Prefix Seek`
