@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习笔记 Day 014：Compaction 策略与 Write Stall
 date: 2026-05-09T21:35:00+08:00
-lastmod: 2026-05-13T15:05:16+08:00
+lastmod: 2026-05-13T16:39:40+08:00
 tags: [RocksDB, Database, Storage, Compaction, WriteStall]
 categories: [数据库]
 series:
@@ -1502,9 +1502,9 @@ Day 014 建立了 compaction 策略和写入背压的整体图景：
 
 下一步建议继续看：
 
-`CompactionIterator：snapshot / delete tombstone / merge operand / range tombstone / compaction filter 如何决定最终输出`
+`Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
 
-原因是我们已经知道 picker 如何选文件，也知道 `CompactionJob` 会跑重写流程。下一步需要进入真正的数据语义：为什么某些旧版本可以被丢弃，为什么某些 delete tombstone 必须保留，merge 和 snapshot 如何改变输出。
+原因是前面已经看过 `TableCache / TableReader / BlockBasedTable` 的点查主链，也在 compaction 章节看到了后台整理如何控制 LSM 形状。下一步适合回到读路径优化层：block cache 决定 data/index/filter block 的内存命中，bloom filter 和 prefix bloom 决定能否跳过不必要的 SST/block 访问，partitioned index/filter 则决定大索引和大过滤器如何分片加载。
 
 ## 复习题
 

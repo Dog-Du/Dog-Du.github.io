@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-13T16:25:25+08:00
+lastmod: 2026-05-13T16:53:39+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,30 +13,21 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`14`
-- 当前最近一次学习主题：`Day 014：Compaction 策略与 Write Stall`
-- 当前主线阶段：`第 14 章：Level / Universal / FIFO Compaction、Tiering Compaction 与写入背压`
+- 当前学习总天数：`15`
+- 当前最近一次学习主题：`Day 015：CompactionIterator Revisit`
+- 当前主线阶段：`Compaction revisit：CompactionIterator 如何消费 internal key 流并按 snapshot / delete / merge / range tombstone 决定输出`
 - 上一篇文章写到：
-  - `compaction_style` 主要分为 `Level`、`Universal`、`FIFO`；三者复用大体相同的 `CompactionJob / VersionEdit` 执行提交框架，核心差异在 picker 选文件策略
-  - Level compaction 是默认策略：L0 允许重叠 sorted runs，L1+ 通常同层不重叠；它用更高写放大换取更低读放大和空间放大
-  - Universal compaction 是 RocksDB 中最接近 tiering compaction 的策略：以 sorted run 为核心单位，延迟归并以降低写放大，但读放大、空间放大和 I/O 峰值可能更高
-  - FIFO compaction 更像文件队列淘汰：按 TTL、`max_table_files_size` 或温度变化处理旧 SST，适合 cache/log/time-window 数据，不适合必须保留全量历史的业务
-  - `Tiering Compaction` 不是本地源码里的独立枚举；在 RocksDB 语境里主要对应 `Universal`，而 `Level` 可以理解为 L0 tiered + L1+ leveled 的混合
-  - `LevelCompactionBuilder::PickCompaction()` 主链是 `SetupInitialFiles -> SetupOtherL0FilesIfNeeded -> SetupOtherInputsIfNeeded -> GetCompaction`
-  - `base_level` 是 leveled compaction 中 L0 数据应该 compact 到的第一个非空层级；静态 leveled 下通常是 L1，默认动态 leveled 下会随当前非 L0 层数据量在最后一层到 L1 之间重新计算
-  - Level 里的 `PickSizeBasedIntraL0Compaction()` 不是独立 compaction style，而是在 L0 文件多且 LBase 相对 L0 过大时，先做 L0->L0 来减少 L0 run 数量并避免昂贵 L0->LBase 写放大的优化
-  - 普通 L0->LBase 不会无条件全选 L0，而是扩展与本次 key range 重叠的 L0；size-based intra-L0 满足条件后会选择一段未 compacting 的 L0 前缀，常见情况下可能接近全部 L0，但输出仍在 L0
-  - L1+ 的普通 `PickFileToCompact()` 通常从一个优先级最高的文件开始，再按 clean-cut、输出层 overlap 和冲突检查做必要扩展；`kRoundRobin` 可能扩展连续文件，但也受 `max_compaction_bytes` 等约束
-  - L0 过多且重叠时，RocksDB 不只有 L0->LBase：还会尝试 trivial move、intra-L0 compaction、按低 overlap ratio 选文件，并最终通过 write stall 保护后台整理
-  - `UniversalCompactionBuilder::CalculateSortedRuns(...)` 会把每个 L0 文件视为 sorted run，也会把每个非空 L1+ level 作为一个 sorted run
-  - `FIFOCompactionPicker::PickCompaction(...)` 会按 TTL、大小、温度变化依次尝试；默认 `allow_compaction=false`，主要价值是旧文件淘汰而非普通合并
-  - Write stall 是当前台写入超过 flush/compaction 能力时的背压机制；触发源包括 unflushed memtable、L0 文件数、pending compaction bytes 和 WriteBufferManager 内存压力
-  - `ColumnFamilyData::GetWriteStallConditionAndCause(...)` 区分 `kDelayed` 和 `kStopped`；delay 会 sleep 限速，stop 会等待后台条件解除
-  - `WriteController` 用 stop token、delay token、compaction pressure token 表达 DB 级写入背压；CF 触发条件会传导到 DB 写路径
-  - `WriteController::GetDelay(...)` 是 credit-based 限速，按 `delayed_write_rate` 补充可写字节额度，额度不够则返回需要 sleep 的时间
-  - `RateLimiter` 和 write stall 不是一回事：RateLimiter 主要限制文件 I/O token，write stall 主要控制前台写入速度；flush/compaction 在 delay/stop 时会提升 I/O priority 以尽快解除压力
-  - RocksDB 的核心后台执行模型是 `Env::Schedule(...)` 投递到优先级线程池：DB open 会根据 `max_background_jobs` 补足 `HIGH/LOW` 线程池；flush 主要走 `HIGH`，普通 compaction 走 `LOW`，bottom-priority compaction 在配置了 `BOTTOM` 线程时走 `BOTTOM`，purge 也会投递到 `HIGH`
-  - flush/compaction 之外，还有 `PeriodicTaskScheduler` 的全局单线程 `Timer` 负责 dump/persist stats、flush info log、record seqno-time、trigger periodic compaction；subcompaction、错误自动恢复、Follower DB、delete scheduler、SstFileManager、persistent cache、backup engine 等功能也可能直接创建线程
+  - `CompactionIterator` 是 compaction 的语义状态机：picker 只负责选文件，真正决定 key/value 是否输出的是 `NextFromInput() / PrepareOutput()`
+  - `CompactionJob::CreateInputIterator()` 会创建 `CompactionRangeDelAggregator`，`VersionSet::MakeInputIterator()` 负责把输入 SST 合并成 internal key 流，并让 `TableCache` 收集 range tombstone
+  - `CompactionIterator` 的输入依赖集中包含 `snapshot_seqs`、`earliest_snapshot`、`earliest_write_conflict_snapshot`、`MergeHelper`、`RangeDelAgg`、`Compaction` 和 `compaction_filter`
+  - 同一个 user key 下，internal key 按 sequence 降序出现；snapshot stripe 决定旧版本是否仍可能被某个活跃 snapshot 看到
+  - rule (A) 的核心是：如果旧版本和已输出的新版本落在同一个 snapshot stripe，它不会被任何 snapshot 单独看到，可以作为 hidden old version 丢弃
+  - point delete tombstone 只有在不新于最老 active snapshot，且能证明不再遮蔽输出层之后或当前输入中的旧 value 时，才能被清理
+  - bottommost compaction 可以进一步清掉同一 snapshot range 内的旧 value/delete，并在安全时把 sequence number 归零以提升压缩
+  - `kTypeSingleDeletion` 需要匹配对应 put，并受 `earliest_write_conflict_snapshot` 约束；不能简单等同普通 delete
+  - `MergeHelper::MergeUntil()` 会尝试合并 merge operands，但不能跨过 snapshot 边界、不同 user key、base value 边界或 range tombstone 覆盖语义
+  - range tombstone 有双重路径：通过 `RangeDelAgg::ShouldDelete()` 遮蔽 point key；输出文件关闭时再由 `CompactionOutputs::AddRangeDels()` 写入 range deletion block
+  - `CompactionIterator` 与 `DBIter` 都消费 internal key 语义，但目标不同：`DBIter` 生成用户可见读结果，`CompactionIterator` 生成新 SST 仍需保存的 internal key/value
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -52,26 +43,29 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 012：MANIFEST / VersionEdit / VersionSet`
   - `Day 013：Compaction 基础机制与主流程`
   - `Day 014：Compaction 策略与 Write Stall`
+  - `Day 015：CompactionIterator Revisit`
 - 下一步建议：
-  - `进入 Day 015：CompactionIterator 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出`
+  - `可进入 Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index；Day 015 保留 revisit，后续回看 ordinary delete tombstone 的清理条件`
 - 当前仍需补看的关键点：
-  - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出，还没展开
+  - `Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index` 的读优化主线还没展开
   - `LevelCompactionBuilder` 的 clean cut、grandparent overlap、base level 动态计算还可以后续结合更细源码再压实
   - `Universal` 的 `max_read_amp` 自动调节、incremental universal compaction、delete-triggered compaction 细节还没完全展开
   - `Write Stall` 与 `WriteThread` group、pipelined write、two write queues 的组合边界还没细拆
+  - `CompactionIterator` 已补上主链；后续可在事务章节细看 `SnapshotChecker / write-prepared / write-unprepared` 对清理边界的影响
+  - ordinary delete tombstone 的清理条件还需要与 rule (A) 的 hidden old version 规则区分开
+  - `user-defined timestamp / full_history_ts_low / trim_ts` 与 compaction 历史 GC 的组合语义还没完全展开
   - `VersionEditHandlerPointInTime / best-efforts recovery` 如何在 MANIFEST 缺损时找回一个仍然有效的旧版本，还没单独展开
   - `manifest_writers_ / atomic group / multi-CF group commit` 只走通了主链，还没细拆并发与原子组细节
   - `CURRENT 切换失败 / MANIFEST rollover / obsolete manifest cleanup` 已补过主结论，但 DB open/recovery 里的异常细节还需要后续压实
-  - `Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index` 的读优化主线还没展开
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 014`
-- latest_review_file：`learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md`
+- latest_review_day：`Day 015`
+- latest_review_file：`learning-rocksdb-day015-2026-05-13-compaction-iterator-revisit.md`
 - review_status：`answered`
-- review_result：`pass`
-- review_answered_at：`2026-05-13T16:25:25+08:00`
-- review_notes：`Day 014 复习问答已完成。整体能把 Level / Universal / FIFO 的读写空间放大取舍、Universal 与 tiered compaction 的关系、L0 score 与 L1+ score 的差异、trivial move 与 intra-L0 的目标、RateLimiter 与 write stall 的职责边界讲清楚。需校正一个表述：memtable、L0 文件数、pending compaction bytes 三类 CF 级触发源都可能先 delayed 再 stopped，分别由 soft/slowdown 与 hard/stop 阈值控制，不是简单分成某类只 delay 或只 stop。另需记住 compaction pressure token 是进入 compaction 追赶/低优先级写限流状态，不是直接执行某个 compaction job。当前无阻断，可以进入 Day 015。`
+- review_result：`partial`
+- review_answered_at：`2026-05-15T16:41:06+08:00`
+- review_notes：`Day 015 复习问答已完成。整体能说明 CompactionPicker 与 CompactionIterator 的职责边界、snapshot 为什么要求保留旧版本、MergeHelper 不能跨 snapshot 合并、range tombstone 的 point-key 过滤与 range deletion block 输出双路径，以及例子三最能说明多个 snapshot 切出多个可见性区间。需要纠偏一处关键点：普通 delete tombstone 的清理条件不是“存在一个更大 sequence 的同 user key 且同 stripe”，那更接近 rule (A) 的 hidden old version 判断；delete tombstone 自己能否丢，关键在于它是否仍承担遮蔽旧 value 的职责，尤其要看 seq <= earliest_snapshot_、KeyNotExistsBeyondOutputLevel(...)、bottommost/input 中旧版本是否会被清掉，以及 ingest_behind/事务边界。当前判定 partial，可继续进入 Day 016，但后续学习事务或 DeleteRange 时回看。`
 - review_block_next：`no`
 
 说明：
@@ -116,8 +110,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 010 | 2026-04-30 | Snapshot / Sequence Number / 可见性语义 | `learning-rocksdb-day010-2026-04-30-snapshot-sequence-number-visibility.md` | `done` |
 | 011 | 2026-05-01 | 磁盘 I/O / TableReader / Block 读取 / OS Page Cache | `learning-rocksdb-day011-2026-05-01-disk-io-table-reader-block-read.md` | `revisit` |
 | 012 | 2026-05-03 | MANIFEST / VersionEdit / VersionSet | `learning-rocksdb-day012-2026-05-03-manifest-versionedit-versionset.md` | `revisit` |
-| 013 | 2026-05-04 | Compaction 基础机制与主流程 | `learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md` | `revisit` |
-| 014 | 2026-05-09 | Compaction 策略与 Write Stall | `learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md` | `next` |
+| 013 | 2026-05-04 | Compaction 基础机制与主流程 | `learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md` | `done` |
+| 014 | 2026-05-09 | Compaction 策略与 Write Stall | `learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md` | `revisit` |
+| 015 | 2026-05-13 | CompactionIterator Revisit | `learning-rocksdb-day015-2026-05-13-compaction-iterator-revisit.md` | `revisit` |
 
 说明：
 
@@ -512,12 +507,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 - 主题：`Compaction 基础机制与主流程`
 - 文件：`learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md`
-- understanding_status：`yellow`
-- mastery_score：`3/5`
+- understanding_status：`green`
+- mastery_score：`4/5`
 - weak_points：
-  - `Leveled Compaction` 的 base level、L0 -> LBase、overlap expansion、clean cut 还没细拆
-  - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出，还没展开
-  - `Universal / FIFO Compaction` 目前只建立 picker 边界，还没讲策略细节
+  - `Leveled Compaction` 的 clean cut、grandparent overlap 仍可在后续细拆
+  - `CompactionIterator` 主链已在 Day 015 补上；事务和 timestamp 扩展语义仍留给后续专题
+  - `CompactionJob` 到 `VersionEdit / LogAndApply` 的主链已闭环，异常恢复细节仍归入 MANIFEST revisit
 - source_anchors：
   - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
   - `D:\program\rocksdb\db\column_family.h`
@@ -541,7 +536,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `D:\program\rocksdb\db\compaction\compaction_outputs.cc`
   - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
 - ready_for_next：`yes`
-- next_review_trigger：`学习 Day 014 Leveled Compaction 时回看 L0 -> LBase、overlap expansion、clean cut 与并发 compaction 安全边界`
+- next_review_trigger：`学习 Leveled Compaction clean cut、事务可见性或 MANIFEST 异常恢复时回看`
 - review_status：`answered`
 - review_result：`pass`
 - review_answered_at：`2026-05-09T21:05:57+08:00`
@@ -555,9 +550,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - understanding_status：`yellow`
 - mastery_score：`3/5`
 - weak_points：
-  - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出还没展开
   - `LevelCompactionBuilder` 的 clean cut、grandparent overlap 还可以继续压实
   - `Write Stall` 与 `WriteThread`、two write queues、pipelined write、事务写入优先级的组合边界还没细拆
+  - `Universal` 的 `max_read_amp` 自动调节、incremental universal compaction、delete-triggered compaction 细节还没完全展开
 - source_anchors：
   - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
   - `D:\program\rocksdb\include\rocksdb\universal_compaction.h`
@@ -592,11 +587,44 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `D:\program\rocksdb\file\delete_scheduler.cc`
   - `D:\program\rocksdb\file\sst_file_manager_impl.cc`
 - ready_for_next：`yes`
-- next_review_trigger：`学习 Day 015 CompactionIterator 时回看 picker 选择出来的输入如何真正过滤、合并、写出`
+- next_review_trigger：`后续学习 clean cut、Universal 细节、WriteThread 或事务写入优先级时回看`
 - review_status：`answered`
 - review_result：`pass`
 - review_answered_at：`2026-05-13T16:25:25+08:00`
 - review_notes：`Day 014 复习问答已完成。整体能把 Level / Universal / FIFO 的读写空间放大取舍、Universal 与 tiered compaction 的关系、L0 score 与 L1+ score 的差异、trivial move 与 intra-L0 的目标、RateLimiter 与 write stall 的职责边界讲清楚。需校正一个表述：memtable、L0 文件数、pending compaction bytes 三类 CF 级触发源都可能先 delayed 再 stopped，分别由 soft/slowdown 与 hard/stop 阈值控制，不是简单分成某类只 delay 或只 stop。另需记住 compaction pressure token 是进入 compaction 追赶/低优先级写限流状态，不是直接执行某个 compaction job。当前无阻断，可以进入 Day 015。`
+- review_block_next：`no`
+
+### Day 015
+
+- 主题：`CompactionIterator Revisit`
+- 文件：`learning-rocksdb-day015-2026-05-13-compaction-iterator-revisit.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - `SnapshotChecker / write-prepared / write-unprepared` 如何影响 `DefinitelyInSnapshot` 和清理边界还没在事务语境下细拆
+  - `user-defined timestamp / full_history_ts_low / trim_ts` 与 compaction 历史 GC 的组合语义只建立了入口
+  - ordinary delete tombstone 的可丢弃条件还需要与 rule (A) 的同 stripe 遮蔽规则区分开
+- source_anchors：
+  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+  - `D:\program\rocksdb\db\job_context.h`
+  - `D:\program\rocksdb\db\version_set.cc`
+  - `D:\program\rocksdb\db\table_cache.cc`
+  - `D:\program\rocksdb\db\dbformat.h`
+  - `D:\program\rocksdb\db\dbformat.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_iterator.h`
+  - `D:\program\rocksdb\db\compaction\compaction_iterator.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_outputs.cc`
+  - `D:\program\rocksdb\db\range_del_aggregator.h`
+  - `D:\program\rocksdb\db\range_del_aggregator.cc`
+  - `D:\program\rocksdb\db\merge_helper.h`
+  - `D:\program\rocksdb\db\merge_helper.cc`
+- ready_for_next：`yes`
+- next_review_trigger：`学习事务 SnapshotChecker、DeleteRange 或 user-defined timestamp 历史 GC 时回看`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-05-15T16:41:06+08:00`
+- review_notes：`Day 015 复习问答已完成。前两题、MergeHelper、range tombstone 和六个例子的回答基本正确；第 3 题把普通 delete tombstone 的清理条件误写成“更大 sequence 同 user key 且同 snapshot stripe”，需要改成：delete tombstone 能否丢，取决于它是否仍要遮蔽可能复活的旧 value，并结合 seq <= earliest_snapshot_、KeyNotExistsBeyondOutputLevel(...)、bottommost/input 旧版本清理、ingest_behind 与事务边界判断。`
 - review_block_next：`no`
 
 ## 状态使用建议
@@ -623,10 +651,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `CompactionIterator` 如何按 snapshot、delete、merge、range tombstone、compaction filter 决定输出，还没展开
   - `Leveled Compaction` 的 clean cut、grandparent overlap 还可以结合更细源码继续压实
   - `Universal` 的 `max_read_amp`、incremental universal compaction、delete-triggered compaction 细节还没完全展开
   - `Write Stall` 与 `WriteThread`、pipelined write、two write queues、事务写入优先级的组合边界还没细拆
+  - `CompactionIterator` 主链已补上；`SnapshotChecker / write-prepared / write-unprepared` 对清理边界的影响仍需在事务章节回看
+  - ordinary delete tombstone 的清理条件需要与 rule (A) 的 hidden old version 条件继续区分
+  - `user-defined timestamp / full_history_ts_low / trim_ts` 与 compaction 历史 GC 的组合语义还没完全展开
   - `VersionSet` 与 `DBImpl / ColumnFamilyData / SuperVersion / Cache` 的整体架构边界还需要后续章节反复压实
   - `LogAndApply` 安装 `current Version` 与 `SuperVersion` 发布读视图的职责边界需要在 Compaction 中回看
   - MANIFEST sync 对频繁 flush/compaction、写停顿和小 SST 放大的影响已经在 Write Stall 中建立入口，但异常与恢复细节仍需回看
@@ -642,15 +672,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `atomic flush` 与普通 flush 的提交流程差异
   - `range tombstone / MultiGet / memtable bloom` 的组合边界
   - `ReadCallback` 在事务 DB 中的完整提交可见性
-  - `CompactionIterator` 按 snapshot 边界清理旧版本的细节
   - flush 推进 `min_log_number_to_keep` 之后，obsolete WAL 的实际删除/归档路径
 - 回看触发条件：
   - `学习事务与并发控制`
-  - `学习 CompactionIterator`
   - `学习 Column Family`
   - `学习 DB 打开/恢复路径`
   - `学习 Block Cache / Bloom Filter / Prefix Seek`
   - `学习 MANIFEST / VersionEdit / VersionSet`
+  - `学习 DeleteRange / CompactionFilter / Blob GC`
 
 ## 外部资料使用原则
 
@@ -678,4 +707,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-05-09T21:05:57+08:00
+- 2026-05-13T16:53:39+08:00
