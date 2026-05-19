@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-13T16:53:39+08:00
+lastmod: 2026-05-19T14:32:01+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,21 +13,20 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`15`
-- 当前最近一次学习主题：`Day 015：CompactionIterator Revisit`
-- 当前主线阶段：`Compaction revisit：CompactionIterator 如何消费 internal key 流并按 snapshot / delete / merge / range tombstone 决定输出`
+- 当前学习总天数：`16`
+- 当前最近一次学习主题：`Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
+- 当前主线阶段：`读路径优化：BlockBasedTable 如何用 filter 剪枝、index 定位 data block、block cache 复用 block，并用 partitioned index/filter 控制元数据缓存粒度`
 - 上一篇文章写到：
-  - `CompactionIterator` 是 compaction 的语义状态机：picker 只负责选文件，真正决定 key/value 是否输出的是 `NextFromInput() / PrepareOutput()`
-  - `CompactionJob::CreateInputIterator()` 会创建 `CompactionRangeDelAggregator`，`VersionSet::MakeInputIterator()` 负责把输入 SST 合并成 internal key 流，并让 `TableCache` 收集 range tombstone
-  - `CompactionIterator` 的输入依赖集中包含 `snapshot_seqs`、`earliest_snapshot`、`earliest_write_conflict_snapshot`、`MergeHelper`、`RangeDelAgg`、`Compaction` 和 `compaction_filter`
-  - 同一个 user key 下，internal key 按 sequence 降序出现；snapshot stripe 决定旧版本是否仍可能被某个活跃 snapshot 看到
-  - rule (A) 的核心是：如果旧版本和已输出的新版本落在同一个 snapshot stripe，它不会被任何 snapshot 单独看到，可以作为 hidden old version 丢弃
-  - point delete tombstone 只有在不新于最老 active snapshot，且能证明不再遮蔽输出层之后或当前输入中的旧 value 时，才能被清理
-  - bottommost compaction 可以进一步清掉同一 snapshot range 内的旧 value/delete，并在安全时把 sequence number 归零以提升压缩
-  - `kTypeSingleDeletion` 需要匹配对应 put，并受 `earliest_write_conflict_snapshot` 约束；不能简单等同普通 delete
-  - `MergeHelper::MergeUntil()` 会尝试合并 merge operands，但不能跨过 snapshot 边界、不同 user key、base value 边界或 range tombstone 覆盖语义
-  - range tombstone 有双重路径：通过 `RangeDelAgg::ShouldDelete()` 遮蔽 point key；输出文件关闭时再由 `CompactionOutputs::AddRangeDels()` 写入 range deletion block
-  - `CompactionIterator` 与 `DBIter` 都消费 internal key 语义，但目标不同：`DBIter` 生成用户可见读结果，`CompactionIterator` 生成新 SST 仍需保存的 internal key/value
+  - `BlockBasedTable::Get()` 的 SST 内读路径是：先查 full/prefix filter，再用 index 定位 data block，最后经 block cache 或文件 I/O 创建 `DataBlockIter`
+  - Bloom filter 的 `false` 才是强剪枝信号；`true` 只是 may match，仍要继续查 index/data block 和 `GetContext`
+  - block cache 缓存的是 data/index/filter 等 block-like 对象，cache key 来自 SST 的 base cache key 与 block handle，不是用户 key
+  - `read_tier == kBlockCacheTier` 时不会做阻塞 I/O；cache miss 只能返回 incomplete 或保守放行
+  - `fill_cache` 控制 miss 后是否把读出的 block 插入 cache，大扫描可用它避免污染热点缓存
+  - `whole_key_filtering` 面向 point Get；prefix bloom 依赖 `prefix_extractor` 与 comparator 满足同 prefix 连续性
+  - filter 在 SST 构建阶段由 `BlockBasedTableBuilder` 收集 user key/prefix 并写入 meta block，读取阶段由 table reader 通过 meta index 找到 filter handle
+  - `partition_filters` 会把大 filter 拆成多个 filter partition，并通过顶层 filter partition index 按需读取一个 partition
+  - `partition_filters` 在当前源码实现中要求配合 `kTwoLevelIndexSearch`，否则初始化时会被关闭；这个要求主要来自实现与历史耦合，不是 filter 语义上的必然条件
+  - partitioned index/filter 主要解决大元数据块挤占 block cache 的粒度问题，不改变 Bloom filter 的 may-match 语义
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -44,10 +43,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 013：Compaction 基础机制与主流程`
   - `Day 014：Compaction 策略与 Write Stall`
   - `Day 015：CompactionIterator Revisit`
+  - `Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
 - 下一步建议：
-  - `可进入 Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index；Day 015 保留 revisit，后续回看 ordinary delete tombstone 的清理条件`
+  - `进入 Day 017：Column Family`
 - 当前仍需补看的关键点：
-  - `Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index` 的读优化主线还没展开
+  - `Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index` 的读优化主线已建立；后续还可细看 `HyperClockCache / SecondaryCache / shard / priority` 的内部淘汰机制
+  - `auto_prefix_mode / prefix_same_as_start / iterate_upper_bound` 与 prefix bloom 的安全使用边界还没细拆
+  - partitioned index/filter 的 pin/cache dependency、`metadata_block_size` 与实际调参经验还没展开
   - `LevelCompactionBuilder` 的 clean cut、grandparent overlap、base level 动态计算还可以后续结合更细源码再压实
   - `Universal` 的 `max_read_amp` 自动调节、incremental universal compaction、delete-triggered compaction 细节还没完全展开
   - `Write Stall` 与 `WriteThread` group、pipelined write、two write queues 的组合边界还没细拆
@@ -60,12 +62,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 015`
-- latest_review_file：`learning-rocksdb-day015-2026-05-13-compaction-iterator-revisit.md`
+- latest_review_day：`Day 016`
+- latest_review_file：`learning-rocksdb-day016-2026-05-15-block-cache-bloom-filter-partitioned-index.md`
 - review_status：`answered`
-- review_result：`partial`
-- review_answered_at：`2026-05-15T16:41:06+08:00`
-- review_notes：`Day 015 复习问答已完成。整体能说明 CompactionPicker 与 CompactionIterator 的职责边界、snapshot 为什么要求保留旧版本、MergeHelper 不能跨 snapshot 合并、range tombstone 的 point-key 过滤与 range deletion block 输出双路径，以及例子三最能说明多个 snapshot 切出多个可见性区间。需要纠偏一处关键点：普通 delete tombstone 的清理条件不是“存在一个更大 sequence 的同 user key 且同 stripe”，那更接近 rule (A) 的 hidden old version 判断；delete tombstone 自己能否丢，关键在于它是否仍承担遮蔽旧 value 的职责，尤其要看 seq <= earliest_snapshot_、KeyNotExistsBeyondOutputLevel(...)、bottommost/input 中旧版本是否会被清掉，以及 ingest_behind/事务边界。当前判定 partial，可继续进入 Day 016，但后续学习事务或 DeleteRange 时回看。`
+- review_result：`pass`
+- review_answered_at：`2026-05-19T14:32:01+08:00`
+- review_notes：`Day 016 复习问答已完成。整体能说明 BlockBasedTable::Get() 中 filter -> index -> data block 的主顺序，能区分 Bloom may-match、block cache key、whole_key_filtering 与 prefix bloom、prefix 连续性、metadata cache 取舍和 partitioned index/filter 的缓存粒度目标。最后一题已校正为：partition_filters 当前要求 kTwoLevelIndexSearch 主要是源码实现与历史耦合，不是 filter 语义上的必然条件。`
 - review_block_next：`no`
 
 说明：
@@ -113,6 +115,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 013 | 2026-05-04 | Compaction 基础机制与主流程 | `learning-rocksdb-day013-2026-05-04-compaction-basics-and-flow.md` | `done` |
 | 014 | 2026-05-09 | Compaction 策略与 Write Stall | `learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md` | `revisit` |
 | 015 | 2026-05-13 | CompactionIterator Revisit | `learning-rocksdb-day015-2026-05-13-compaction-iterator-revisit.md` | `revisit` |
+| 016 | 2026-05-15 | Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index | `learning-rocksdb-day016-2026-05-15-block-cache-bloom-filter-partitioned-index.md` | `done` |
 
 说明：
 
@@ -627,6 +630,42 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 015 复习问答已完成。前两题、MergeHelper、range tombstone 和六个例子的回答基本正确；第 3 题把普通 delete tombstone 的清理条件误写成“更大 sequence 同 user key 且同 snapshot stripe”，需要改成：delete tombstone 能否丢，取决于它是否仍要遮蔽可能复活的旧 value，并结合 seq <= earliest_snapshot_、KeyNotExistsBeyondOutputLevel(...)、bottommost/input 旧版本清理、ingest_behind 与事务边界判断。`
 - review_block_next：`no`
 
+### Day 016
+
+- 主题：`Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
+- 文件：`learning-rocksdb-day016-2026-05-15-block-cache-bloom-filter-partitioned-index.md`
+- understanding_status：`green`
+- mastery_score：`4/5`
+- weak_points：
+  - `HyperClockCache / SecondaryCache / shard / priority` 的内部淘汰与多级缓存细节还没展开
+  - `auto_prefix_mode / prefix_same_as_start / iterate_upper_bound` 与 prefix bloom 的安全使用边界还需要结合 iterator 再细看
+  - partitioned index/filter 的 pin/cache dependency、`metadata_block_size` 与真实调参经验还需要后续补充
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\table.h`
+  - `D:\program\rocksdb\include\rocksdb\options.h`
+  - `D:\program\rocksdb\include\rocksdb\filter_policy.h`
+  - `D:\program\rocksdb\include\rocksdb\cache.h`
+  - `D:\program\rocksdb\table\block_based\block_cache.h`
+  - `D:\program\rocksdb\table\block_based\block_cache.cc`
+  - `D:\program\rocksdb\table\block_based\block_based_table_reader.cc`
+  - `D:\program\rocksdb\table\block_based\block_based_table_reader.h`
+  - `D:\program\rocksdb\table\block_based\block_based_table_builder.cc`
+  - `D:\program\rocksdb\table\block_based\filter_block.h`
+  - `D:\program\rocksdb\table\block_based\filter_block_reader_common.cc`
+  - `D:\program\rocksdb\table\block_based\full_filter_block.cc`
+  - `D:\program\rocksdb\table\block_based\partitioned_filter_block.cc`
+  - `D:\program\rocksdb\table\block_based\partitioned_index_reader.cc`
+  - `D:\program\rocksdb\table\block_based\filter_policy.cc`
+  - `D:\program\rocksdb\table\block_based\block_based_table_factory.cc`
+  - `D:\program\rocksdb\docs\_posts\2017-05-12-partitioned-index-filter.markdown`
+- ready_for_next：`yes`
+- next_review_trigger：`学习 Column Family 后，回看 block cache/table options 在多 CF 下的共享与隔离边界；学习缓存调优时回看 HyperClockCache、SecondaryCache 与 partitioned metadata。`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-05-19T14:32:01+08:00`
+- review_notes：`Day 016 复习问答已完成。读路径优化主链、Bloom false/true 语义、block cache key、whole-key/prefix filter、prefix 连续性、metadata cache 取舍和 partitioned metadata 的缓存粒度目标均已回答正确；partition_filters 与 kTwoLevelIndexSearch 的关系已修正为当前实现/历史耦合，不是语义必然。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -666,9 +705,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `VersionEditHandlerPointInTime / best-efforts recovery` 的恢复分支
   - `manifest_writers_ / atomic group / multi-CF group commit` 的并发与批量提交流程
   - `CURRENT 切换失败 / MANIFEST rollover / obsolete manifest cleanup` 的异常恢复细节
-  - `Block Cache` 内部 key、charge、压缩/非压缩 block 与淘汰策略
+  - `Block Cache` 已建立 block handle / charge / fill_cache 主链；`HyperClockCache / SecondaryCache / shard / priority` 的内部淘汰细节仍需回看
   - `FilePrefetchBuffer / readahead / direct I/O / mmap` 的性能取舍
-  - `partitioned index / partitioned filter / prefix seek` 的实际读写差异
+  - `partitioned index / partitioned filter / prefix seek` 主链已建立；pin/cache dependency 与真实参数组合仍需回看
   - `atomic flush` 与普通 flush 的提交流程差异
   - `range tombstone / MultiGet / memtable bloom` 的组合边界
   - `ReadCallback` 在事务 DB 中的完整提交可见性
@@ -677,7 +716,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `学习事务与并发控制`
   - `学习 Column Family`
   - `学习 DB 打开/恢复路径`
-  - `学习 Block Cache / Bloom Filter / Prefix Seek`
+  - `学习参数调优 / 缓存预算 / Prefix Seek`
   - `学习 MANIFEST / VersionEdit / VersionSet`
   - `学习 DeleteRange / CompactionFilter / Blob GC`
 
