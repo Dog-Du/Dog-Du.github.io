@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-19T14:32:01+08:00
+lastmod: 2026-05-21T12:55:13+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,20 +13,21 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`16`
-- 当前最近一次学习主题：`Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
-- 当前主线阶段：`读路径优化：BlockBasedTable 如何用 filter 剪枝、index 定位 data block、block cache 复用 block，并用 partitioned index/filter 控制元数据缓存粒度`
+- 当前学习总天数：`17`
+- 当前最近一次学习主题：`Day 017：Column Family`
+- 当前主线阶段：`多 Column Family：一个 DB 内多套逻辑 LSM 状态如何共享 WAL/DB 级资源，同时独立维护 memtable、Version/SST、options 和 compaction 状态`
 - 上一篇文章写到：
-  - `BlockBasedTable::Get()` 的 SST 内读路径是：先查 full/prefix filter，再用 index 定位 data block，最后经 block cache 或文件 I/O 创建 `DataBlockIter`
-  - Bloom filter 的 `false` 才是强剪枝信号；`true` 只是 may match，仍要继续查 index/data block 和 `GetContext`
-  - block cache 缓存的是 data/index/filter 等 block-like 对象，cache key 来自 SST 的 base cache key 与 block handle，不是用户 key
-  - `read_tier == kBlockCacheTier` 时不会做阻塞 I/O；cache miss 只能返回 incomplete 或保守放行
-  - `fill_cache` 控制 miss 后是否把读出的 block 插入 cache，大扫描可用它避免污染热点缓存
-  - `whole_key_filtering` 面向 point Get；prefix bloom 依赖 `prefix_extractor` 与 comparator 满足同 prefix 连续性
-  - filter 在 SST 构建阶段由 `BlockBasedTableBuilder` 收集 user key/prefix 并写入 meta block，读取阶段由 table reader 通过 meta index 找到 filter handle
-  - `partition_filters` 会把大 filter 拆成多个 filter partition，并通过顶层 filter partition index 按需读取一个 partition
-  - `partition_filters` 在当前源码实现中要求配合 `kTwoLevelIndexSearch`，否则初始化时会被关闭；这个要求主要来自实现与历史耦合，不是 filter 语义上的必然条件
-  - partitioned index/filter 主要解决大元数据块挤占 block cache 的粒度问题，不改变 Bloom filter 的 may-match 语义
+  - `ColumnFamilyHandleImpl` 是用户侧入口，内部直接指向 `ColumnFamilyData`
+  - `ColumnFamilySet` 是 DB 内所有 CF 的注册表，维护 name/id 到 `ColumnFamilyData` 的映射
+  - 每个 `ColumnFamilyData` 独立持有 memtable、immutable memtable list、current `Version`、`SuperVersion`、options、compaction picker 和 flush/compaction 状态
+  - `DBImpl::Get()` 通过 handle 找到 `cfd`，再拿该 CF 的 `SuperVersion`，按 mem -> imm -> current Version 查找
+  - `WriteBatch` 会把非 default CF 的写入编码成 `kTypeColumnFamilyValue + column_family_id + key + value`
+  - WAL 是 DB 级共享的，sequence number 也是全局分配的；跨 CF `WriteBatch` 可以作为一个 batch 写入 WAL，这是多个独立 DB 不天然具备的原子写入能力
+  - memtable 插入通过 `ColumnFamilyMemTablesImpl::Seek(column_family_id)` 路由到目标 CF
+  - `CreateColumnFamily` / `DropColumnFamily` 通过 `VersionEdit` 和 `LogAndApply` 持久化到 MANIFEST；default CF 不能 drop
+  - `DropColumnFamily()` 先标记 dropped 并阻止 flush/compaction，仍允许已有 handle 读旧数据；等引用释放后再清理内存和文件
+  - flush 和 compaction 以 `ColumnFamilyData` 为单位推进；`atomic_flush` 可以把多个 CF 的 flush 输出作为 atomic group 提交到 MANIFEST，主要用于补足无 WAL 保护写入的崩溃一致性
+  - Column Family 的核心取舍是：共享 DB 级引擎资源，同时隔离多套 LSM 状态和参数
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -44,9 +45,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 014：Compaction 策略与 Write Stall`
   - `Day 015：CompactionIterator Revisit`
   - `Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
+  - `Day 017：Column Family`
 - 下一步建议：
-  - `进入 Day 017：Column Family`
+  - `进入 Day 018：事务与并发控制`
 - 当前仍需补看的关键点：
+  - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
+  - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
+  - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
   - `Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index` 的读优化主线已建立；后续还可细看 `HyperClockCache / SecondaryCache / shard / priority` 的内部淘汰机制
   - `auto_prefix_mode / prefix_same_as_start / iterate_upper_bound` 与 prefix bloom 的安全使用边界还没细拆
   - partitioned index/filter 的 pin/cache dependency、`metadata_block_size` 与实际调参经验还没展开
@@ -62,12 +67,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 016`
-- latest_review_file：`learning-rocksdb-day016-2026-05-15-block-cache-bloom-filter-partitioned-index.md`
+- latest_review_day：`Day 017`
+- latest_review_file：`learning-rocksdb-day017-2026-05-19-column-family.md`
 - review_status：`answered`
 - review_result：`pass`
-- review_answered_at：`2026-05-19T14:32:01+08:00`
-- review_notes：`Day 016 复习问答已完成。整体能说明 BlockBasedTable::Get() 中 filter -> index -> data block 的主顺序，能区分 Bloom may-match、block cache key、whole_key_filtering 与 prefix bloom、prefix 连续性、metadata cache 取舍和 partitioned index/filter 的缓存粒度目标。最后一题已校正为：partition_filters 当前要求 kTwoLevelIndexSearch 主要是源码实现与历史耦合，不是 filter 语义上的必然条件。`
+- review_answered_at：`2026-05-21T12:55:13+08:00`
+- review_notes：`Day 017 复习问答已完成。整体能区分 ColumnFamilyHandleImpl / ColumnFamilyData / ColumnFamilySet 的职责，能说明 CF 是逻辑隔离但共享 WAL、sequence、write stall 等 DB 级资源，能讲清 Get 通过 handle -> cfd -> SuperVersion 路由到 mem/imm/current Version，能说明 WriteBatch 用 kTypeColumnFamilyValue + column_family_id 记录非 default CF，并能答出 write_buffer_size 是 per CF、跨 CF 总内存应关注 db_write_buffer_size 或 WriteBufferManager。需要补充记住：Get 找 SST 是通过 SuperVersion::current Version；CF 级 write stall 触发源最终会影响 DB 级写路径。`
 - review_block_next：`no`
 
 说明：
@@ -116,6 +121,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 014 | 2026-05-09 | Compaction 策略与 Write Stall | `learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md` | `revisit` |
 | 015 | 2026-05-13 | CompactionIterator Revisit | `learning-rocksdb-day015-2026-05-13-compaction-iterator-revisit.md` | `revisit` |
 | 016 | 2026-05-15 | Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index | `learning-rocksdb-day016-2026-05-15-block-cache-bloom-filter-partitioned-index.md` | `done` |
+| 017 | 2026-05-19 | Column Family | `learning-rocksdb-day017-2026-05-19-column-family.md` | `done` |
 
 说明：
 
@@ -666,6 +672,38 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 016 复习问答已完成。读路径优化主链、Bloom false/true 语义、block cache key、whole-key/prefix filter、prefix 连续性、metadata cache 取舍和 partitioned metadata 的缓存粒度目标均已回答正确；partition_filters 与 kTwoLevelIndexSearch 的关系已修正为当前实现/历史耦合，不是语义必然。`
 - review_block_next：`no`
 
+### Day 017
+
+- 主题：`Column Family`
+- 文件：`learning-rocksdb-day017-2026-05-19-column-family.md`
+- understanding_status：`green`
+- mastery_score：`4/5`
+- weak_points：
+  - `atomic_flush` 的主要语义已补上：它把多个 CF 的 flush 输出作为 atomic group 提交到 MANIFEST，主要用于无 WAL 保护写入；MANIFEST atomic group 恢复细节后续可看
+  - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
+  - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\db.h`
+  - `D:\program\rocksdb\include\rocksdb\options.h`
+  - `D:\program\rocksdb\db\column_family.h`
+  - `D:\program\rocksdb\db\column_family.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+  - `D:\program\rocksdb\db\write_batch.cc`
+  - `D:\program\rocksdb\db\memtable_list.cc`
+  - `D:\program\rocksdb\db\version_edit.h`
+  - `D:\program\rocksdb\db\version_edit.cc`
+  - `D:\program\rocksdb\db\version_set.cc`
+- ready_for_next：`yes`
+- next_review_trigger：`学习事务与并发控制时，回看跨 CF WriteBatch 的原子写入与事务可见性边界`
+- review_status：`answered`
+- review_result：`pass`
+- review_answered_at：`2026-05-21T12:55:13+08:00`
+- review_notes：`Day 017 复习问答已完成。整体能区分 handle / cfd / cfs 的职责，能说明 CF 的逻辑隔离和 DB 级共享资源，能讲清 Get 和 WriteBatch 的 CF 路由，能回答 DropColumnFamily 延迟清理和 write_buffer_size per CF。补充点：Get 进入 SST 依赖 SuperVersion::current Version；CF 级 write stall 触发源最终会影响 DB 级写路径。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -690,6 +728,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
+  - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
+  - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
+  - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
   - `Leveled Compaction` 的 clean cut、grandparent overlap 还可以结合更细源码继续压实
   - `Universal` 的 `max_read_amp`、incremental universal compaction、delete-triggered compaction 细节还没完全展开
   - `Write Stall` 与 `WriteThread`、pipelined write、two write queues、事务写入优先级的组合边界还没细拆
@@ -714,7 +755,6 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - flush 推进 `min_log_number_to_keep` 之后，obsolete WAL 的实际删除/归档路径
 - 回看触发条件：
   - `学习事务与并发控制`
-  - `学习 Column Family`
   - `学习 DB 打开/恢复路径`
   - `学习参数调优 / 缓存预算 / Prefix Seek`
   - `学习 MANIFEST / VersionEdit / VersionSet`
@@ -746,4 +786,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-05-13T16:53:39+08:00
+- 2026-05-21T12:55:13+08:00
