@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-21T12:55:13+08:00
+lastmod: 2026-05-21T13:06:36+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -47,8 +47,9 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
   - `Day 017：Column Family`
 - 下一步建议：
-  - `进入 Day 018：事务与并发控制`
+  - `进入 Day 018：BlobDB / KV 分离`
 - 当前仍需补看的关键点：
+  - `BlobDB / KV 分离` 已插入为 Day 018，优先看 KV 分离读写路径、常见配置、日志与持久化、blob 文件格式、flush/compaction/GC、元数据管理、blob cache、scan 优化、merge 操作和动态开关边界
   - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
   - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
   - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
@@ -97,9 +98,10 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 12. `Compaction` 及其策略与三大放大权衡
 13. `Block Cache / Bloom Filter / Prefix Bloom / Partition Index`
 14. `Column Family`
-15. 事务与并发控制
-16. 参数调优 / `Rate Limiter` / `Write Stall`
-17. 高级特性与专题深挖
+15. `BlobDB / KV 分离`
+16. 事务与并发控制
+17. 参数调优 / `Rate Limiter` / `Write Stall`
+18. 高级特性与专题深挖
 
 ## 每日文章索引
 
@@ -728,6 +730,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
+  - `BlobDB / KV 分离` 已插入为 Day 018，优先看 KV 分离读写路径、常见配置、日志与持久化、blob 文件格式、flush/compaction/GC、元数据管理、blob cache、scan 优化、merge 操作和动态开关边界
   - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
   - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
   - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
@@ -754,6 +757,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `ReadCallback` 在事务 DB 中的完整提交可见性
   - flush 推进 `min_log_number_to_keep` 之后，obsolete WAL 的实际删除/归档路径
 - 回看触发条件：
+  - `学习 BlobDB / KV 分离`
   - `学习事务与并发控制`
   - `学习 DB 打开/恢复路径`
   - `学习参数调优 / 缓存预算 / Prefix Seek`
@@ -786,4 +790,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-05-21T12:55:13+08:00
+- 2026-05-21T13:06:36+08:00

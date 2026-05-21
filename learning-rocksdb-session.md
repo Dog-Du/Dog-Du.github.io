@@ -45,9 +45,10 @@
 12. Compaction 及其策略与三大放大权衡
 13. Block Cache / Bloom Filter / Prefix Bloom / Partition Index
 14. Column Family
-15. 事务与并发控制
-16. 参数调优 / Rate Limiter / Write Stall
-17. 高级特性与专题深挖
+15. BlobDB / KV 分离
+16. 事务与并发控制
+17. 参数调优 / Rate Limiter / Write Stall
+18. 高级特性与专题深挖
 
 如果当前没有更细的索引安排，可优先以这条“摘要顺序”继续：
 
@@ -58,9 +59,10 @@
 5. 磁盘读写与缓冲/缓存
 6. Compaction
 7. Block Cache + Bloom Filter
-8. 事务与并发控制
-9. 配置调优与 Write Stall
-10. 高级特性
+8. BlobDB / KV 分离
+9. 事务与并发控制
+10. 配置调优与 Write Stall
+11. 高级特性
 
 ## 执行规则
 

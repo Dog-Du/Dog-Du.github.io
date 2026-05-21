@@ -522,7 +522,7 @@
 
 - 核心架构必须先建立整体图景
 - 写路径与读路径必须作为主线反复回到源码中串起来
-- `Compaction`、`MemTable`、`Block Cache`、`Bloom Filter`、`Column Family`、事务并发、配置调优和高级特性都要纳入正式学习路径
+- `Compaction`、`MemTable`、`Block Cache`、`Bloom Filter`、`Column Family`、`BlobDB / KV 分离`、事务并发、配置调优和高级特性都要纳入正式学习路径
 - 需要单独补入“磁盘管理相关”，包括：
   - RocksDB 如何读写磁盘
   - 文件 I/O 相关抽象
@@ -652,35 +652,44 @@
 55. 不同 CF 使用不同 Compaction 策略和参数
 56. Column Family 对读写路径和调优的影响
 
-### 第十一阶段：事务与并发控制
+### 第十一阶段：BlobDB / KV 分离
 
-57. `OptimisticTransaction`
-58. `PessimisticTransaction`
-59. Snapshot 与基于 sequence number 的 MVCC
-60. `WriteBatch` 与 `WriteGroup` 的并发和合并语义
-61. 并发控制与可见性边界
+57. BlobDB / KV 分离的逻辑模型
+58. Blob 写路径：value 何时进入 blob file，SST 中保存什么引用
+59. Blob 读路径：从 blob index 到 blob file / cache
+60. Blob 文件格式、日志与持久化、元数据管理
+61. Blob 与 flush / compaction / GC 的协作
+62. Blob cache、scan 优化、merge 操作与动态开关配置边界
 
-### 第十二阶段：重要配置调优（实践价值高）
+### 第十二阶段：事务与并发控制
 
-62. `write_buffer_size`
-63. `max_write_buffer_number`
-64. `level0_file_num_compaction_trigger`
-65. `max_bytes_for_level_base`
-66. `target_file_size_base`
-67. `compression_per_level`
-68. `Rate Limiter`
-69. `Write Stall`
-70. 调参如何影响写放大、读放大、空间放大
+63. `OptimisticTransaction`
+64. `PessimisticTransaction`
+65. Snapshot 与基于 sequence number 的 MVCC
+66. `WriteBatch` 与 `WriteGroup` 的并发和合并语义
+67. 并发控制与可见性边界
 
-### 第十三阶段：值得关注的高级特性
+### 第十三阶段：重要配置调优（实践价值高）
 
-71. `Merge Operator`
-72. `Compaction Filter`
-73. `SST File Ingestion`
-74. `Backup / Checkpoint`
-75. `DeleteRange`
+68. `write_buffer_size`
+69. `max_write_buffer_number`
+70. `level0_file_num_compaction_trigger`
+71. `max_bytes_for_level_base`
+72. `target_file_size_base`
+73. `compression_per_level`
+74. `Rate Limiter`
+75. `Write Stall`
+76. 调参如何影响写放大、读放大、空间放大
 
-### 第十四阶段：推荐专题深挖
+### 第十四阶段：值得关注的高级特性
+
+77. `Merge Operator`
+78. `Compaction Filter`
+79. `SST File Ingestion`
+80. `Backup / Checkpoint`
+81. `DeleteRange`
+
+### 第十五阶段：推荐专题深挖
 
 在主线走通后，可选择专题深挖：
 
@@ -692,6 +701,7 @@
 - `Table Reader`
 - `Compaction Picker`
 - `VersionSet`
+- `BlobDB`
 - `TransactionDB`
 
 ### 学习路径的使用规则
@@ -725,9 +735,10 @@
 5. 磁盘读写、缓存与缓冲处理
 6. Compaction 策略与放大分析
 7. Block Cache + Bloom Filter
-8. 事务与并发控制
-9. 配置调优与 `Write Stall`
-10. 高级特性
+8. BlobDB / KV 分离
+9. 事务与并发控制
+10. 配置调优与 `Write Stall`
+11. 高级特性
 
 ## 9. 当天文章中的问题如何写
 
