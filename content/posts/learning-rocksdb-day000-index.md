@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-21T13:06:36+08:00
+lastmod: 2026-05-23T21:06:23+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,21 +13,20 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`17`
-- 当前最近一次学习主题：`Day 017：Column Family`
-- 当前主线阶段：`多 Column Family：一个 DB 内多套逻辑 LSM 状态如何共享 WAL/DB 级资源，同时独立维护 memtable、Version/SST、options 和 compaction 状态`
+- 当前学习总天数：`18`
+- 当前最近一次学习主题：`Day 018：BlobDB / KV 分离`
+- 当前主线阶段：`BlobDB / KV 分离：用 blob file 承载大 value，让 LSM 主要保存 key、可见性状态和 blob index，从而降低大 value 场景下的 compaction 写放大`
 - 上一篇文章写到：
-  - `ColumnFamilyHandleImpl` 是用户侧入口，内部直接指向 `ColumnFamilyData`
-  - `ColumnFamilySet` 是 DB 内所有 CF 的注册表，维护 name/id 到 `ColumnFamilyData` 的映射
-  - 每个 `ColumnFamilyData` 独立持有 memtable、immutable memtable list、current `Version`、`SuperVersion`、options、compaction picker 和 flush/compaction 状态
-  - `DBImpl::Get()` 通过 handle 找到 `cfd`，再拿该 CF 的 `SuperVersion`，按 mem -> imm -> current Version 查找
-  - `WriteBatch` 会把非 default CF 的写入编码成 `kTypeColumnFamilyValue + column_family_id + key + value`
-  - WAL 是 DB 级共享的，sequence number 也是全局分配的；跨 CF `WriteBatch` 可以作为一个 batch 写入 WAL，这是多个独立 DB 不天然具备的原子写入能力
-  - memtable 插入通过 `ColumnFamilyMemTablesImpl::Seek(column_family_id)` 路由到目标 CF
-  - `CreateColumnFamily` / `DropColumnFamily` 通过 `VersionEdit` 和 `LogAndApply` 持久化到 MANIFEST；default CF 不能 drop
-  - `DropColumnFamily()` 先标记 dropped 并阻止 flush/compaction，仍允许已有 handle 读旧数据；等引用释放后再清理内存和文件
-  - flush 和 compaction 以 `ColumnFamilyData` 为单位推进；`atomic_flush` 可以把多个 CF 的 flush 输出作为 atomic group 提交到 MANIFEST，主要用于补足无 WAL 保护写入的崩溃一致性
-  - Column Family 的核心取舍是：共享 DB 级引擎资源，同时隔离多套 LSM 状态和参数
+  - integrated BlobDB 与 legacy stacked BlobDB 是两套语境；本章主线是 `enable_blob_files` 驱动的 core integrated BlobDB
+  - 普通 `Put()` 前台仍写 WAL 和 memtable，保存 full value；大 value 抽离发生在 flush / compaction 构建输出文件时
+  - `BlobFileBuilder` 在 `BuildTable()` 或 `CompactionJob::CreateBlobFileBuilder()` 中创建，`CompactionIterator::ExtractLargeValueIfNeeded()` 把大 value 写入 `.blob` 并把 SST value 改成 `kTypeBlobIndex`
+  - `BlobIndex` 保存 blob file number、offset、size、compression；offset 指向 blob value 本身，不是 record header 起点
+  - `BlobLogHeader / BlobLogRecord / BlobLogFooter` 构成 `.blob` 文件格式，record 中保存 key 以便读时校验
+  - `Get()` / `MultiGet()` / iterator 先通过普通 LSM 找到 key 的最新可见版本；遇到 `kTypeBlobIndex` 后经 `Version::GetBlob()`、`BlobSource`、`BlobFileReader` 读取真实 value
+  - `BlobFileAddition` 和 `BlobFileGarbage` 写入 MANIFEST，`VersionBuilder` replay 后恢复 blob file metadata；当前 `Version` 同时管理 SST files 和 blob files
+  - Blob GC 集成在 compaction 中：旧 blob file 满足 age cutoff 时，`GarbageCollectBlobIfNeeded()` 读取旧 blob 并搬迁到新 blob file 或内联回 SST
+  - `blob_cache` 缓存真实 blob 内容，cache key 是 `db_id + db_session_id + blob file number + offset`，不是 user key
+  - `enable_blob_files` 等多数 blob 选项可以动态修改，但只影响后续 flush / compaction；已有 blob index 仍必须保持可读
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -46,10 +45,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 015：CompactionIterator Revisit`
   - `Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
   - `Day 017：Column Family`
+  - `Day 018：BlobDB / KV 分离`
 - 下一步建议：
-  - `进入 Day 018：BlobDB / KV 分离`
+  - `进入 Day 019：事务与并发控制`
 - 当前仍需补看的关键点：
-  - `BlobDB / KV 分离` 已插入为 Day 018，优先看 KV 分离读写路径、常见配置、日志与持久化、blob 文件格式、flush/compaction/GC、元数据管理、blob cache、scan 优化、merge 操作和动态开关边界
+  - `BlobDB / KV 分离` 主链已建立；后续可结合测试继续压实 forced blob GC picker、backup/checkpoint 与 blob file live set、secondary/remote storage 下的 blob scan 性能边界
+  - `事务与并发控制` 是 Day 019 主线，重点看 TransactionDB、lock manager、snapshot/write conflict、WritePrepared / WriteUnprepared 与 `SnapshotChecker`
   - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
   - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
   - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
@@ -68,12 +69,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 017`
-- latest_review_file：`learning-rocksdb-day017-2026-05-19-column-family.md`
+- latest_review_day：`Day 018`
+- latest_review_file：`learning-rocksdb-day018-2026-05-21-blobdb-kv-separation.md`
 - review_status：`answered`
-- review_result：`pass`
-- review_answered_at：`2026-05-21T12:55:13+08:00`
-- review_notes：`Day 017 复习问答已完成。整体能区分 ColumnFamilyHandleImpl / ColumnFamilyData / ColumnFamilySet 的职责，能说明 CF 是逻辑隔离但共享 WAL、sequence、write stall 等 DB 级资源，能讲清 Get 通过 handle -> cfd -> SuperVersion 路由到 mem/imm/current Version，能说明 WriteBatch 用 kTypeColumnFamilyValue + column_family_id 记录非 default CF，并能答出 write_buffer_size 是 per CF、跨 CF 总内存应关注 db_write_buffer_size 或 WriteBufferManager。需要补充记住：Get 找 SST 是通过 SuperVersion::current Version；CF 级 write stall 触发源最终会影响 DB 级写路径。`
+- review_result：`partial`
+- review_answered_at：`2026-05-23T21:06:23+08:00`
+- review_notes：`Day 018 复习问答已完成。主线已经过关：能说明 integrated BlobDB 的 flush/compaction 抽离、BlobIndex、blob file 格式、WAL/MANIFEST 职责、GC 借 compaction、旧 blob file 保留原因、scan 代价和 lazy value 优化。需纠偏：BlobFileGarbage 记录新增垃圾而不是减少量；point Get 主链不要把 BlobFetcher 放在最前；blob cache key 实际是 db_id + db_session_id + file_number + offset，file_size 当前未参与；SetOptions 安装的是新的 SuperVersion，不是新的 LSM Version；cutoff 选 oldest prefix 而不是末尾；linked_ssts 是 oldest_blob_file_number 的反向文件级索引；garbage 统计要同时看 inflow/outflow。当前无阻断，可以进入 Day 019。`
 - review_block_next：`no`
 
 说明：
@@ -124,6 +125,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 015 | 2026-05-13 | CompactionIterator Revisit | `learning-rocksdb-day015-2026-05-13-compaction-iterator-revisit.md` | `revisit` |
 | 016 | 2026-05-15 | Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index | `learning-rocksdb-day016-2026-05-15-block-cache-bloom-filter-partitioned-index.md` | `done` |
 | 017 | 2026-05-19 | Column Family | `learning-rocksdb-day017-2026-05-19-column-family.md` | `done` |
+| 018 | 2026-05-21 | BlobDB / KV 分离 | `learning-rocksdb-day018-2026-05-21-blobdb-kv-separation.md` | `next` |
 
 说明：
 
@@ -559,7 +561,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - 主题：`Compaction 策略与 Write Stall`
 - 文件：`learning-rocksdb-day014-2026-05-09-compaction-styles-and-write-stall.md`
 - understanding_status：`yellow`
-- mastery_score：`3/5`
+- mastery_score：`4/5`
 - weak_points：
   - `LevelCompactionBuilder` 的 clean cut、grandparent overlap 还可以继续压实
   - `Write Stall` 与 `WriteThread`、two write queues、pipelined write、事务写入优先级的组合边界还没细拆
@@ -706,6 +708,50 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 017 复习问答已完成。整体能区分 handle / cfd / cfs 的职责，能说明 CF 的逻辑隔离和 DB 级共享资源，能讲清 Get 和 WriteBatch 的 CF 路由，能回答 DropColumnFamily 延迟清理和 write_buffer_size per CF。补充点：Get 进入 SST 依赖 SuperVersion::current Version；CF 级 write stall 触发源最终会影响 DB 级写路径。`
 - review_block_next：`no`
 
+### Day 018
+
+- 主题：`BlobDB / KV 分离`
+- 文件：`learning-rocksdb-day018-2026-05-21-blobdb-kv-separation.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - integrated BlobDB 主链已经建立：普通 `Put()` 前台写 WAL/memtable，flush / compaction 用 `BlobFileBuilder` 抽离大 value，SST 中保存 `kTypeBlobIndex`
+  - 读路径主链已经建立：`Version::Get` / `MultiGet` / `DBIter` 遇到 blob index 后，通过 `BlobFetcher -> Version::GetBlob -> BlobSource -> BlobFileReader` 取回真实 value
+  - Blob GC 主链已经建立：compaction 中通过 `GarbageCollectBlobIfNeeded()` 搬迁旧 blob，`BlobGarbageMeter` 统计 inflow/outflow，并用 `BlobFileGarbage` 持久化垃圾统计
+  - 仍需后续压实 forced blob GC 与 compaction picker 的联动细节、backup/checkpoint/secondary instance 对 blob live set 的边界，以及远端存储或大 scan 场景下的真实性能参数
+- source_anchors：
+  - `D:\program\rocksdb\docs\_posts\2021-05-26-integrated-blob-db.markdown`
+  - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
+  - `D:\program\rocksdb\options\cf_options.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
+  - `D:\program\rocksdb\db\column_family.cc`
+  - `D:\program\rocksdb\db\builder.cc`
+  - `D:\program\rocksdb\db\flush_job.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_iterator.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_outputs.cc`
+  - `D:\program\rocksdb\db\blob\blob_file_builder.cc`
+  - `D:\program\rocksdb\db\blob\blob_index.h`
+  - `D:\program\rocksdb\db\blob\blob_log_format.h`
+  - `D:\program\rocksdb\db\blob\blob_source.cc`
+  - `D:\program\rocksdb\db\blob\blob_file_reader.cc`
+  - `D:\program\rocksdb\db\blob\blob_file_cache.cc`
+  - `D:\program\rocksdb\db\blob\blob_garbage_meter.cc`
+  - `D:\program\rocksdb\db\version_set.cc`
+  - `D:\program\rocksdb\db\version_edit.h`
+  - `D:\program\rocksdb\db\version_builder.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_files.cc`
+  - `D:\program\rocksdb\table\get_context.cc`
+  - `D:\program\rocksdb\db\db_iter.cc`
+  - `D:\program\rocksdb\db\merge_helper.cc`
+- ready_for_next：`yes`
+- next_review_trigger：`学习事务与并发控制时，回看 BlobDB 与 snapshot/transaction 可见性、compaction 清理边界的关系；学习缓存调优时回看 blob cache key 组成`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-05-23T21:06:23+08:00`
+- review_notes：`Day 018 复习问答已完成。主线已经过关：能说明 integrated BlobDB 的 flush/compaction 抽离、BlobIndex、blob file 格式、WAL/MANIFEST 职责、GC 借 compaction、旧 blob file 保留原因、scan 代价和 lazy value 优化。需纠偏：BlobFileGarbage 记录新增垃圾而不是减少量；point Get 主链不要把 BlobFetcher 放在最前；blob cache key 实际是 db_id + db_session_id + file_number + offset，file_size 当前未参与；SetOptions 安装的是新的 SuperVersion，不是新的 LSM Version；cutoff 选 oldest prefix 而不是末尾；linked_ssts 是 oldest_blob_file_number 的反向文件级索引；garbage 统计要同时看 inflow/outflow。当前无阻断，可以进入 Day 019。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -730,7 +776,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `BlobDB / KV 分离` 已插入为 Day 018，优先看 KV 分离读写路径、常见配置、日志与持久化、blob 文件格式、flush/compaction/GC、元数据管理、blob cache、scan 优化、merge 操作和动态开关边界
+  - `BlobDB / KV 分离` 主链已建立；后续可结合测试继续压实 forced blob GC picker、backup/checkpoint 与 blob file live set、secondary/remote storage 下的 blob scan 性能边界
+  - `事务与并发控制` 是 Day 019 主线，重点看 TransactionDB、lock manager、snapshot/write conflict、WritePrepared / WriteUnprepared 与 `SnapshotChecker`
   - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
   - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
   - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
