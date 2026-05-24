@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 15
 slug: learning-rocksdb-day015-compaction-iterator-revisit
+featureimage: "images/covers/rocksdb/day015-compaction-iterator-y88617.webp"
 summary: 回看 RocksDB CompactionIterator 如何消费 internal key 流，并结合 snapshot、delete tombstone、single delete、merge、range tombstone 与 CompactionJob 输出链路决定新 SST 中最终保留什么。
 ---
 

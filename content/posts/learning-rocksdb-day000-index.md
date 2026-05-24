@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: -1
 slug: learning-rocksdb-index
+featureimage: "images/covers/rocksdb/day000-index-vpo8k8.webp"
 summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进度、导航每日文章，并记录掌握度与最近一天复习问答闸门状态。
 ---
 

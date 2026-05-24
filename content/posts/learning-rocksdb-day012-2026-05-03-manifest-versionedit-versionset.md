@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 12
 slug: learning-rocksdb-day012-manifest-versionedit-versionset
+featureimage: "images/covers/rocksdb/day012-manifest-429lvy.webp"
 summary: 从 CURRENT 指向 MANIFEST、VersionEdit 增量记录、VersionBuilder/VersionEditHandler 的应用与回放、以及 VersionSet::LogAndApply/Recover 的主链出发，讲清 RocksDB 如何持久化 SST 元数据、切换 current Version，并在 DB 打开时恢复回来。
 ---
 

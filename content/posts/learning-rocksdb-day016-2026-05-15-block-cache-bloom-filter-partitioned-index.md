@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 16
 slug: learning-rocksdb-day016-block-cache-bloom-filter-partitioned-index
+featureimage: "images/covers/rocksdb/day016-cache-filter-je8d2w.webp"
 summary: 沿着 RocksDB BlockBasedTable 读路径，解释 Block Cache、Bloom Filter、Prefix Bloom、Partitioned Index/Filter 如何减少读放大，并从构建端和读取端源码串起 filter、index、data block 与缓存的关系。
 ---
 

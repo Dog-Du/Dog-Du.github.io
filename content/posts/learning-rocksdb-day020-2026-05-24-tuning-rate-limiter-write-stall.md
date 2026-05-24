@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 20
 slug: learning-rocksdb-day020-tuning-rate-limiter-write-stall
+featureimage: "images/covers/rocksdb/day020-tuning-6ld8xl.webp"
 summary: 从 Options、MutableCFOptions、VersionStorageInfo、WriteController 和 RateLimiter 出发，理解 RocksDB 参数如何影响 memtable、L0、level target、后台 compaction 债务、I/O 限流和 write stall，并整理一套可执行的调参顺序。
 ---
 

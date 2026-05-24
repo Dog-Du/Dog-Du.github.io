@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 4
 slug: learning-rocksdb-day004-wal
+featureimage: "images/covers/rocksdb/day004-wal-k7825m.webp"
 summary: 结合 DBImpl::WriteToWAL、log::Writer::AddRecord、log::Reader::ReadRecord 与 RecoverLogFiles 源码，梳理 RocksDB 的 WAL 如何承载 WriteBatch、如何做物理分片写入，以及恢复时如何重新还原为 memtable 更新。
 ---
 

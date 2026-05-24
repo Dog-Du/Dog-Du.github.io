@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 2
 slug: learning-rocksdb-day002-db-open-and-core-object-relationships
+featureimage: "images/covers/rocksdb/day002-db-open-o5ezel.webp"
 summary: 结合 DBImpl::Open、Recover、VersionSet::Recover、WAL 回放与 InstallSuperVersion 的源码，梳理 RocksDB 在启动阶段如何从磁盘元数据和 WAL 重建可服务的运行时对象图。
 ---
 

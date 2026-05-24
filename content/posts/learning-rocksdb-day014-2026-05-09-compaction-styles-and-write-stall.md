@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 14
 slug: learning-rocksdb-day014-compaction-styles-and-write-stall
+featureimage: "images/covers/rocksdb/day014-compaction-stall-gwz8rl.webp"
 summary: 对比 RocksDB 的 Level、Universal、FIFO 三种 compaction style，解释 tiering compaction 的含义，并从 ColumnFamilyData、WriteController、DBImpl 写路径和 RateLimiter 看 write stall 如何减速、停止和保护后台整理。
 ---
 

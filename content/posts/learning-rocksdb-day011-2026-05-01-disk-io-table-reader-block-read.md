@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 11
 slug: learning-rocksdb-day011-disk-io-table-reader-block-read
+featureimage: "images/covers/rocksdb/day011-disk-io-jx2w75.webp"
 summary: 从 FileSystem/Env 文件抽象、TableCache、TableReader、BlockBasedTableReader、BlockFetcher、RandomAccessFileReader 和 ReadOptions 出发，梳理 RocksDB 点查 SST 时如何从逻辑查找落到物理 block 读取，并区分 table cache、block cache、prefetch buffer 与 OS page cache 的职责边界。
 ---
 

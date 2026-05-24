@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 3
 slug: learning-rocksdb-day003-write-path-writebatch-sequence-number
+featureimage: "images/covers/rocksdb/day003-write-path-mdmr89.webp"
 summary: 结合 DBImpl::WriteImpl、WriteThread、WriteBatchInternal 等源码，梳理 RocksDB 写路径里写线程分组、sequence number 分配、WAL 写入与 memtable 插入的主流程。
 ---
 

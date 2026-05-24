@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 8
 slug: learning-rocksdb-day008-sstable-blockbasedtable-and-blocks
+featureimage: "images/covers/rocksdb/day008-sstable-73qz23.webp"
 summary: 结合 BuildTable、TableBuilder、BlockBasedTableBuilder、BlockBuilder、BlockHandle 和 Footer 的源码，从写侧视角梳理 RocksDB 如何把 flush/compaction 输入流编码成 block-based SST，以及 data/index/filter/properties/metaindex/footer 各自的职责与字节边界。
 ---
 

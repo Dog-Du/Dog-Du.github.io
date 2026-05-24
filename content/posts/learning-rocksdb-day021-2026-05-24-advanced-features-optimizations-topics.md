@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 21
 slug: learning-rocksdb-day021-advanced-features-optimizations-topics
+featureimage: "images/covers/rocksdb/day021-advanced-4lgmyr.webp"
 summary: Day 021 作为 RocksDB 高级特性、优化与专题深挖的目录页，简要梳理 Merge Operator、Compaction Filter、SST File Ingestion、Backup / Checkpoint 和 DeleteRange 的定位、原理、必要性与大概实现链路。
 ---
 

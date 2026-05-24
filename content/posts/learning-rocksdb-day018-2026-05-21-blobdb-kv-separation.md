@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 18
 slug: learning-rocksdb-day018-blobdb-kv-separation
+featureimage: "images/covers/rocksdb/day018-blobdb-ey1lz8.webp"
 summary: 从 integrated BlobDB 的读写路径、blob 文件格式、MANIFEST 元数据、flush/compaction/GC、blob cache、scan、merge 与动态开关边界出发，理解 RocksDB 如何把大 value 从 LSM 中抽离出来。
 ---
 

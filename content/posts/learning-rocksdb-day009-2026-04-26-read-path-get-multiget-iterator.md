@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 9
 slug: learning-rocksdb-day009-read-path-get-multiget-iterator
+featureimage: "images/covers/rocksdb/day009-read-path-gw5ypd.webp"
 summary: 从 DBImpl::GetImpl、MultiGetImpl、NewInternalIterator、Version::Get、TableCache 和 BlockBasedTableReader 源码出发，梳理 RocksDB 读路径如何在 SuperVersion 稳定视图上先查 memtable，再查 immutable memtable，最后查 SST，并说明 Get、MultiGet 与 Iterator 的职责边界。
 ---
 

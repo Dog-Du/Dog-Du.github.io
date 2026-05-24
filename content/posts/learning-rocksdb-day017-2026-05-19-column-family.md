@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 17
 slug: learning-rocksdb-day017-column-family
+featureimage: "images/covers/rocksdb/day017-column-family-6opxo6.webp"
 summary: 从 ColumnFamilyHandle、ColumnFamilyData、ColumnFamilySet 和读写路径入手，解释 RocksDB 如何在一个 DB 内维护多套逻辑 LSM 状态，以及哪些资源按 Column Family 隔离、哪些资源仍由 DB 共享。
 ---
 

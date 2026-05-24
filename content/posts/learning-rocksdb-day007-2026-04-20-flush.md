@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 7
 slug: learning-rocksdb-day007-flush
+featureimage: "images/covers/rocksdb/day007-flush-9m61m1.webp"
 summary: 结合 ScheduleFlushes、SwitchMemtable、BackgroundFlush、FlushJob、MemTableList::TryInstallMemtableFlushResults 与 GetDBRecoveryEditForObsoletingMemTables 的源码，梳理 RocksDB 如何把 mutable memtable 切成 immutable、刷成 L0 SST，并推进 MANIFEST 与 WAL 保留边界。
 ---
 

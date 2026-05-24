@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 19
 slug: learning-rocksdb-day019-transactions-and-concurrency-control
+featureimage: "images/covers/rocksdb/day019-transactions-42ol3m.webp"
 summary: 从 TransactionDB、LockManager、SnapshotChecker、OptimisticTransactionDB 和 WritePrepared / WriteUnprepared 出发，理解 RocksDB 如何在既有 LSM 之上叠加事务隔离、冲突检测和恢复语义。
 ---
 

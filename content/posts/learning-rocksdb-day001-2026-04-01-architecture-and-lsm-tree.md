@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 1
 slug: learning-rocksdb-day001-architecture-and-lsm-tree
+featureimage: "images/covers/rocksdb/day001-architecture-4ve76m.webp"
 summary: 先用更清晰的概念分层讲清 DB、CF、MemTable、WAL、SuperVersion、VersionSet、MANIFEST 分别负责什么，再从 DBImpl、ColumnFamilyData、SuperVersion、MemTable、VersionSet 的源码关系出发，建立 RocksDB 的整体架构与 LSM-Tree 心智模型。
 ---
 

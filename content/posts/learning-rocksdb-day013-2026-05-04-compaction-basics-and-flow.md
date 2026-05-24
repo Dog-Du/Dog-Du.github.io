@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 13
 slug: learning-rocksdb-day013-compaction-basics-and-flow
+featureimage: "images/covers/rocksdb/day013-compaction-flow-d8k5rm.webp"
 summary: 从 VersionStorageInfo 的 compaction score、ColumnFamilyData 的 picker、DBImpl 的后台调度、CompactionJob 的输出 SST 构建、以及 VersionEdit/LogAndApply 的提交链路出发，建立 RocksDB compaction 的基础机制与主流程。
 ---
 

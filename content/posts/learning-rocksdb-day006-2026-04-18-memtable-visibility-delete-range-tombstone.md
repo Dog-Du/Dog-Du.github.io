@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 6
 slug: learning-rocksdb-day006-memtable-visibility-delete-range-tombstone
+featureimage: "images/covers/rocksdb/day006-visibility-ymr3m7.webp"
 summary: 结合 LookupKey、InternalKeyComparator、MemTable::Get、SaveValue、range_del_table_ 与 WriteBatch::InsertInto 的源码，梳理 RocksDB 如何在 memtable 中实现删除、多版本可见性、范围删除覆盖以及 seq_per_batch 语义。
 ---
 

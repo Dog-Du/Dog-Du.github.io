@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 5
 slug: learning-rocksdb-day005-memtable-skiplist-arena
+featureimage: "images/covers/rocksdb/day005-memtable-4xklev.webp"
 summary: 结合 MemTable::Add、MemTable::Get、SkipListRep、InlineSkipList 与 ConcurrentArena 的源码，梳理 RocksDB 如何把带 sequence 的更新编码进内存表，并用跳表与分块分配器组织读写与内存生命周期。
 ---
 

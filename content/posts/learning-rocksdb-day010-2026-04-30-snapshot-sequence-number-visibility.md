@@ -8,6 +8,7 @@ series:
 - "RocksDB 学习笔记"
 series_order: 10
 slug: learning-rocksdb-day010-snapshot-sequence-number-visibility
+featureimage: "images/covers/rocksdb/day010-snapshot-3k9mo9.webp"
 summary: 从 WriteBatch sequence 分配、SnapshotImpl、DBImpl::GetImpl、LookupKey、GetContext、DBIter 和 ReadCallback 源码出发，梳理 RocksDB 如何用 sequence number 表达版本顺序，用 snapshot 固定读可见性上界，并在 Get 与 Iterator 路径中过滤不可见版本。
 ---
 
