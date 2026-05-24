@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-23T21:06:23+08:00
+lastmod: 2026-05-24T11:26:38+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -13,20 +13,17 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`18`
-- 当前最近一次学习主题：`Day 018：BlobDB / KV 分离`
-- 当前主线阶段：`BlobDB / KV 分离：用 blob file 承载大 value，让 LSM 主要保存 key、可见性状态和 blob index，从而降低大 value 场景下的 compaction 写放大`
+- 当前学习总天数：`19`
+- 当前最近一次学习主题：`Day 019：事务与并发控制`
+- 当前主线阶段：`事务与并发控制：在既有 LSM 之上叠加锁、snapshot、冲突检测与恢复语义，让 RocksDB 能在同一套存储引擎里同时支持普通写入和事务写入`
 - 上一篇文章写到：
-  - integrated BlobDB 与 legacy stacked BlobDB 是两套语境；本章主线是 `enable_blob_files` 驱动的 core integrated BlobDB
-  - 普通 `Put()` 前台仍写 WAL 和 memtable，保存 full value；大 value 抽离发生在 flush / compaction 构建输出文件时
-  - `BlobFileBuilder` 在 `BuildTable()` 或 `CompactionJob::CreateBlobFileBuilder()` 中创建，`CompactionIterator::ExtractLargeValueIfNeeded()` 把大 value 写入 `.blob` 并把 SST value 改成 `kTypeBlobIndex`
-  - `BlobIndex` 保存 blob file number、offset、size、compression；offset 指向 blob value 本身，不是 record header 起点
-  - `BlobLogHeader / BlobLogRecord / BlobLogFooter` 构成 `.blob` 文件格式，record 中保存 key 以便读时校验
-  - `Get()` / `MultiGet()` / iterator 先通过普通 LSM 找到 key 的最新可见版本；遇到 `kTypeBlobIndex` 后经 `Version::GetBlob()`、`BlobSource`、`BlobFileReader` 读取真实 value
-  - `BlobFileAddition` 和 `BlobFileGarbage` 写入 MANIFEST，`VersionBuilder` replay 后恢复 blob file metadata；当前 `Version` 同时管理 SST files 和 blob files
-  - Blob GC 集成在 compaction 中：旧 blob file 满足 age cutoff 时，`GarbageCollectBlobIfNeeded()` 读取旧 blob 并搬迁到新 blob file 或内联回 SST
-  - `blob_cache` 缓存真实 blob 内容，cache key 是 `db_id + db_session_id + blob file number + offset`，不是 user key
-  - `enable_blob_files` 等多数 blob 选项可以动态修改，但只影响后续 flush / compaction；已有 blob index 仍必须保持可读
+  - `TransactionDB::Open()` 会先经 `PrepareWrap()` 改写底层 options，再用 `WrapDB()` 把普通 `DBImpl` 包装成事务接口；`OptimisticTransactionDB::Open()` 也会补足 memtable 历史
+  - `TransactionBaseImpl` 是事务读写骨架：`Put()` / `GetForUpdate()` 先走 `TryLock()`，再决定是立即写入、延后校验，还是只追踪 key
+  - `PessimisticTransaction::TryLock()` 会经 lock manager 真正加锁并做 snapshot 校验；`OptimisticTransaction::CommitWithParallelValidate()` 则把冲突检测推迟到 commit
+  - `TransactionUtil::CheckKeyForConflicts()` 统一处理冲突判断，必要时会返回 `TryAgain`，因为 memtable 历史不足时无法完成可靠验证
+  - `WRITE_COMMITTED / WRITE_PREPARED / WRITE_UNPREPARED` 不是同一层概念的微调，而是把提交时机、恢复元数据和可见性规则分别前移或后移
+  - `WritePreparedTxnDB` / `WriteUnpreparedTxnDB` 会安装 `SnapshotChecker`，让 compaction / flush 也理解事务可见性边界；它不是冲突检测器，而是事务 snapshot visibility 的桥
+  - RocksDB 事务不是全局串行执行；在所有相关读写 key/range 都被追踪时可以形成冲突可串行化，但普通 `Get()` 不会自动进入冲突检测，`GetForUpdate()` 同时服务悲观和乐观事务
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -46,13 +43,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 016：Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index`
   - `Day 017：Column Family`
   - `Day 018：BlobDB / KV 分离`
+  - `Day 019：事务与并发控制`
 - 下一步建议：
-  - `进入 Day 019：事务与并发控制`
+  - `进入 Day 020：参数调优 / Rate Limiter / Write Stall`
 - 当前仍需补看的关键点：
   - `BlobDB / KV 分离` 主链已建立；后续可结合测试继续压实 forced blob GC picker、backup/checkpoint 与 blob file live set、secondary/remote storage 下的 blob scan 性能边界
-  - `事务与并发控制` 是 Day 019 主线，重点看 TransactionDB、lock manager、snapshot/write conflict、WritePrepared / WriteUnprepared 与 `SnapshotChecker`
+  - `事务与并发控制` 主线已建立；后续还要回看 `SnapshotChecker` 不是冲突检测器、`unprep_seqs_` 先于 `IsInSnapshot()` 的自写可见性语义，以及三种 write policy 的复杂度位置
   - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
-  - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
+  - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；与事务 DB 中 snapshot、锁、WritePrepared / WriteUnprepared 可见性的衔接已在 Day 019 建立入口
   - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
   - `Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index` 的读优化主线已建立；后续还可细看 `HyperClockCache / SecondaryCache / shard / priority` 的内部淘汰机制
   - `auto_prefix_mode / prefix_same_as_start / iterate_upper_bound` 与 prefix bloom 的安全使用边界还没细拆
@@ -60,7 +58,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `LevelCompactionBuilder` 的 clean cut、grandparent overlap、base level 动态计算还可以后续结合更细源码再压实
   - `Universal` 的 `max_read_amp` 自动调节、incremental universal compaction、delete-triggered compaction 细节还没完全展开
   - `Write Stall` 与 `WriteThread` group、pipelined write、two write queues 的组合边界还没细拆
-  - `CompactionIterator` 已补上主链；后续可在事务章节细看 `SnapshotChecker / write-prepared / write-unprepared` 对清理边界的影响
+  - `CompactionIterator` 已补上主链；`SnapshotChecker / write-prepared / write-unprepared` 对清理边界的影响已在 Day 019 建立入口，后续还需结合复习题和异常分支压实
   - ordinary delete tombstone 的清理条件还需要与 rule (A) 的 hidden old version 规则区分开
   - `user-defined timestamp / full_history_ts_low / trim_ts` 与 compaction 历史 GC 的组合语义还没完全展开
   - `VersionEditHandlerPointInTime / best-efforts recovery` 如何在 MANIFEST 缺损时找回一个仍然有效的旧版本，还没单独展开
@@ -69,12 +67,12 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 018`
-- latest_review_file：`learning-rocksdb-day018-2026-05-21-blobdb-kv-separation.md`
+- latest_review_day：`Day 019`
+- latest_review_file：`learning-rocksdb-day019-2026-05-23-transactions-and-concurrency-control.md`
 - review_status：`answered`
 - review_result：`partial`
-- review_answered_at：`2026-05-23T21:06:23+08:00`
-- review_notes：`Day 018 复习问答已完成。主线已经过关：能说明 integrated BlobDB 的 flush/compaction 抽离、BlobIndex、blob file 格式、WAL/MANIFEST 职责、GC 借 compaction、旧 blob file 保留原因、scan 代价和 lazy value 优化。需纠偏：BlobFileGarbage 记录新增垃圾而不是减少量；point Get 主链不要把 BlobFetcher 放在最前；blob cache key 实际是 db_id + db_session_id + file_number + offset，file_size 当前未参与；SetOptions 安装的是新的 SuperVersion，不是新的 LSM Version；cutoff 选 oldest prefix 而不是末尾；linked_ssts 是 oldest_blob_file_number 的反向文件级索引；garbage 统计要同时看 inflow/outflow。当前无阻断，可以进入 Day 019。`
+- review_answered_at：`2026-05-24T11:26:38+08:00`
+- review_notes：`Day 019 复习问答已完成。主线可以通过：PrepareWrap / WrapDB、TryLock 顺序、OCC bucket 排序加锁、memtable history 不足导致 TryAgain 都已答对。需纠偏：SnapshotChecker 不是冲突检测器，而是 WritePrepared / WriteUnprepared 的 snapshot visibility 桥；WriteUnpreparedTxnReadCallback 必须先查 unprep_seqs_，以保证本事务 unprepared writes 自写可见，再查 IsInSnapshot；三种 write policy 的差异是复杂度位置不同，WRITE_COMMITTED 重 commit 和内存缓冲，WRITE_PREPARED 重 commit cache / prepared set / SnapshotChecker / recovery，WRITE_UNPREPARED 重 read callback / unprep_seqs_ / rollback / recovery。当前无阻断，可以进入 Day 020。`
 - review_block_next：`no`
 
 说明：
@@ -125,7 +123,8 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 015 | 2026-05-13 | CompactionIterator Revisit | `learning-rocksdb-day015-2026-05-13-compaction-iterator-revisit.md` | `revisit` |
 | 016 | 2026-05-15 | Block Cache / Bloom Filter / Prefix Bloom / Partitioned Index | `learning-rocksdb-day016-2026-05-15-block-cache-bloom-filter-partitioned-index.md` | `done` |
 | 017 | 2026-05-19 | Column Family | `learning-rocksdb-day017-2026-05-19-column-family.md` | `done` |
-| 018 | 2026-05-21 | BlobDB / KV 分离 | `learning-rocksdb-day018-2026-05-21-blobdb-kv-separation.md` | `next` |
+| 018 | 2026-05-21 | BlobDB / KV 分离 | `learning-rocksdb-day018-2026-05-21-blobdb-kv-separation.md` | `revisit` |
+| 019 | 2026-05-23 | 事务与并发控制 | `learning-rocksdb-day019-2026-05-23-transactions-and-concurrency-control.md` | `revisit` |
 
 说明：
 
@@ -684,7 +683,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - mastery_score：`4/5`
 - weak_points：
   - `atomic_flush` 的主要语义已补上：它把多个 CF 的 flush 输出作为 atomic group 提交到 MANIFEST，主要用于无 WAL 保护写入；MANIFEST atomic group 恢复细节后续可看
-  - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
+  - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；与事务 DB 中 snapshot、锁、WritePrepared / WriteUnprepared 可见性的衔接已在 Day 019 建立入口，仍需复习题确认
   - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
 - source_anchors：
   - `D:\program\rocksdb\include\rocksdb\db.h`
@@ -752,6 +751,49 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 018 复习问答已完成。主线已经过关：能说明 integrated BlobDB 的 flush/compaction 抽离、BlobIndex、blob file 格式、WAL/MANIFEST 职责、GC 借 compaction、旧 blob file 保留原因、scan 代价和 lazy value 优化。需纠偏：BlobFileGarbage 记录新增垃圾而不是减少量；point Get 主链不要把 BlobFetcher 放在最前；blob cache key 实际是 db_id + db_session_id + file_number + offset，file_size 当前未参与；SetOptions 安装的是新的 SuperVersion，不是新的 LSM Version；cutoff 选 oldest prefix 而不是末尾；linked_ssts 是 oldest_blob_file_number 的反向文件级索引；garbage 统计要同时看 inflow/outflow。当前无阻断，可以进入 Day 019。`
 - review_block_next：`no`
 
+### Day 019
+
+- 主题：`事务与并发控制`
+- 文件：`learning-rocksdb-day019-2026-05-23-transactions-and-concurrency-control.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - `TransactionDB` / `OptimisticTransactionDB` 的包装边界已经建立，但还需要通过复习题把 `PrepareWrap()`、`WrapDB()`、`TryLock()`、`CommitWithParallelValidate()` 的调用顺序再压实
+  - `WritePrepared` / `WriteUnprepared` 的恢复语义、可见性和 `SnapshotChecker` 的 compaction / flush 影响已经看过正文，还要靠复习题把链路闭环
+  - 已补充事务隔离边界：所有相关读写 key/range 被追踪时可形成冲突可串行化；普通 `Get()` 不自动参与冲突检测，`GetForUpdate()` 同时服务悲观和乐观事务
+  - 复习纠偏点：`SnapshotChecker` 不是冲突检测器；`unprep_seqs_` 要先于 `IsInSnapshot()` 保证自写可见；三种 write policy 的本质是复杂度位置取舍
+  - 悲观 / 乐观事务、锁管理器、冲突检测和恢复元数据是同一主题的不同层面，后续还要结合源码把状态变化和异常分支再细看
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\utilities\transaction_db.h`
+  - `D:\program\rocksdb\include\rocksdb\utilities\optimistic_transaction_db.h`
+  - `D:\program\rocksdb\utilities\transactions\pessimistic_transaction_db.h`
+  - `D:\program\rocksdb\utilities\transactions\pessimistic_transaction_db.cc`
+  - `D:\program\rocksdb\utilities\transactions\optimistic_transaction_db_impl.h`
+  - `D:\program\rocksdb\utilities\transactions\optimistic_transaction_db_impl.cc`
+  - `D:\program\rocksdb\utilities\transactions\transaction_base.h`
+  - `D:\program\rocksdb\utilities\transactions\transaction_base.cc`
+  - `D:\program\rocksdb\utilities\transactions\pessimistic_transaction.h`
+  - `D:\program\rocksdb\utilities\transactions\pessimistic_transaction.cc`
+  - `D:\program\rocksdb\utilities\transactions\optimistic_transaction.h`
+  - `D:\program\rocksdb\utilities\transactions\optimistic_transaction.cc`
+  - `D:\program\rocksdb\utilities\transactions\transaction_util.h`
+  - `D:\program\rocksdb\utilities\transactions\transaction_util.cc`
+  - `D:\program\rocksdb\utilities\transactions\write_prepared_txn_db.h`
+  - `D:\program\rocksdb\utilities\transactions\write_prepared_txn_db.cc`
+  - `D:\program\rocksdb\utilities\transactions\write_unprepared_txn_db.h`
+  - `D:\program\rocksdb\utilities\transactions\write_unprepared_txn_db.cc`
+  - `D:\program\rocksdb\db\snapshot_checker.h`
+  - `D:\program\rocksdb\utilities\transactions\snapshot_checker.cc`
+  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
+  - `D:\program\rocksdb\db\compaction\compaction_iterator.cc`
+- ready_for_next：`yes`
+- next_review_trigger：`学习参数调优 / Rate Limiter / Write Stall 时，回看事务写入策略对 commit latency、memtable 写入和 write stall 的影响`
+- review_status：`answered`
+- review_result：`partial`
+- review_answered_at：`2026-05-24T11:26:38+08:00`
+- review_notes：`Day 019 复习问答已完成。主线可以通过：PrepareWrap / WrapDB、TryLock 顺序、OCC bucket 排序加锁、memtable history 不足导致 TryAgain 都已答对。需纠偏：SnapshotChecker 不是冲突检测器，而是事务 snapshot visibility 桥；WriteUnpreparedTxnReadCallback 必须先查 unprep_seqs_ 以保证自写可见；三种 write policy 的差异是复杂度位置不同，而不是简单分散到不同 DB 类。当前无阻断，可以进入 Day 020。`
+- review_block_next：`no`
+
 ## 状态使用建议
 
 - `green`
@@ -777,14 +819,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 - 当前薄弱点：
   - `BlobDB / KV 分离` 主链已建立；后续可结合测试继续压实 forced blob GC picker、backup/checkpoint 与 blob file live set、secondary/remote storage 下的 blob scan 性能边界
-  - `事务与并发控制` 是 Day 019 主线，重点看 TransactionDB、lock manager、snapshot/write conflict、WritePrepared / WriteUnprepared 与 `SnapshotChecker`
+  - `事务与并发控制` 已进入 Day 019；重点先答复习题，压实 TransactionDB、lock manager、snapshot/write conflict、WritePrepared / WriteUnprepared 与 `SnapshotChecker`
   - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
   - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；事务 DB 中的 snapshot、锁、WritePrepared / WriteUnprepared 可见性还需要继续看
   - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争需要在参数调优章节回看
   - `Leveled Compaction` 的 clean cut、grandparent overlap 还可以结合更细源码继续压实
   - `Universal` 的 `max_read_amp`、incremental universal compaction、delete-triggered compaction 细节还没完全展开
   - `Write Stall` 与 `WriteThread`、pipelined write、two write queues、事务写入优先级的组合边界还没细拆
-  - `CompactionIterator` 主链已补上；`SnapshotChecker / write-prepared / write-unprepared` 对清理边界的影响仍需在事务章节回看
+  - `CompactionIterator` 主链已补上；`SnapshotChecker / write-prepared / write-unprepared` 对清理边界的影响已建立入口，但仍需结合异常分支继续回看
   - ordinary delete tombstone 的清理条件需要与 rule (A) 的 hidden old version 条件继续区分
   - `user-defined timestamp / full_history_ts_low / trim_ts` 与 compaction 历史 GC 的组合语义还没完全展开
   - `VersionSet` 与 `DBImpl / ColumnFamilyData / SuperVersion / Cache` 的整体架构边界还需要后续章节反复压实
