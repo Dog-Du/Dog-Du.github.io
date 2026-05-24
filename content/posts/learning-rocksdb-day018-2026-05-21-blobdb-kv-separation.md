@@ -1925,6 +1925,10 @@ rocksdb 的实现：
 
 ## 工程启发
 
+rocksdb 的 KV 分离架构层面做的相当好 (不过部分代码看由于老版本 blobdb 的兼容，导致写的有点丑)。可能这就是 “优秀的设计让人感受不到在设计”。
+
+整体的架构就是几句话， WAL 正常写入日志；flush/compaction 时写入 blob file；查询流程完全一致；GC 依赖 compaction；
+
 1. KV 分离不是简单“把 value 放到另一个文件”。
    - 真正困难的是恢复、引用计数、旧版本、GC、cache、compaction filter、merge、backup/checkpoint 等所有边界都要统一。
 
