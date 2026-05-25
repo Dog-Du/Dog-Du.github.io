@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-24T21:47:00+08:00
+lastmod: 2026-05-25T00:00:00+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -379,7 +379,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Snapshot / Sequence Number / ReadCallback / DBIter::IsVisible` 的完整可见性链路还没单独展开
   - `Block Cache`、row cache、table cache 与 OS page cache 的边界还没系统拆开
   - `partitioned index / partitioned filter / prefix seek` 这些读优化变体还没单独展开
-  - `MergingIterator` 与 `DBIter` 的 reverse、merge operand、range tombstone 深层细节还只是建立骨架
+  - `MergingIterator` 与 `DBIter` 的 reverse、merge operand、range tombstone 深层细节已经补上主链，但还可以继续和 snapshot / transaction / prefix seek 交叉压实
 - source_anchors：
   - `D:\program\rocksdb\include\rocksdb\db.h`
   - `D:\program\rocksdb\db\db_impl\db_impl.cc`

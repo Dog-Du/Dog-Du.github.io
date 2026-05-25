@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习笔记 Day 009：Read Path / Get / MultiGet / Iterator
 date: 2026-04-26T15:23:14+08:00
-lastmod: 2026-04-29T13:41:21+08:00
+lastmod: 2026-05-25T00:00:00+08:00
 tags: [RocksDB, Database, Storage, ReadPath, Iterator]
 categories: [数据库]
 series:
@@ -256,9 +256,179 @@ Iterator 路径分两层：
 
 这就是为什么范围扫描不能简单理解成“从每个 SST 读一点再返回”。它需要处理多路合并、sequence 可见性、删除遮蔽、merge operand 和 range tombstone。
 
+更准确地说，用户看到的 `Iterator` 外面是 `ArenaWrappedDBIter`，里面包着一个 `DBIter`，`DBIter` 再包着一个 `InternalIterator`。这个 internal iterator 通常就是 `MergingIterator`，它下面挂着多个 child iterator：
+
+- mutable memtable iterator
+- immutable memtable iterator
+- L0 每个 SST 的 table iterator
+- L1+ 每层一个 `LevelIterator`
+
+所以用户调用：
+
+```cpp
+iter->Seek("k");
+iter->Next();
+iter->key();
+iter->value();
+```
+
+并不是直接在某个 SST 上移动，而是沿下面这条链路：
+
+```mermaid
+flowchart TD
+    A[用户 Iterator::Seek/Next] --> B[ArenaWrappedDBIter]
+    B --> C[DBIter]
+    C --> D[MergingIterator internal stream]
+    D --> E[mutable memtable iterator]
+    D --> F[immutable memtable iterators]
+    D --> G[L0 table iterators]
+    D --> H[L1+ LevelIterator]
+    H --> I[TableCache::NewIterator]
+    I --> J[TableReader::NewIterator]
+```
+
+其中：
+
+- `MergingIterator` 只保证输出一个按 internal key 排序的流。
+- 它不做 user key 去重。
+- 它不决定 snapshot 可见性。
+- 它不把 delete / merge 语义转换成最终 value。
+- 这些语义由外层 `DBIter` 完成。
+
+### `MergingIterator` 怎么知道该返回哪个 child？
+
+`MergingIterator` 的核心结构是 heap。
+
+正向扫描时，它维护一个 min heap；每个 child iterator 如果当前有效，就把当前位置作为一个 heap item 放进去。heap 的比较器用的是 `InternalKeyComparator`，所以堆顶就是当前所有 child 中 internal key 最小的那一个。
+
+RocksDB 的 internal key 排序是：
+
+`user key 升序；同一个 user key 内 sequence number 降序；type 参与低位排序`
+
+因此对同一个 user key 来说，更新的版本会排在更前面。`MergingIterator` 不需要理解“新旧版本”的业务含义，它只需要依赖 `InternalKeyComparator`，不断返回当前堆顶 child 的 key/value。
+
+正向 `Seek(target)` 的大概过程：
+
+1. 对每个 child 调用 `child.Seek(target_internal_key)`。
+2. 如果 child 有效，把 child 放进 min heap。
+3. 堆顶 child 就是全局最小 internal key。
+4. `MergingIterator::key()` 和 `value()` 返回堆顶 child 的 key/value。
+5. 用户调用外层 `Next()` 时，最终会推进当前堆顶 child，再把它的新位置放回 heap。
+
+这可以理解成标准的 K 路归并：
+
+```text
+child 0: a#105, c#90,  x#80
+child 1: a#103, b#99,  d#88
+child 2: a#101, b#95,  z#70
+
+min heap top -> a#105
+推进 child 0 后：
+child 0: c#90
+heap top -> a#103
+推进 child 1 后：
+child 1: b#99
+heap top -> a#101
+...
+```
+
+注意这里会连续返回多个 `a` 的 internal key。`MergingIterator` 的头文件注释明确说：它返回 children 的 union，不做 duplicate suppression。也就是说，如果同一个 key 在 K 个 child 中都出现，它会被 yield K 次。
+
+那“同一个 user key 只给用户返回一个结果”是谁做的？答案是外层 `DBIter`。
+
+### `MergingIterator` 与 range tombstone 的关系
+
+上面是 point key 的普通 K 路归并。真实 RocksDB 还要处理 range tombstone。
+
+当不忽略 range deletion 时，`MergeIteratorBuilder` 添加的不是单纯 point iterator，而是：
+
+`point iterator + range tombstone iterator`
+
+`MergingIterator` 内部会维护：
+
+- point child iterator
+- 每个 level 对应的 range tombstone iterator
+- min heap / max heap
+- active range tombstone 集合
+
+正向扫描时，如果 heap 顶部遇到 range tombstone start，它会把 tombstone 标记为 active；如果遇到 range tombstone end，就取消 active。当前 point key 如果被更新层级的 active range tombstone 覆盖，`MergingIterator` 会跳过或 seek 到 tombstone end 附近，避免把明显被范围删除覆盖的 point key 交给外层。
+
+不过不要把它理解成完整的用户可见性判断。`MergingIterator` 处理的是 internal stream 层的 range tombstone 过滤和文件边界 sentinel；`DBIter` 仍然要基于 snapshot sequence、value type、merge operand 等规则决定最终用户结果。
+
+### `DBIter` 怎么返回用户可见 key/value？
+
+`DBIter` 是把 internal key 流转换成用户 `Iterator` 的状态机。
+
+它收到的输入是类似这样的 internal stream：
+
+```text
+a#105 Put(v5)
+a#103 Delete
+a#101 Put(v1)
+b#100 Merge(+1)
+b#98  Merge(+2)
+b#90  Put(10)
+c#97  Delete
+c#88  Put(old)
+d#80  Put(v)
+```
+
+用户不应该看到这些 internal 版本。用户应该看到的是某个 snapshot sequence 下，每个 user key 的一个结果。
+
+正向扫描时，`DBIter::Seek(target)` 会：
+
+1. 把 user target 包成 internal seek key：`target + sequence_ + kValueTypeForSeek`。
+2. 调用内部 `iter_.Seek(...)`，这里的 `iter_` 通常是 `MergingIterator`。
+3. 调用 `FindNextUserEntry(false, ...)`，从当前 internal key 开始找第一个用户可见 entry。
+
+`FindNextUserEntryInternal()` 是关键状态机。它循环读取 `MergingIterator` 输出的 internal key，并做这些判断：
+
+1. `ParseKey()`：把 internal key 拆成 user key、sequence、type。
+2. `IsVisible()`：判断 sequence 是否不大于当前 snapshot，或者是否通过事务 `ReadCallback` 可见。
+3. 如果当前 internal key 是未来版本，就跳过。
+4. 如果是 delete / single delete，就记住这个 user key 已被删除，并跳过同 user key 的更老版本。
+5. 如果是 put / blob index / wide column entity，就准备 value，保存 user key，返回给用户。
+6. 如果是 merge，就进入 `MergeValuesNewToOld()`，继续向后收集同 user key 的 merge operands 和 base value，算出最终 value 后返回。
+
+所以 `DBIter` 的返回条件不是“当前 internal key 是堆顶”。真正的返回条件是：
+
+`当前 internal key 对本次 snapshot 可见，并且它的 value type 能产生一个用户可见结果。`
+
+删除标记不返回；被更新版本覆盖的旧版本不返回；snapshot 之后写入的新版本不返回；merge operand 要先合并后才返回。
+
+### 一个完整例子
+
+假设 snapshot sequence 是 `100`，`MergingIterator` 合并后输出下面的 internal stream：
+
+```text
+a#105 Put(newer-than-snapshot)
+a#99  Put(v99)
+a#80  Put(v80)
+b#98  Delete
+b#70  Put(old-b)
+c#97  Merge(+2)
+c#90  Merge(+3)
+c#60  Put(10)
+d#50  Put(v50)
+```
+
+`DBIter` 正向扫描时会这样处理：
+
+1. `a#105` 的 sequence 大于 snapshot `100`，不可见，跳过。
+2. `a#99` 可见且是 Put，返回 `a -> v99`；`a#80` 被同 user key 的更新版本遮蔽。
+3. 下一次 `Next()` 跳到 `b#98`，这是可见 Delete，于是整个 `b` 不返回，`b#70` 被删除遮蔽。
+4. 再往后到 `c#97 Merge(+2)`，它不能直接返回 operand；`DBIter` 继续收集 `c#90 Merge(+3)` 和 `c#60 Put(10)`，调用 merge operator 得到结果，返回 `c -> 15`。
+5. 最后返回 `d -> v50`。
+
+这个例子说明了三层职责：
+
+- child iterators 负责各自来源内有序。
+- `MergingIterator` 负责把多个来源合成一个全局 internal key 流。
+- `DBIter` 负责把 internal key 流解释成用户可见 key/value。
+
 ## 源码细读
 
-这次选 11 个关键片段，把读路径从 API 入口串到 memtable、SST 和 iterator。
+这次选一组关键片段，把读路径从 API 入口串到 memtable、SST 和 iterator。
 
 ### 1. `SuperVersion` 把读路径需要的对象固定下来
 
@@ -716,6 +886,313 @@ db_iter->SetIterUnderDBIter(internal_iter);
 - `DBIter`：按 snapshot / timestamp / delete / merge 语义整理成用户可见结果
 
 这和 `Get()` 很不一样。`Get()` 是围绕一个 key 做短路查找；`Iterator` 是围绕一个有序流做持续过滤。
+
+### 12. Iterator 的完整构造调用链
+
+先把 user-facing iterator 的构造链路单独拉出来：
+
+```mermaid
+flowchart TD
+    A[DBImpl::NewIterator] --> B[Get referenced SuperVersion]
+    B --> C[DBImpl::NewIteratorImpl]
+    C --> D[NewArenaWrappedDbIterator]
+    D --> E[ArenaWrappedDBIter::Init]
+    E --> F[DBIter::NewIter]
+    D --> G[DBImpl::NewInternalIterator]
+    G --> H[MergeIteratorBuilder]
+    H --> I[memtable iterator]
+    H --> J[immutable memtable iterators]
+    H --> K[L0 table iterators]
+    H --> L[L1+ LevelIterator]
+    H --> M[MergeIteratorBuilder::Finish]
+    M --> N[MergingIterator or single child]
+    N --> O[ArenaWrappedDBIter::SetIterUnderDBIter]
+    O --> P[DBIter wraps internal iterator]
+```
+
+从源码看，`DBImpl::NewIteratorImpl()` 并不直接创建所有 child iterator，而是先创建一个外层包装：
+
+```cpp
+// db/db_impl/db_impl.cc, DBImpl::NewIteratorImpl(...)
+return NewArenaWrappedDbIterator(
+    env_, read_options, cfh, sv, snapshot, read_callback, this,
+    expose_blob_index, allow_refresh,
+    /*allow_mark_memtable_for_flush=*/true);
+```
+
+`NewArenaWrappedDbIterator()` 里先初始化 `DBIter`，再创建 internal iterator tree，最后把 internal iterator 塞回 `DBIter`：
+
+```cpp
+// db/arena_wrapped_db_iter.cc, NewArenaWrappedDbIterator(...)
+db_iter->Init(env, read_options, cfh->cfd()->ioptions(),
+              sv->mutable_cf_options, sv->current, sequence,
+              sv->version_number, read_callback, cfh, expose_blob_index,
+              allow_refresh, sv->mem);
+
+InternalIterator* internal_iter = db_impl->NewInternalIterator(
+    db_iter->GetReadOptions(), cfh->cfd(), sv, db_iter->GetArena(), sequence,
+    true /* allow_unprepared_value */, db_iter);
+
+db_iter->SetIterUnderDBIter(internal_iter);
+```
+
+这解释了为什么文章前面说 iterator 是两层：
+
+- 外层 `DBIter` 持有 snapshot sequence、read callback、read options、merge operator 等用户语义。
+- 内层 `MergingIterator` 或单个 child iterator 只负责产出 internal key stream。
+
+也就是说，`DBIter` 是用户 Iterator 的语义层；`MergingIterator` 是有序归并层。
+
+### 13. `MergeIteratorBuilder::Finish()`：只有多个来源时才需要真正的 `MergingIterator`
+
+`MergeIteratorBuilder` 是一个小优化点。它不总是创建 `MergingIterator`。
+
+```cpp
+// table/merging_iterator.cc, MergeIteratorBuilder::Finish(...)
+InternalIterator* MergeIteratorBuilder::Finish(ArenaWrappedDBIter* db_iter) {
+  InternalIterator* ret = nullptr;
+  if (!use_merging_iter) {
+    ret = first_iter;
+    first_iter = nullptr;
+  } else {
+    for (auto& p : range_del_iter_ptrs_) {
+      *(p.second) = &(merge_iter->range_tombstone_iters_[p.first]);
+    }
+    if (db_iter && !merge_iter->range_tombstone_iters_.empty()) {
+      db_iter->SetMemtableRangetombstoneIter(
+          &merge_iter->range_tombstone_iters_.front());
+    }
+    merge_iter->Finish();
+    ret = merge_iter;
+    merge_iter = nullptr;
+  }
+  return ret;
+}
+```
+
+如果只有一个来源，比如只有一个 memtable iterator 且没有 range tombstone 复杂性，那么直接返回这个 child iterator 就够了，不需要包一层 `MergingIterator`。
+
+一旦出现多个 child，或者需要同时处理 point iterator 和 range tombstone iterator，就切换到真正的 `MergingIterator`。
+
+这里有两个细节：
+
+1. `range_del_iter_ptrs_` 用来让 `LevelIterator` 在切换 SST 文件时更新对应的 range tombstone iterator。
+2. `db_iter->SetMemtableRangetombstoneIter(...)` 是给 `ArenaWrappedDBIter::Refresh()` 用的，iterator refresh 时可以知道 memtable range tombstone 是否变化。
+
+所以 `MergeIteratorBuilder` 不只是“append child list”，它还负责把 point iterator 与 range tombstone iterator 对齐，最后决定是否需要真正的多路合并器。
+
+### 14. `MergingIterator`：用 heap 维护当前应该返回的 child
+
+正向扫描时，`MergingIterator` 的核心逻辑可以从 `Seek()` 和 `Next()` 看出来。
+
+```cpp
+// table/merging_iterator.cc, MergingIterator::Seek(...)
+void Seek(const Slice& target) override {
+  status_ = Status::OK();
+  SeekImpl(target);
+  FindNextVisibleKey();
+
+  direction_ = kForward;
+  current_ = CurrentForward();
+}
+```
+
+`SeekImpl(target)` 会对每个 child 执行 seek，并把有效 child 放进 min heap：
+
+```cpp
+// table/merging_iterator.cc, MergingIterator::SeekImpl(...)
+for (auto level = starting_level; level < children_.size(); ++level) {
+  children_[level].iter.Seek(current_search_key.GetInternalKey());
+  ...
+  AddToMinHeapOrCheckStatus(&children_[level]);
+}
+```
+
+`CurrentForward()` 取的就是 min heap 顶部。这个顶部 child 的 key，就是当前所有 child iterator 中最小的 internal key。
+
+调用 `Next()` 时，它只推进当前 heap top 对应的 child：
+
+```cpp
+// table/merging_iterator.cc, MergingIterator::Next(...)
+current_->Next();
+if (current_->Valid()) {
+  minHeap_.replace_top(minHeap_.top());
+} else {
+  considerStatus(current_->status());
+  minHeap_.pop();
+}
+FindNextVisibleKey();
+current_ = CurrentForward();
+```
+
+这个过程就是 K 路归并：
+
+1. heap top 是当前要输出的 child。
+2. 输出后只推进这个 child。
+3. 如果 child 还有下一个 key，用 `replace_top()` 恢复 heap 顺序。
+4. 如果 child 已经无效，从 heap 中移除。
+5. 新 heap top 就是下一条 internal key。
+
+注意这里比较的是 internal key，不是 user key。internal key 的排序规则会让同一个 user key 的更新 sequence 排在更前面，但 `MergingIterator` 不解释这个含义。
+
+`FindNextVisibleKey()` 这个名字容易误导。它不是做 snapshot 可见性，而是处理 range tombstone 和 file-boundary sentinel：
+
+```cpp
+// table/merging_iterator.cc, MergingIterator::FindNextVisibleKey()
+inline void MergingIterator::FindNextVisibleKey() {
+  PopDeleteRangeStart();
+  while (!minHeap_.empty() &&
+         (!active_.empty() || minHeap_.top()->iter.IsDeleteRangeSentinelKey()) &&
+         SkipNextDeleted()) {
+    PopDeleteRangeStart();
+  }
+  assert(minHeap_.empty() || minHeap_.top()->type == HeapItem::Type::ITERATOR);
+}
+```
+
+这里的 “visible” 指的是对 `MergingIterator` 这个 internal stream 来说可产出：不是 range tombstone 的 start/end，不是文件边界 sentinel，也不是被明显更新层级 range tombstone 覆盖的 point key。
+
+但是它不会判断：
+
+- 当前 sequence 是否对 snapshot 可见
+- delete tombstone 是否要遮蔽更老版本
+- merge operand 是否要合并成最终值
+
+这些都留给外层 `DBIter`。
+
+### 15. `DBIter::Seek()`：先 seek internal stream，再找用户可见 entry
+
+用户调用 `iter->Seek(user_key)` 时，真正进入的是 `DBIter::Seek()`：
+
+```cpp
+// db/db_iter.cc, DBIter::Seek(...)
+SetSavedKeyToSeekTarget(target);
+iter_.Seek(saved_key_.GetInternalKey());
+...
+direction_ = kForward;
+ClearSavedValue();
+FindNextUserEntry(false /* not skipping saved_key */, nullptr);
+```
+
+这里的 `iter_` 是 `DBIter` 里面包着的 internal iterator，通常就是 `MergingIterator`。
+
+第一步 `SetSavedKeyToSeekTarget(target)` 会把用户 key 拼成 internal key：
+
+```text
+target user key + sequence_ + kValueTypeForSeek
+```
+
+这样内部 seek 才能落到“这个 user key 在当前 snapshot 可见范围内的最新候选版本”附近。
+
+第二步 `iter_.Seek(...)` 把 `MergingIterator` 放到第一个候选 internal key。
+
+第三步 `FindNextUserEntry(...)` 才开始解释 internal key：
+
+```cpp
+// db/db_iter.cc, DBIter::FindNextUserEntryInternal(...)
+if (IsVisible(ikey_.sequence, ts, &more_recent)) {
+  if (skipping_saved_key &&
+      CompareKeyForSkip(ikey_.user_key, saved_key_.GetUserKey()) <= 0) {
+    num_skipped++;
+  } else {
+    switch (ikey_.type) {
+      case kTypeDeletion:
+      case kTypeSingleDeletion:
+        saved_key_.SetUserKey(ikey_.user_key, ...);
+        skipping_saved_key = true;
+        break;
+
+      case kTypeValue:
+      case kTypeBlobIndex:
+      case kTypeWideColumnEntity:
+        PrepareValueInternal();
+        saved_key_.SetUserKey(ikey_.user_key, ...);
+        SetValueAndColumnsFromPlain(...);
+        valid_ = true;
+        return true;
+
+      case kTypeMerge:
+        PrepareValueInternal();
+        saved_key_.SetUserKey(ikey_.user_key, ...);
+        current_entry_is_merged_ = true;
+        valid_ = true;
+        return MergeValuesNewToOld();
+    }
+  }
+}
+```
+
+这段状态机的核心是：
+
+- 如果 sequence 不可见，跳过。
+- 如果是 delete，当前 user key 不返回，并跳过这个 user key 的更老版本。
+- 如果是 value / blob / wide column，准备 value 并返回。
+- 如果是 merge，不直接返回 operand，而是进入 merge 状态机。
+
+所以 `DBIter::Valid()` 为 true 时，`DBIter::key()` / `DBIter::value()` 返回的不是当前 internal key 的原始内容，而是经过可见性和 value type 处理后的用户结果。
+
+### 16. `DBIter` 遇到 merge operand 时如何返回值
+
+如果当前 internal key 是 `kTypeMerge`，`DBIter` 会进入 `MergeValuesNewToOld()`：
+
+```cpp
+// db/db_iter.cc, DBIter::MergeValuesNewToOld()
+merge_context_.Clear();
+merge_context_.PushOperand(iter_.value(), iter_.iter()->IsValuePinned());
+
+for (iter_.Next(); iter_.Valid(); iter_.Next()) {
+  if (!ParseKey(&ikey)) {
+    return false;
+  }
+  if (!user_comparator_.EqualWithoutTimestamp(
+          ikey.user_key, saved_key_.GetUserKey())) {
+    break;
+  }
+  ...
+}
+```
+
+它会从新到旧扫描同一个 user key：
+
+1. 先把当前 merge operand 放进 `merge_context_`。
+2. 继续推进 internal iterator。
+3. 如果还是同一个 user key 且还是 merge operand，就继续收集。
+4. 如果遇到 base value，就用 merge operator 做 full merge。
+5. 如果遇到 delete，或者没有 base value，就按对应规则结束。
+6. 计算出的结果存入 `saved_value_` 或 `pinned_value_`，然后让 `DBIter` 对用户返回这个合并结果。
+
+对应的 full merge 调用长这样：
+
+```cpp
+// db/db_iter.cc, DBIter::MergeWithPlainBaseValue(...)
+const Status s = MergeHelper::TimedFullMerge(
+    merge_operator_, user_key, MergeHelper::kPlainBaseValue, value,
+    merge_context_.GetOperands(), logger_, statistics_, clock_,
+    true /* update_num_ops_stats */, nullptr /* op_failure_scope */,
+    &saved_value_, &pinned_value_, &result_type);
+return SetValueAndColumnsFromMergeResult(s, result_type);
+```
+
+这解释了一个容易混的点：`MergingIterator` 会把 merge operand 当普通 internal key 产出；真正知道“这些 operand 应该合并成一个用户 value”的，是 `DBIter`。
+
+也解释了 `DBIter::Next()` 里为什么要判断 `current_entry_is_merged_`：
+
+```cpp
+// db/db_iter.cc, DBIter::Next(...)
+if (direction_ == kReverse) {
+  ...
+} else if (!current_entry_is_merged_) {
+  iter_.Next();
+}
+...
+FindNextUserEntry(true /* skipping the current user key */, nullptr);
+```
+
+如果当前返回值来自普通 Put，internal iterator 还停在这条 Put 上，下一次 `Next()` 可以先 `iter_.Next()`。
+
+如果当前返回值来自 merge，`MergeValuesNewToOld()` 已经向后扫描过多个 internal entry，`iter_` 可能已经停在下一个 user key 或更后的位置。此时不能再无脑 `iter_.Next()`，否则会跳过数据。
+
+这一点是理解 `DBIter` 状态机的关键：它不只是过滤器，还要维护 internal iterator 在 merge、reverse、reseek 等复杂路径后的正确位置。
 
 ## 今日问题与讨论
 
