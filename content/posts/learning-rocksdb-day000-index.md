@@ -1,7 +1,7 @@
 ---
 title: RocksDB 学习索引
 date: 2026-04-01T19:11:02+08:00
-lastmod: 2026-05-25T00:00:00+08:00
+lastmod: 2026-05-26T14:52:25+08:00
 tags: [RocksDB, Database, Storage]
 categories: [数据库]
 series:
@@ -14,20 +14,20 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 当前状态
 
-- 当前学习总天数：`20`
-- 当前最近一次学习主题：`Day 020：参数调优 / Rate Limiter / Write Stall`
-- 当前主线阶段：`参数调优：从 Options / MutableCFOptions 到 VersionStorageInfo / WriteController / RateLimiter，理解参数如何沿 memtable、L0、level target、compaction debt 和 I/O 限流链路传导`
+- 当前学习总天数：`21`
+- 当前最近一次学习主题：`Day 021：SST File Ingestion`
+- 当前主线阶段：`高级特性：从 SstFileWriter、DBImpl::IngestExternalFiles、ExternalSstFileIngestionJob、VersionEdit 与 MANIFEST，理解外部 SST 如何以文件级写入方式接入当前 LSM`
 - 上一篇文章写到：
-  - RocksDB 调参不能按单个参数背默认值，而要沿 `写入吸收能力 -> flush -> L0 -> compaction debt -> stall` 链路观察
-  - `Options / AdvancedColumnFamilyOptions` 中的参数会被拆入 `MutableCFOptions`，再派生成每层文件大小、level target、compaction score 和 stall 条件
-  - `write_buffer_size / max_write_buffer_number / WriteBufferManager` 分别控制单 CF memtable、immutable memtable 堆积和 DB/多 DB 总内存预算
-  - `level0_file_num_compaction_trigger` 是 L0 compaction 触发线，`level0_slowdown_writes_trigger / level0_stop_writes_trigger` 是前台背压保护线
-  - `target_file_size_base` 控制单个输出 SST 粒度，`max_bytes_for_level_base / max_bytes_for_level_multiplier` 控制 level 总容量目标；动态 level bytes 下 base level 可能不是 L1
-  - `RateLimiter` 限制内部文件 I/O token，不直接限制前台 `Put()`；设得太低会让后台还债变慢，从而间接增加 write stall 风险
-  - 读延迟不是不重要，而是通常没有像 write stall 一样的阈值式 delay / stop；读侧更常随 L0 文件数、cache miss 和 I/O 竞争逐步抬高尾延迟
-  - 常见调优参数的源码默认值已补充到 Day 020 正文，包括 memtable、L0、level shape、后台 I/O、RateLimiter 构造参数和相关写入开关；同时补充了默认值面向的机器 / workload 画像与压力判断边界
-  - Day 020 复习题已完成；主线可以通过，但需记住 dynamic level bytes 的目标是动态选择 base level 以稳定 LSM 形状和空间放大边界，不是简单“把数据放到更高层降低写放大”
-  - 实际调参顺序应是：观测触发源 -> 增加后台还债能力或减少债务生成 -> 最后再调整 stall 保护阈值
+  - SST File Ingestion 绕过的是逐条 `Put -> WAL -> memtable -> flush` 写入成本，但不能绕过 `VersionEdit / MANIFEST / SuperVersion`
+  - `SstFileWriter` 生成外部 SST 时要求 point key 按 comparator 严格递增，内部 sequence number 默认为 `0`
+  - `DBImpl::IngestExternalFile()` 只是单 CF 包装，真正主入口是 `DBImpl::IngestExternalFiles()`
+  - `ExternalSstFileIngestionJob::Prepare()` 负责读取 table properties、校验 CF/key/seqno/checksum，并把文件 copy 或 link 到 DB 目录
+  - 如果导入文件 key range 和 memtable 重叠，`NeedsFlush()` 会要求先 flush，除非 `allow_blocking_flush=false` 直接失败
+  - `Run()` 负责分配 level 和 global seqno，并通过 `VersionEdit::AddFile()` 准备 MANIFEST edit
+  - 默认目标是把外部 SST 放入能容纳其 key range 的最低层；有 overlap、FIFO 或批次新旧顺序要求时可能进入 L0
+  - global seqno 是文件级覆盖语义，让 seqno=0 的外部 SST 在读路径中表现为较新的版本；当前默认不把它写回 SST 文件本体
+  - 真正提交点是 `VersionSet::LogAndApply()` 写 MANIFEST，随后 `InstallSuperVersionAndScheduleWork()` 发布新读视图
+  - Day 021 文章已完成，复习题尚未回答；下一次继续新章节前必须先完成 Day 021 复习问答
 - 已学过主题：
   - `Day 001：整体架构与 LSM-Tree`
   - `Day 002：DB 打开流程与核心对象关系`
@@ -49,9 +49,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Day 018：BlobDB / KV 分离`
   - `Day 019：事务与并发控制`
   - `Day 020：参数调优 / Rate Limiter / Write Stall`
+  - `Day 021：SST File Ingestion`
 - 下一步建议：
-  - `进入 Day 021：Merge Operator / Compaction Filter`
+  - `先完成 Day 021 复习题；通过后进入 Day 022：Merge Operator / Compaction Filter`
 - 当前仍需补看的关键点：
+  - `SST File Ingestion` 主链已建立；后续需要通过复习题确认 `Prepare / NeedsFlush / Run / LogAndApply` 的职责边界
+  - `global seqno` 的文件级覆盖语义已建立；后续还可结合 `TableReader` 和 snapshot 边界继续压实
+  - `ingest_behind / allow_db_generated_files / multi-CF atomic group` 已建立入口，但具体异常分支、tombstone 保留和文件迁移场景还可后续专题展开
   - `参数调优 / Rate Limiter / Write Stall` 主链已建立；后续需要结合真实 `rocksdb.stats`、stall micros、L0 文件数、pending compaction bytes、compaction read/write bytes 做一次 benchmark 型实战调参
   - `BlobDB / KV 分离` 主链已建立；后续可结合测试继续压实 forced blob GC picker、backup/checkpoint 与 blob file live set、secondary/remote storage 下的 blob scan 性能边界
   - `事务与并发控制` 主线已建立；后续还要回看 `SnapshotChecker` 不是冲突检测器、`unprep_seqs_` 先于 `IsInSnapshot()` 的自写可见性语义，以及三种 write policy 的复杂度位置
@@ -73,13 +77,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近一天复习问答闸门
 
-- latest_review_day：`Day 020`
-- latest_review_file：`learning-rocksdb-day020-2026-05-24-tuning-rate-limiter-write-stall.md`
-- review_status：`answered`
-- review_result：`partial`
-- review_answered_at：`2026-05-24T21:47:00+08:00`
-- review_notes：`Day 020 复习问答已完成。主线可以通过：memtable 内存层次、L0 compaction/slowdown/stop 三条线、target file 与 level target、RateLimiter 文件 I/O、pending compaction bytes 和 DB 级 WriteController 都答到核心。需纠偏：level_compaction_dynamic_level_bytes=true 的 base level 选择不是简单为了“把数据放到更高层降低写放大”，而是按总数据量和 multiplier 动态选择 base level，以维持更稳定的 LSM 形状和空间放大边界。当前无阻断，可以进入 Day 021。`
-- review_block_next：`no`
+- latest_review_day：`Day 021`
+- latest_review_file：`learning-rocksdb-day021-2026-05-26-sst-file-ingestion.md`
+- review_status：
+- review_result：
+- review_answered_at：
+- review_notes：`Day 021 文章已完成，复习题尚未回答。下一次继续新章节前，应先完成 SST File Ingestion 复习问答。`
+- review_block_next：`yes`
 
 说明：
 
@@ -132,6 +136,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 | 018 | 2026-05-21 | BlobDB / KV 分离 | `learning-rocksdb-day018-2026-05-21-blobdb-kv-separation.md` | `revisit` |
 | 019 | 2026-05-23 | 事务与并发控制 | `learning-rocksdb-day019-2026-05-23-transactions-and-concurrency-control.md` | `revisit` |
 | 020 | 2026-05-24 | 参数调优 / Rate Limiter / Write Stall | `learning-rocksdb-day020-2026-05-24-tuning-rate-limiter-write-stall.md` | `revisit` |
+| 021 | 2026-05-26 | SST File Ingestion | `learning-rocksdb-day021-2026-05-26-sst-file-ingestion.md` | `next` |
 
 说明：
 
@@ -841,6 +846,37 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 - review_notes：`Day 020 复习问答已完成。主线可以通过：memtable 内存层次、L0 compaction/slowdown/stop 三条线、target file 与 level target、RateLimiter 文件 I/O、pending compaction bytes 和 DB 级 WriteController 都答到核心。需纠偏：level_compaction_dynamic_level_bytes=true 的 base level 选择不是简单为了“把数据放到更高层降低写放大”，而是按总数据量和 multiplier 动态选择 base level，以维持更稳定的 LSM 形状和空间放大边界。当前无阻断，可以进入 Day 021。`
 - review_block_next：`no`
 
+### Day 021
+
+- 主题：`SST File Ingestion`
+- 文件：`learning-rocksdb-day021-2026-05-26-sst-file-ingestion.md`
+- understanding_status：`yellow`
+- mastery_score：`4/5`
+- weak_points：
+  - `SstFileWriter -> DBImpl::IngestExternalFiles -> ExternalSstFileIngestionJob -> VersionEdit -> LogAndApply -> SuperVersion` 主调用链已建立，但还需要通过复习题确认每一步职责边界
+  - `global seqno` 的文件级覆盖语义已建立：默认不随机写回 SST 文件，而是进入 `FileMetaData / VersionEdit` 语义；后续可结合 `TableReader` 读路径和 snapshot 再压实
+  - `ingest_behind / allow_db_generated_files / multi-CF atomic group` 已建立入口，但 tombstone 保留、DB-generated 文件迁移和 atomic group 恢复细节还没完全展开
+- source_anchors：
+  - `D:\program\rocksdb\include\rocksdb\db.h`
+  - `D:\program\rocksdb\include\rocksdb\options.h`
+  - `D:\program\rocksdb\include\rocksdb\sst_file_writer.h`
+  - `D:\program\rocksdb\table\sst_file_writer.cc`
+  - `D:\program\rocksdb\table\sst_file_writer_collectors.h`
+  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
+  - `D:\program\rocksdb\db\external_sst_file_ingestion_job.h`
+  - `D:\program\rocksdb\db\external_sst_file_ingestion_job.cc`
+  - `D:\program\rocksdb\db\version_edit.h`
+  - `D:\program\rocksdb\db\version_edit.cc`
+  - `D:\program\rocksdb\table\block_based\block_based_table_reader.cc`
+  - `D:\program\rocksdb\docs\_posts\2017-02-17-bulkoad-ingest-sst-file.markdown`
+- ready_for_next：`no`
+- next_review_trigger：`完成 Day 021 复习题后，进入 Merge Operator / Compaction Filter；后续学习 Backup / Checkpoint 或 DeleteRange 时回看 ingestion 的文件生命周期、MANIFEST 和 tombstone 语义`
+- review_status：
+- review_result：
+- review_answered_at：
+- review_notes：`Day 021 文章已完成，复习题尚未回答。下一次继续新章节前，应先完成 SST File Ingestion 复习问答。`
+- review_block_next：`yes`
+
 ## 状态使用建议
 
 - `green`
@@ -865,7 +901,10 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 ## 当前薄弱点与回看提示
 
 - 当前薄弱点：
-  - `参数调优 / Rate Limiter / Write Stall` 主链已建立，复习闸门已通过；下一步可进入 `Merge Operator / Compaction Filter`
+  - `SST File Ingestion` 主链已建立，复习闸门待答题；下一步必须先完成 Day 021 复习题
+  - `global seqno`、`level placement`、`memtable overlap flush`、`VersionEdit / MANIFEST` 的职责边界是 Day 021 复习重点
+  - `ingest_behind / allow_db_generated_files / multi-CF atomic group` 已建立入口，后续可结合 tombstone、DB 文件迁移和恢复细节继续回看
+  - `参数调优 / Rate Limiter / Write Stall` 主链已建立；后续可结合真实 `rocksdb.stats`、stall micros、L0 文件数、pending compaction bytes、compaction read/write bytes 做一次 benchmark 型实战调参
   - `BlobDB / KV 分离` 主链已建立；后续可结合测试继续压实 forced blob GC picker、backup/checkpoint 与 blob file live set、secondary/remote storage 下的 blob scan 性能边界
   - `事务与并发控制` 主线已建立；后续还要结合异常分支压实 TransactionDB、lock manager、snapshot/write conflict、WritePrepared / WriteUnprepared 与 `SnapshotChecker`
   - `Column Family` 主链已建立；`atomic_flush` 的主要语义已补上，MANIFEST atomic group 的恢复细节后续可结合 `VersionEditHandler` 再看
@@ -900,6 +939,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `学习参数调优 / 缓存预算 / Prefix Seek`
   - `做 benchmark 型实战调参`
   - `学习 MANIFEST / VersionEdit / VersionSet`
+  - `学习 Backup / Checkpoint`
   - `学习 DeleteRange / CompactionFilter / Blob GC`
 
 ## 外部资料使用原则
@@ -928,4 +968,4 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
 
 ## 最近更新时间
 
-- 2026-05-24T21:47:00+08:00
+- 2026-05-26T14:52:25+08:00
