@@ -167,8 +167,6 @@ storage-first 视角下，重点不是“数据放对象存储”这么简单，
 
 代表系统：`Aurora`、`Neon`、`PolarDB`、`Azure SQL Hyperscale`。
 
-这类系统更接近你公司项目关注的方向：大容量、低成本、SQL、分布式、共享存储、计算节点尽量无状态。
-
 学习重点应该放在状态转移：
 
 - 传统数据库里的 buffer pool、WAL、page、checkpoint 被拆到了哪里？
@@ -387,10 +385,6 @@ pgvector、PostGIS、TimescaleDB、Citus 这类扩展很有价值，但必须追
 第四，现代数据库经常用“后台任务”换取前台简洁。
 
 LSM 的 compaction、列存的 merge、MVCC 的 vacuum、对象存储表格式的小文件合并、向量索引的构建与重排，本质都是把复杂性推迟到后台。评估系统时必须看后台任务跟不上时的退化路径。
-
-第五，对你们项目最相关的主线是共享存储 SQL 数据库。
-
-需要重点比较 Aurora/Neon/PolarDB/Hyperscale/Snowflake/BigQuery/Doris 存算分离模式，但不能只看“计算无状态”。真正要学的是日志服务、page/object 存储、metadata service、cache、recovery 和多租户资源隔离如何配合。
 
 ## 下一步
 
