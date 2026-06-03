@@ -1299,18 +1299,13 @@ body.max-w-7xl {
 /* 响应式滚动包装 */
 .prose table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
   line-height: 1.6;
   display: block;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-@media (min-width: 640px) {
-  .prose table {
-    display: table;
-  }
 }
 
 /* 表头 */
