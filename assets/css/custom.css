@@ -2045,12 +2045,16 @@ body.max-w-7xl {
   position: fixed;
   inset: 0;
   z-index: 9998;
-  background: rgba(0, 0, 0, 0.88);
+  background: rgba(var(--color-neutral-50), 0.97);
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s ease, visibility 0.25s ease;
   cursor: grab;
+}
+
+.dark .mermaid-overlay {
+  background: rgba(0, 0, 0, 0.88);
 }
 
 .mermaid-overlay--active {
@@ -2082,8 +2086,8 @@ body.max-w-7xl {
   height: 2.5rem;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: rgba(var(--color-neutral-900), 0.08);
+  color: rgb(var(--color-neutral-800));
   font-size: 1.25rem;
   cursor: pointer;
   display: flex;
@@ -2094,6 +2098,15 @@ body.max-w-7xl {
 }
 
 .mermaid-overlay__close:hover {
+  background: rgba(var(--color-neutral-900), 0.16);
+}
+
+.dark .mermaid-overlay__close {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.dark .mermaid-overlay__close:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
@@ -2105,6 +2118,10 @@ body.max-w-7xl {
   transform: translateX(-50%);
   z-index: 9999;
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(var(--color-neutral-700), 0.72);
   pointer-events: none;
+}
+
+.dark .mermaid-overlay__zoom {
+  color: rgba(255, 255, 255, 0.5);
 }

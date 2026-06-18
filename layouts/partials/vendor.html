@@ -1,7 +1,7 @@
 {{/* Mermaid */}}
 {{ $hasMermaidFence := false }}
 {{ if .File }}
-  {{ $hasMermaidFence = gt (len (findRE "(?m)^```[ \\t]*mermaid(?:[ \\t].*)?$" .RawContent)) 0 }}
+  {{ $hasMermaidFence = in .RawContent "```mermaid" }}
 {{ end }}
 {{ if or (.Page.HasShortcode "mermaid") $hasMermaidFence }}
   {{ $mermaidLib := resources.Get "lib/mermaid/mermaid.min.js" }}
