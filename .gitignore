@@ -4,3 +4,5 @@ resources/_gen/
 tools/postimg/target/
 tools/game-of-life/target/
 tmp/
+/local-repos/*
+!/local-repos/README.md

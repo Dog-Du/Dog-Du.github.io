@@ -7,7 +7,7 @@
 - 先恢复当前学习进度。
 - 再根据用户本次消息的意图执行学习或问答。
 - 所有与当天学习直接相关的重要内容，都要持久化写入 `content/posts`。
-- 当前本地源码 `D:\program\rocksdb` 是事实标准。
+- 当前本地源码 `local-repos/rocksdb` 是事实标准。
 
 
 当用户要求持续学习、讲解、问答、整理或持久化 RocksDB 相关内容时，优先遵守本文件。
@@ -27,7 +27,7 @@
 
 ### 2.1 本地源码是事实标准
 
-- RocksDB 本地源码目录固定为 `D:\program\rocksdb`。
+- RocksDB 本地源码目录默认为本仓库下的 `local-repos/rocksdb`。
 - 当前本地仓库中的 RocksDB 源码是事实标准。
 - 当网络文章、Wiki、Issue、评论区说法、历史印象与当前本地源码不一致时，以当前本地源码为准。
 
@@ -81,7 +81,7 @@
 
 1. 先记录问题，而不是直接接受结论
 2. 判断这个问题是否对当前主题有学习价值
-3. 回到 `D:\program\rocksdb` 中查相关源码
+3. 回到 `local-repos/rocksdb` 中查相关源码
 4. 最终把“源码验证后的结论”写入当天文章
 
 ### 2.5 外部资料的记录建议
@@ -172,7 +172,7 @@
    - 最近一次学习的主线停在哪
    - 目前的薄弱点是什么
 5. 如果索引文件与每日文章冲突，以已有每日文章和实际文件序列为准，修正索引
-6. 若本次任务涉及具体实现细节，先读取 `D:\program\rocksdb` 中相关源码，再组织回答或生成新文章
+6. 若本次任务涉及具体实现细节，先读取 `local-repos/rocksdb` 中相关源码，再组织回答或生成新文章
 
 ## 6. 索引/状态文件应记录什么
 
@@ -874,16 +874,16 @@
 
 讲解时优先关注以下目录，并尽量落到具体文件、类、函数：
 
-- `D:\program\rocksdb\db`
-- `D:\program\rocksdb\db\db_impl`
-- `D:\program\rocksdb\db\compaction`
-- `D:\program\rocksdb\memtable`
-- `D:\program\rocksdb\table`
-- `D:\program\rocksdb\table\block_based`
-- `D:\program\rocksdb\include`
-- `D:\program\rocksdb\options`
-- `D:\program\rocksdb\util`
-- `D:\program\rocksdb\monitoring`
+- `local-repos/rocksdb/db`
+- `local-repos/rocksdb/db/db_impl`
+- `local-repos/rocksdb/db/compaction`
+- `local-repos/rocksdb/memtable`
+- `local-repos/rocksdb/table`
+- `local-repos/rocksdb/table/block_based`
+- `local-repos/rocksdb/include`
+- `local-repos/rocksdb/options`
+- `local-repos/rocksdb/util`
+- `local-repos/rocksdb/monitoring`
 
 ## 14. 回复用户时必须说明的内容
 

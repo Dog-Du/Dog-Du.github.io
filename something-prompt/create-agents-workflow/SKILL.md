@@ -118,7 +118,7 @@ description: Use when the user wants to create a structured long-term learning s
 
 **Type B — 事实标准与资料优先级**：本地源码为主
 
-一级：本地源码（固定路径 D:\program\&lt;repo&gt;），是权威真相源。
+一级：本地源码（仓库相对路径 local-repos/&lt;repo&gt;），是权威真相源。
 外部资料分三级：官方仓库内（Wiki/Issue/Discussion/PR）→ 社区（Stack Overflow/知乎/博客）→ 二手资料（仅线索）。
 约束：能指源码位置不讲抽象概念；能说调用链不讲教科书定义；结构推断必须标注。
 

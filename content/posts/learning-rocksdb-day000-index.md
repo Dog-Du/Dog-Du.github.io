@@ -159,20 +159,20 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `SuperVersion` 的安装和回收时机还只理解到第一层
   - `WriteImpl` 内部的写线程分组和 sequence 分配还没细看
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\db.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_experimental.cc`
-  - `D:\program\rocksdb\db\column_family.h`
-  - `D:\program\rocksdb\db\memtable.h`
-  - `D:\program\rocksdb\db\memtable_list.h`
-  - `D:\program\rocksdb\db\version_set.h`
-  - `D:\program\rocksdb\db\dbformat.h`
+  - `local-repos/rocksdb/include/rocksdb/db.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl_open.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_experimental.cc`
+  - `local-repos/rocksdb/db/column_family.h`
+  - `local-repos/rocksdb/db/memtable.h`
+  - `local-repos/rocksdb/db/memtable_list.h`
+  - `local-repos/rocksdb/db/version_set.h`
+  - `local-repos/rocksdb/db/dbformat.h`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 DB 打开流程、Snapshot 或 MANIFEST 时回看`
 - review_status：`answered`
@@ -194,14 +194,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `LogAndApplyForRecovery` 与 `WAL replay` 的职责边界还值得回看
   - `SuperVersion` 的“发布稳定可读视图”表述后面读路径章节还要继续压实
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\db.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\version_set.h`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\column_family.h`
-  - `D:\program\rocksdb\db\column_family.cc`
+  - `local-repos/rocksdb/include/rocksdb/db.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl_open.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/version_set.h`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/column_family.h`
+  - `local-repos/rocksdb/db/column_family.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 WAL、MANIFEST / VersionEdit / VersionSet、Flush 或读路径时回看`
 - review_status：`answered`
@@ -221,14 +221,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `WriteBatch` header 里的 `sequence` 在 WAL / replay / memtable 三处的统一作用还值得再压实
   - `SequenceNumber` 在 snapshot / 可见性里的消费路径还没进入
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\db.h`
-  - `D:\program\rocksdb\include\rocksdb\write_batch.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\db\write_thread.h`
-  - `D:\program\rocksdb\db\write_thread.cc`
-  - `D:\program\rocksdb\db\write_batch_internal.h`
-  - `D:\program\rocksdb\db\write_batch.cc`
-  - `D:\program\rocksdb\db\dbformat.h`
+  - `local-repos/rocksdb/include/rocksdb/db.h`
+  - `local-repos/rocksdb/include/rocksdb/write_batch.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/db/write_thread.h`
+  - `local-repos/rocksdb/db/write_thread.cc`
+  - `local-repos/rocksdb/db/write_batch_internal.h`
+  - `local-repos/rocksdb/db/write_batch.cc`
+  - `local-repos/rocksdb/db/dbformat.h`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 WAL、MemTable、Snapshot / Sequence Number / 可见性语义时回看`
 - review_status：`answered`
@@ -248,14 +248,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `wal_filter` 只知道入口和作用，还没看实际使用场景
   - `SequenceNumber` 在 recovery replay 之后如何进入读可见性判断还没进入
 - source_anchors：
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\db\log_format.h`
-  - `D:\program\rocksdb\db\log_writer.h`
-  - `D:\program\rocksdb\db\log_writer.cc`
-  - `D:\program\rocksdb\db\log_reader.h`
-  - `D:\program\rocksdb\db\log_reader.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
-  - `D:\program\rocksdb\include\rocksdb\wal_filter.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/db/log_format.h`
+  - `local-repos/rocksdb/db/log_writer.h`
+  - `local-repos/rocksdb/db/log_writer.cc`
+  - `local-repos/rocksdb/db/log_reader.h`
+  - `local-repos/rocksdb/db/log_reader.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_open.cc`
+  - `local-repos/rocksdb/include/rocksdb/wal_filter.h`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 MemTable、Snapshot / Sequence Number / 可见性语义、恢复路径细节时回看`
 - review_status：`answered`
@@ -275,14 +275,14 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `InlineSkipList` 并发插入里的 splice 复用和校验逻辑还没有展开
   - `ConcurrentArena` 的 per-core shard 分配细节只看到框架，没继续顺着实现看完
 - source_anchors：
-  - `D:\program\rocksdb\db\memtable.h`
-  - `D:\program\rocksdb\db\memtable.cc`
-  - `D:\program\rocksdb\memtable\skiplistrep.cc`
-  - `D:\program\rocksdb\memtable\inlineskiplist.h`
-  - `D:\program\rocksdb\memory\arena.h`
-  - `D:\program\rocksdb\memory\arena.cc`
-  - `D:\program\rocksdb\memory\concurrent_arena.h`
-  - `D:\program\rocksdb\db\dbformat.h`
+  - `local-repos/rocksdb/db/memtable.h`
+  - `local-repos/rocksdb/db/memtable.cc`
+  - `local-repos/rocksdb/memtable/skiplistrep.cc`
+  - `local-repos/rocksdb/memtable/inlineskiplist.h`
+  - `local-repos/rocksdb/memory/arena.h`
+  - `local-repos/rocksdb/memory/arena.cc`
+  - `local-repos/rocksdb/memory/concurrent_arena.h`
+  - `local-repos/rocksdb/db/dbformat.h`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 Flush、Read Path、Snapshot / Sequence Number / 可见性语义时回看`
 - review_status：`answered`
@@ -302,13 +302,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `MemTable::Update / UpdateCallback` 的 inplace update 边界和锁粒度还只看到第一层
   - `kValueTypeForSeek` 与 internal key 排序规则的精确关系，后续可在 Snapshot / Read Path 再压实
 - source_anchors：
-  - `D:\program\rocksdb\db\lookup_key.h`
-  - `D:\program\rocksdb\db\dbformat.cc`
-  - `D:\program\rocksdb\db\dbformat.h`
-  - `D:\program\rocksdb\db\memtable.h`
-  - `D:\program\rocksdb\db\memtable.cc`
-  - `D:\program\rocksdb\db\write_batch.cc`
-  - `D:\program\rocksdb\table\block_based\block_based_table_builder.cc`
+  - `local-repos/rocksdb/db/lookup_key.h`
+  - `local-repos/rocksdb/db/dbformat.cc`
+  - `local-repos/rocksdb/db/dbformat.h`
+  - `local-repos/rocksdb/db/memtable.h`
+  - `local-repos/rocksdb/db/memtable.cc`
+  - `local-repos/rocksdb/db/write_batch.cc`
+  - `local-repos/rocksdb/table/block_based/block_based_table_builder.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 Flush、Read Path、Snapshot / Sequence Number / 可见性语义、事务时回看`
 - review_status：`answered`
@@ -328,13 +328,13 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `mempurge / timestamp stripping` 这些 flush 分支目前只知道入口，没有继续深挖
   - `BuildTable(...)` 内部的 SST 物理写入细节刻意留到 `SSTable / BlockBasedTable` 章节再展开
 - source_anchors：
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\flush_job.h`
-  - `D:\program\rocksdb\db\flush_job.cc`
-  - `D:\program\rocksdb\db\memtable_list.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_files.cc`
-  - `D:\program\rocksdb\db\column_family.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/flush_job.h`
+  - `local-repos/rocksdb/db/flush_job.cc`
+  - `local-repos/rocksdb/db/memtable_list.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_files.cc`
+  - `local-repos/rocksdb/db/column_family.h`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 SSTable / BlockBasedTable、MANIFEST / VersionEdit / VersionSet 或 WAL 删除路径时回看`
 - review_status：`answered`
@@ -355,17 +355,17 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Block Cache / table reader / OS Page Cache` 的交互细节留到后续读路径与磁盘 I/O 章节
   - `BlockHandle`、block trailer 和 footer 各自承载什么信息，边界还容易混淆
 - source_anchors：
-  - `D:\program\rocksdb\db\builder.h`
-  - `D:\program\rocksdb\db\builder.cc`
-  - `D:\program\rocksdb\table\table_builder.h`
-  - `D:\program\rocksdb\table\format.h`
-  - `D:\program\rocksdb\table\format.cc`
-  - `D:\program\rocksdb\table\block_based\block_based_table_builder.h`
-  - `D:\program\rocksdb\table\block_based\block_based_table_builder.cc`
-  - `D:\program\rocksdb\table\block_based\block_builder.h`
-  - `D:\program\rocksdb\table\block_based\block_builder.cc`
-  - `D:\program\rocksdb\table\block_based\block_based_table_reader.h`
-  - `D:\program\rocksdb\include\rocksdb\table.h`
+  - `local-repos/rocksdb/db/builder.h`
+  - `local-repos/rocksdb/db/builder.cc`
+  - `local-repos/rocksdb/table/table_builder.h`
+  - `local-repos/rocksdb/table/format.h`
+  - `local-repos/rocksdb/table/format.cc`
+  - `local-repos/rocksdb/table/block_based/block_based_table_builder.h`
+  - `local-repos/rocksdb/table/block_based/block_based_table_builder.cc`
+  - `local-repos/rocksdb/table/block_based/block_builder.h`
+  - `local-repos/rocksdb/table/block_based/block_builder.cc`
+  - `local-repos/rocksdb/table/block_based/block_based_table_reader.h`
+  - `local-repos/rocksdb/include/rocksdb/table.h`
 - ready_for_next：`yes`
 - next_review_trigger：`当学习 Read Path / Iterator、Block Cache / Bloom Filter、Disk IO / Table Reader 时回看`
 - review_status：`answered`
@@ -386,27 +386,27 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `partitioned index / partitioned filter / prefix seek` 这些读优化变体还没单独展开
   - `MergingIterator` 与 `DBIter` 的 reverse、merge operand、range tombstone 深层细节已经补上主链，但还可以继续和 snapshot / transaction / prefix seek 交叉压实
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\db.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl.h`
-  - `D:\program\rocksdb\db\column_family.h`
-  - `D:\program\rocksdb\db\column_family.cc`
-  - `D:\program\rocksdb\db\job_context.h`
-  - `D:\program\rocksdb\db\dbformat.cc`
-  - `D:\program\rocksdb\db\lookup_key.h`
-  - `D:\program\rocksdb\db\memtable.cc`
-  - `D:\program\rocksdb\db\memtable_list.cc`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\version_set.h`
-  - `D:\program\rocksdb\db\table_cache.cc`
-  - `D:\program\rocksdb\table\table_reader.h`
-  - `D:\program\rocksdb\table\get_context.h`
-  - `D:\program\rocksdb\table\get_context.cc`
-  - `D:\program\rocksdb\table\multiget_context.h`
-  - `D:\program\rocksdb\table\block_based\block_based_table_reader.cc`
-  - `D:\program\rocksdb\db\arena_wrapped_db_iter.cc`
-  - `D:\program\rocksdb\db\db_iter.cc`
-  - `D:\program\rocksdb\table\merging_iterator.cc`
+  - `local-repos/rocksdb/include/rocksdb/db.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl.h`
+  - `local-repos/rocksdb/db/column_family.h`
+  - `local-repos/rocksdb/db/column_family.cc`
+  - `local-repos/rocksdb/db/job_context.h`
+  - `local-repos/rocksdb/db/dbformat.cc`
+  - `local-repos/rocksdb/db/lookup_key.h`
+  - `local-repos/rocksdb/db/memtable.cc`
+  - `local-repos/rocksdb/db/memtable_list.cc`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/version_set.h`
+  - `local-repos/rocksdb/db/table_cache.cc`
+  - `local-repos/rocksdb/table/table_reader.h`
+  - `local-repos/rocksdb/table/get_context.h`
+  - `local-repos/rocksdb/table/get_context.cc`
+  - `local-repos/rocksdb/table/multiget_context.h`
+  - `local-repos/rocksdb/table/block_based/block_based_table_reader.cc`
+  - `local-repos/rocksdb/db/arena_wrapped_db_iter.cc`
+  - `local-repos/rocksdb/db/db_iter.cc`
+  - `local-repos/rocksdb/table/merging_iterator.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`进入 Snapshot / Sequence Number / 可见性语义时回看`
 - review_status：`answered`
@@ -426,28 +426,28 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `CompactionIterator` 如何按 snapshot 边界丢弃旧版本还只是建立入口
   - `timestamped snapshot / user-defined timestamp` 与普通 sequence snapshot 的组合语义暂时只点到入口
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\db.h`
-  - `D:\program\rocksdb\include\rocksdb\options.h`
-  - `D:\program\rocksdb\include\rocksdb\snapshot.h`
-  - `D:\program\rocksdb\db\snapshot_impl.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\db\write_batch.cc`
-  - `D:\program\rocksdb\db\write_batch_internal.h`
-  - `D:\program\rocksdb\db\version_set.h`
-  - `D:\program\rocksdb\db\dbformat.h`
-  - `D:\program\rocksdb\db\dbformat.cc`
-  - `D:\program\rocksdb\db\lookup_key.h`
-  - `D:\program\rocksdb\table\get_context.h`
-  - `D:\program\rocksdb\table\get_context.cc`
-  - `D:\program\rocksdb\db\db_iter.h`
-  - `D:\program\rocksdb\db\db_iter.cc`
-  - `D:\program\rocksdb\db\read_callback.h`
-  - `D:\program\rocksdb\utilities\transactions\write_prepared_txn_db.h`
-  - `D:\program\rocksdb\utilities\transactions\write_unprepared_txn.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_iterator.cc`
+  - `local-repos/rocksdb/include/rocksdb/db.h`
+  - `local-repos/rocksdb/include/rocksdb/options.h`
+  - `local-repos/rocksdb/include/rocksdb/snapshot.h`
+  - `local-repos/rocksdb/db/snapshot_impl.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/db/write_batch.cc`
+  - `local-repos/rocksdb/db/write_batch_internal.h`
+  - `local-repos/rocksdb/db/version_set.h`
+  - `local-repos/rocksdb/db/dbformat.h`
+  - `local-repos/rocksdb/db/dbformat.cc`
+  - `local-repos/rocksdb/db/lookup_key.h`
+  - `local-repos/rocksdb/table/get_context.h`
+  - `local-repos/rocksdb/table/get_context.cc`
+  - `local-repos/rocksdb/db/db_iter.h`
+  - `local-repos/rocksdb/db/db_iter.cc`
+  - `local-repos/rocksdb/db/read_callback.h`
+  - `local-repos/rocksdb/utilities/transactions/write_prepared_txn_db.h`
+  - `local-repos/rocksdb/utilities/transactions/write_unprepared_txn.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_iterator.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`学习事务、Compaction 或 VersionSet/obsolete file 删除路径时回看`
 - review_status：`answered`
@@ -468,23 +468,23 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `partitioned index / partitioned filter` 如何改变 index/filter block 读取路径还没有进入
   - `BlockCache` 对 data/index/filter block 的覆盖范围与 charge 细节还没展开
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\env.h`
-  - `D:\program\rocksdb\include\rocksdb\file_system.h`
-  - `D:\program\rocksdb\include\rocksdb\options.h`
-  - `D:\program\rocksdb\file\random_access_file_reader.h`
-  - `D:\program\rocksdb\file\random_access_file_reader.cc`
-  - `D:\program\rocksdb\file\file_prefetch_buffer.h`
-  - `D:\program\rocksdb\file\file_prefetch_buffer.cc`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\table_cache.h`
-  - `D:\program\rocksdb\db\table_cache.cc`
-  - `D:\program\rocksdb\table\table_reader.h`
-  - `D:\program\rocksdb\table\format.h`
-  - `D:\program\rocksdb\table\format.cc`
-  - `D:\program\rocksdb\table\block_fetcher.h`
-  - `D:\program\rocksdb\table\block_fetcher.cc`
-  - `D:\program\rocksdb\table\block_based\block_based_table_reader.h`
-  - `D:\program\rocksdb\table\block_based\block_based_table_reader.cc`
+  - `local-repos/rocksdb/include/rocksdb/env.h`
+  - `local-repos/rocksdb/include/rocksdb/file_system.h`
+  - `local-repos/rocksdb/include/rocksdb/options.h`
+  - `local-repos/rocksdb/file/random_access_file_reader.h`
+  - `local-repos/rocksdb/file/random_access_file_reader.cc`
+  - `local-repos/rocksdb/file/file_prefetch_buffer.h`
+  - `local-repos/rocksdb/file/file_prefetch_buffer.cc`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/table_cache.h`
+  - `local-repos/rocksdb/db/table_cache.cc`
+  - `local-repos/rocksdb/table/table_reader.h`
+  - `local-repos/rocksdb/table/format.h`
+  - `local-repos/rocksdb/table/format.cc`
+  - `local-repos/rocksdb/table/block_fetcher.h`
+  - `local-repos/rocksdb/table/block_fetcher.cc`
+  - `local-repos/rocksdb/table/block_based/block_based_table_reader.h`
+  - `local-repos/rocksdb/table/block_based/block_based_table_reader.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`学习 Block Cache / Bloom Filter / Prefix Bloom / Partition Index 时回看`
 - review_status：`answered`
@@ -505,20 +505,20 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `LogAndApply` 安装 `current Version` 与 `SuperVersion` 发布读视图的边界需要在 Compaction 中回看
   - `CURRENT 切换失败 / MANIFEST rollover / obsolete manifest cleanup` 已补过主结论，但 DB open/recovery 里的异常细节还需压实
 - source_anchors：
-  - `D:\program\rocksdb\db\version_set.h`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\version_edit.h`
-  - `D:\program\rocksdb\db\version_edit.cc`
-  - `D:\program\rocksdb\db\version_builder.h`
-  - `D:\program\rocksdb\db\version_builder.cc`
-  - `D:\program\rocksdb\db\version_edit_handler.h`
-  - `D:\program\rocksdb\db\version_edit_handler.cc`
-  - `D:\program\rocksdb\db\manifest_ops.cc`
-  - `D:\program\rocksdb\file\filename.cc`
-  - `D:\program\rocksdb\include\rocksdb\file_system.h`
-  - `D:\program\rocksdb\env\fs_posix.cc`
-  - `D:\program\rocksdb\port\win\env_win.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
+  - `local-repos/rocksdb/db/version_set.h`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/version_edit.h`
+  - `local-repos/rocksdb/db/version_edit.cc`
+  - `local-repos/rocksdb/db/version_builder.h`
+  - `local-repos/rocksdb/db/version_builder.cc`
+  - `local-repos/rocksdb/db/version_edit_handler.h`
+  - `local-repos/rocksdb/db/version_edit_handler.cc`
+  - `local-repos/rocksdb/db/manifest_ops.cc`
+  - `local-repos/rocksdb/file/filename.cc`
+  - `local-repos/rocksdb/include/rocksdb/file_system.h`
+  - `local-repos/rocksdb/env/fs_posix.cc`
+  - `local-repos/rocksdb/port/win/env_win.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_open.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`学习 Compaction、Column Family 或 DB 打开/恢复路径时回看`
 - review_status：`answered`
@@ -538,27 +538,27 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `CompactionIterator` 主链已在 Day 015 补上；事务和 timestamp 扩展语义仍留给后续专题
   - `CompactionJob` 到 `VersionEdit / LogAndApply` 的主链已闭环，异常恢复细节仍归入 MANIFEST revisit
 - source_anchors：
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\column_family.h`
-  - `D:\program\rocksdb\db\column_family.cc`
-  - `D:\program\rocksdb\db\version_set.h`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\compaction\compaction.h`
-  - `D:\program\rocksdb\db\compaction\compaction.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_picker.h`
-  - `D:\program\rocksdb\db\compaction\compaction_picker.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_picker_level.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_picker_universal.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_picker_fifo.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_job.h`
-  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_state.h`
-  - `D:\program\rocksdb\db\compaction\compaction_state.cc`
-  - `D:\program\rocksdb\db\compaction\clipping_iterator.h`
-  - `D:\program\rocksdb\db\compaction\subcompaction_state.cc`
-  - `D:\program\rocksdb\db\compaction\subcompaction_state.h`
-  - `D:\program\rocksdb\db\compaction\compaction_outputs.cc`
-  - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/column_family.h`
+  - `local-repos/rocksdb/db/column_family.cc`
+  - `local-repos/rocksdb/db/version_set.h`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/compaction/compaction.h`
+  - `local-repos/rocksdb/db/compaction/compaction.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_picker.h`
+  - `local-repos/rocksdb/db/compaction/compaction_picker.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_picker_level.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_picker_universal.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_picker_fifo.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_job.h`
+  - `local-repos/rocksdb/db/compaction/compaction_job.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_state.h`
+  - `local-repos/rocksdb/db/compaction/compaction_state.cc`
+  - `local-repos/rocksdb/db/compaction/clipping_iterator.h`
+  - `local-repos/rocksdb/db/compaction/subcompaction_state.cc`
+  - `local-repos/rocksdb/db/compaction/subcompaction_state.h`
+  - `local-repos/rocksdb/db/compaction/compaction_outputs.cc`
+  - `local-repos/rocksdb/include/rocksdb/advanced_options.h`
 - ready_for_next：`yes`
 - next_review_trigger：`学习 Leveled Compaction clean cut、事务可见性或 MANIFEST 异常恢复时回看`
 - review_status：`answered`
@@ -578,38 +578,38 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `Write Stall` 与 `WriteThread`、two write queues、pipelined write、事务写入优先级的组合边界还没细拆
   - `Universal` 的 `max_read_amp` 自动调节、incremental universal compaction、delete-triggered compaction 细节还没完全展开
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
-  - `D:\program\rocksdb\include\rocksdb\universal_compaction.h`
-  - `D:\program\rocksdb\include\rocksdb\options.h`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\version_set.h`
-  - `D:\program\rocksdb\db\compaction\compaction_picker_level.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_picker_universal.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_picker_fifo.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_picker.cc`
-  - `D:\program\rocksdb\db\column_family.cc`
-  - `D:\program\rocksdb\db\write_controller.h`
-  - `D:\program\rocksdb\db\write_controller.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\include\rocksdb\write_buffer_manager.h`
-  - `D:\program\rocksdb\include\rocksdb\rate_limiter.h`
-  - `D:\program\rocksdb\file\writable_file_writer.cc`
-  - `D:\program\rocksdb\file\random_access_file_reader.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
-  - `D:\program\rocksdb\db\flush_job.cc`
-  - `D:\program\rocksdb\include\rocksdb\env.h`
-  - `D:\program\rocksdb\env\env_posix.cc`
-  - `D:\program\rocksdb\util\threadpool_imp.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\periodic_task_scheduler.h`
-  - `D:\program\rocksdb\db\periodic_task_scheduler.cc`
-  - `D:\program\rocksdb\util\timer.h`
-  - `D:\program\rocksdb\db\error_handler.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_follower.cc`
-  - `D:\program\rocksdb\file\delete_scheduler.cc`
-  - `D:\program\rocksdb\file\sst_file_manager_impl.cc`
+  - `local-repos/rocksdb/include/rocksdb/advanced_options.h`
+  - `local-repos/rocksdb/include/rocksdb/universal_compaction.h`
+  - `local-repos/rocksdb/include/rocksdb/options.h`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/version_set.h`
+  - `local-repos/rocksdb/db/compaction/compaction_picker_level.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_picker_universal.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_picker_fifo.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_picker.cc`
+  - `local-repos/rocksdb/db/column_family.cc`
+  - `local-repos/rocksdb/db/write_controller.h`
+  - `local-repos/rocksdb/db/write_controller.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/include/rocksdb/write_buffer_manager.h`
+  - `local-repos/rocksdb/include/rocksdb/rate_limiter.h`
+  - `local-repos/rocksdb/file/writable_file_writer.cc`
+  - `local-repos/rocksdb/file/random_access_file_reader.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_job.cc`
+  - `local-repos/rocksdb/db/flush_job.cc`
+  - `local-repos/rocksdb/include/rocksdb/env.h`
+  - `local-repos/rocksdb/env/env_posix.cc`
+  - `local-repos/rocksdb/util/threadpool_imp.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_open.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/periodic_task_scheduler.h`
+  - `local-repos/rocksdb/db/periodic_task_scheduler.cc`
+  - `local-repos/rocksdb/util/timer.h`
+  - `local-repos/rocksdb/db/error_handler.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_follower.cc`
+  - `local-repos/rocksdb/file/delete_scheduler.cc`
+  - `local-repos/rocksdb/file/sst_file_manager_impl.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`后续学习 clean cut、Universal 细节、WriteThread 或事务写入优先级时回看`
 - review_status：`answered`
@@ -629,20 +629,20 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `user-defined timestamp / full_history_ts_low / trim_ts` 与 compaction 历史 GC 的组合语义只建立了入口
   - ordinary delete tombstone 的可丢弃条件还需要与 rule (A) 的同 stripe 遮蔽规则区分开
 - source_anchors：
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\job_context.h`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\table_cache.cc`
-  - `D:\program\rocksdb\db\dbformat.h`
-  - `D:\program\rocksdb\db\dbformat.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_iterator.h`
-  - `D:\program\rocksdb\db\compaction\compaction_iterator.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_outputs.cc`
-  - `D:\program\rocksdb\db\range_del_aggregator.h`
-  - `D:\program\rocksdb\db\range_del_aggregator.cc`
-  - `D:\program\rocksdb\db\merge_helper.h`
-  - `D:\program\rocksdb\db\merge_helper.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/job_context.h`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/table_cache.cc`
+  - `local-repos/rocksdb/db/dbformat.h`
+  - `local-repos/rocksdb/db/dbformat.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_job.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_iterator.h`
+  - `local-repos/rocksdb/db/compaction/compaction_iterator.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_outputs.cc`
+  - `local-repos/rocksdb/db/range_del_aggregator.h`
+  - `local-repos/rocksdb/db/range_del_aggregator.cc`
+  - `local-repos/rocksdb/db/merge_helper.h`
+  - `local-repos/rocksdb/db/merge_helper.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`学习事务 SnapshotChecker、DeleteRange 或 user-defined timestamp 历史 GC 时回看`
 - review_status：`answered`
@@ -662,23 +662,23 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `auto_prefix_mode / prefix_same_as_start / iterate_upper_bound` 与 prefix bloom 的安全使用边界还需要结合 iterator 再细看
   - partitioned index/filter 的 pin/cache dependency、`metadata_block_size` 与真实调参经验还需要后续补充
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\table.h`
-  - `D:\program\rocksdb\include\rocksdb\options.h`
-  - `D:\program\rocksdb\include\rocksdb\filter_policy.h`
-  - `D:\program\rocksdb\include\rocksdb\cache.h`
-  - `D:\program\rocksdb\table\block_based\block_cache.h`
-  - `D:\program\rocksdb\table\block_based\block_cache.cc`
-  - `D:\program\rocksdb\table\block_based\block_based_table_reader.cc`
-  - `D:\program\rocksdb\table\block_based\block_based_table_reader.h`
-  - `D:\program\rocksdb\table\block_based\block_based_table_builder.cc`
-  - `D:\program\rocksdb\table\block_based\filter_block.h`
-  - `D:\program\rocksdb\table\block_based\filter_block_reader_common.cc`
-  - `D:\program\rocksdb\table\block_based\full_filter_block.cc`
-  - `D:\program\rocksdb\table\block_based\partitioned_filter_block.cc`
-  - `D:\program\rocksdb\table\block_based\partitioned_index_reader.cc`
-  - `D:\program\rocksdb\table\block_based\filter_policy.cc`
-  - `D:\program\rocksdb\table\block_based\block_based_table_factory.cc`
-  - `D:\program\rocksdb\docs\_posts\2017-05-12-partitioned-index-filter.markdown`
+  - `local-repos/rocksdb/include/rocksdb/table.h`
+  - `local-repos/rocksdb/include/rocksdb/options.h`
+  - `local-repos/rocksdb/include/rocksdb/filter_policy.h`
+  - `local-repos/rocksdb/include/rocksdb/cache.h`
+  - `local-repos/rocksdb/table/block_based/block_cache.h`
+  - `local-repos/rocksdb/table/block_based/block_cache.cc`
+  - `local-repos/rocksdb/table/block_based/block_based_table_reader.cc`
+  - `local-repos/rocksdb/table/block_based/block_based_table_reader.h`
+  - `local-repos/rocksdb/table/block_based/block_based_table_builder.cc`
+  - `local-repos/rocksdb/table/block_based/filter_block.h`
+  - `local-repos/rocksdb/table/block_based/filter_block_reader_common.cc`
+  - `local-repos/rocksdb/table/block_based/full_filter_block.cc`
+  - `local-repos/rocksdb/table/block_based/partitioned_filter_block.cc`
+  - `local-repos/rocksdb/table/block_based/partitioned_index_reader.cc`
+  - `local-repos/rocksdb/table/block_based/filter_policy.cc`
+  - `local-repos/rocksdb/table/block_based/block_based_table_factory.cc`
+  - `local-repos/rocksdb/docs/_posts/2017-05-12-partitioned-index-filter.markdown`
 - ready_for_next：`yes`
 - next_review_trigger：`学习 Column Family 后，回看 block cache/table options 在多 CF 下的共享与隔离边界；学习缓存调优时回看 HyperClockCache、SecondaryCache 与 partitioned metadata。`
 - review_status：`answered`
@@ -698,19 +698,19 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - 跨 CF `WriteBatch` 的 WAL 原子写主链已建立；与事务 DB 中 snapshot、锁、WritePrepared / WriteUnprepared 可见性的衔接已在 Day 019 建立入口，仍需复习题确认
   - 多 CF 下 block cache、write buffer manager、write stall 的资源竞争已在 Day 020 建立入口；后续还需要结合真实指标验证各 CF 预算
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\db.h`
-  - `D:\program\rocksdb\include\rocksdb\options.h`
-  - `D:\program\rocksdb\db\column_family.h`
-  - `D:\program\rocksdb\db\column_family.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\write_batch.cc`
-  - `D:\program\rocksdb\db\memtable_list.cc`
-  - `D:\program\rocksdb\db\version_edit.h`
-  - `D:\program\rocksdb\db\version_edit.cc`
-  - `D:\program\rocksdb\db\version_set.cc`
+  - `local-repos/rocksdb/include/rocksdb/db.h`
+  - `local-repos/rocksdb/include/rocksdb/options.h`
+  - `local-repos/rocksdb/db/column_family.h`
+  - `local-repos/rocksdb/db/column_family.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_open.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/write_batch.cc`
+  - `local-repos/rocksdb/db/memtable_list.cc`
+  - `local-repos/rocksdb/db/version_edit.h`
+  - `local-repos/rocksdb/db/version_edit.cc`
+  - `local-repos/rocksdb/db/version_set.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`学习事务与并发控制时，回看跨 CF WriteBatch 的原子写入与事务可见性边界`
 - review_status：`answered`
@@ -731,30 +731,30 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - Blob GC 主链已经建立：compaction 中通过 `GarbageCollectBlobIfNeeded()` 搬迁旧 blob，`BlobGarbageMeter` 统计 inflow/outflow，并用 `BlobFileGarbage` 持久化垃圾统计
   - 仍需后续压实 forced blob GC 与 compaction picker 的联动细节、backup/checkpoint/secondary instance 对 blob live set 的边界，以及远端存储或大 scan 场景下的真实性能参数
 - source_anchors：
-  - `D:\program\rocksdb\docs\_posts\2021-05-26-integrated-blob-db.markdown`
-  - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
-  - `D:\program\rocksdb\options\cf_options.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\column_family.cc`
-  - `D:\program\rocksdb\db\builder.cc`
-  - `D:\program\rocksdb\db\flush_job.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_iterator.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_outputs.cc`
-  - `D:\program\rocksdb\db\blob\blob_file_builder.cc`
-  - `D:\program\rocksdb\db\blob\blob_index.h`
-  - `D:\program\rocksdb\db\blob\blob_log_format.h`
-  - `D:\program\rocksdb\db\blob\blob_source.cc`
-  - `D:\program\rocksdb\db\blob\blob_file_reader.cc`
-  - `D:\program\rocksdb\db\blob\blob_file_cache.cc`
-  - `D:\program\rocksdb\db\blob\blob_garbage_meter.cc`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\version_edit.h`
-  - `D:\program\rocksdb\db\version_builder.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_files.cc`
-  - `D:\program\rocksdb\table\get_context.cc`
-  - `D:\program\rocksdb\db\db_iter.cc`
-  - `D:\program\rocksdb\db\merge_helper.cc`
+  - `local-repos/rocksdb/docs/_posts/2021-05-26-integrated-blob-db.markdown`
+  - `local-repos/rocksdb/include/rocksdb/advanced_options.h`
+  - `local-repos/rocksdb/options/cf_options.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/column_family.cc`
+  - `local-repos/rocksdb/db/builder.cc`
+  - `local-repos/rocksdb/db/flush_job.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_job.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_iterator.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_outputs.cc`
+  - `local-repos/rocksdb/db/blob/blob_file_builder.cc`
+  - `local-repos/rocksdb/db/blob/blob_index.h`
+  - `local-repos/rocksdb/db/blob/blob_log_format.h`
+  - `local-repos/rocksdb/db/blob/blob_source.cc`
+  - `local-repos/rocksdb/db/blob/blob_file_reader.cc`
+  - `local-repos/rocksdb/db/blob/blob_file_cache.cc`
+  - `local-repos/rocksdb/db/blob/blob_garbage_meter.cc`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/version_edit.h`
+  - `local-repos/rocksdb/db/version_builder.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_files.cc`
+  - `local-repos/rocksdb/table/get_context.cc`
+  - `local-repos/rocksdb/db/db_iter.cc`
+  - `local-repos/rocksdb/db/merge_helper.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`学习事务与并发控制时，回看 BlobDB 与 snapshot/transaction 可见性、compaction 清理边界的关系；学习缓存调优时回看 blob cache key 组成`
 - review_status：`answered`
@@ -776,28 +776,28 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - 复习纠偏点：`SnapshotChecker` 不是冲突检测器；`unprep_seqs_` 要先于 `IsInSnapshot()` 保证自写可见；三种 write policy 的本质是复杂度位置取舍
   - 悲观 / 乐观事务、锁管理器、冲突检测和恢复元数据是同一主题的不同层面，后续还要结合源码把状态变化和异常分支再细看
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\utilities\transaction_db.h`
-  - `D:\program\rocksdb\include\rocksdb\utilities\optimistic_transaction_db.h`
-  - `D:\program\rocksdb\utilities\transactions\pessimistic_transaction_db.h`
-  - `D:\program\rocksdb\utilities\transactions\pessimistic_transaction_db.cc`
-  - `D:\program\rocksdb\utilities\transactions\optimistic_transaction_db_impl.h`
-  - `D:\program\rocksdb\utilities\transactions\optimistic_transaction_db_impl.cc`
-  - `D:\program\rocksdb\utilities\transactions\transaction_base.h`
-  - `D:\program\rocksdb\utilities\transactions\transaction_base.cc`
-  - `D:\program\rocksdb\utilities\transactions\pessimistic_transaction.h`
-  - `D:\program\rocksdb\utilities\transactions\pessimistic_transaction.cc`
-  - `D:\program\rocksdb\utilities\transactions\optimistic_transaction.h`
-  - `D:\program\rocksdb\utilities\transactions\optimistic_transaction.cc`
-  - `D:\program\rocksdb\utilities\transactions\transaction_util.h`
-  - `D:\program\rocksdb\utilities\transactions\transaction_util.cc`
-  - `D:\program\rocksdb\utilities\transactions\write_prepared_txn_db.h`
-  - `D:\program\rocksdb\utilities\transactions\write_prepared_txn_db.cc`
-  - `D:\program\rocksdb\utilities\transactions\write_unprepared_txn_db.h`
-  - `D:\program\rocksdb\utilities\transactions\write_unprepared_txn_db.cc`
-  - `D:\program\rocksdb\db\snapshot_checker.h`
-  - `D:\program\rocksdb\utilities\transactions\snapshot_checker.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_iterator.cc`
+  - `local-repos/rocksdb/include/rocksdb/utilities/transaction_db.h`
+  - `local-repos/rocksdb/include/rocksdb/utilities/optimistic_transaction_db.h`
+  - `local-repos/rocksdb/utilities/transactions/pessimistic_transaction_db.h`
+  - `local-repos/rocksdb/utilities/transactions/pessimistic_transaction_db.cc`
+  - `local-repos/rocksdb/utilities/transactions/optimistic_transaction_db_impl.h`
+  - `local-repos/rocksdb/utilities/transactions/optimistic_transaction_db_impl.cc`
+  - `local-repos/rocksdb/utilities/transactions/transaction_base.h`
+  - `local-repos/rocksdb/utilities/transactions/transaction_base.cc`
+  - `local-repos/rocksdb/utilities/transactions/pessimistic_transaction.h`
+  - `local-repos/rocksdb/utilities/transactions/pessimistic_transaction.cc`
+  - `local-repos/rocksdb/utilities/transactions/optimistic_transaction.h`
+  - `local-repos/rocksdb/utilities/transactions/optimistic_transaction.cc`
+  - `local-repos/rocksdb/utilities/transactions/transaction_util.h`
+  - `local-repos/rocksdb/utilities/transactions/transaction_util.cc`
+  - `local-repos/rocksdb/utilities/transactions/write_prepared_txn_db.h`
+  - `local-repos/rocksdb/utilities/transactions/write_prepared_txn_db.cc`
+  - `local-repos/rocksdb/utilities/transactions/write_unprepared_txn_db.h`
+  - `local-repos/rocksdb/utilities/transactions/write_unprepared_txn_db.cc`
+  - `local-repos/rocksdb/db/snapshot_checker.h`
+  - `local-repos/rocksdb/utilities/transactions/snapshot_checker.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_iterator.cc`
 - ready_for_next：`yes`
 - next_review_trigger：`学习参数调优 / Rate Limiter / Write Stall 时，回看事务写入策略对 commit latency、memtable 写入和 write stall 的影响`
 - review_status：`answered`
@@ -821,23 +821,23 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - 常见调优参数默认值已整理为速查表，并补充了默认值面向的通用 SSD / 普通 workload 画像；后续实战时要用真实 benchmark 验证压力边界
   - 参数调优方法已整理为“观测 -> 找触发源 -> 增加还债能力或减少债务生成 -> 再调保护阈值”，但还没有真实压测数据支撑
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\options.h`
-  - `D:\program\rocksdb\include\rocksdb\advanced_options.h`
-  - `D:\program\rocksdb\options\cf_options.h`
-  - `D:\program\rocksdb\options\cf_options.cc`
-  - `D:\program\rocksdb\db\version_set.cc`
-  - `D:\program\rocksdb\db\column_family.cc`
-  - `D:\program\rocksdb\db\write_controller.h`
-  - `D:\program\rocksdb\db\write_controller.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_write.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_open.cc`
-  - `D:\program\rocksdb\db\db_impl\db_impl_compaction_flush.cc`
-  - `D:\program\rocksdb\include\rocksdb\rate_limiter.h`
-  - `D:\program\rocksdb\util\rate_limiter.cc`
-  - `D:\program\rocksdb\file\writable_file_writer.cc`
-  - `D:\program\rocksdb\db\flush_job.cc`
-  - `D:\program\rocksdb\db\compaction\compaction_job.cc`
-  - `D:\program\rocksdb\include\rocksdb\write_buffer_manager.h`
+  - `local-repos/rocksdb/include/rocksdb/options.h`
+  - `local-repos/rocksdb/include/rocksdb/advanced_options.h`
+  - `local-repos/rocksdb/options/cf_options.h`
+  - `local-repos/rocksdb/options/cf_options.cc`
+  - `local-repos/rocksdb/db/version_set.cc`
+  - `local-repos/rocksdb/db/column_family.cc`
+  - `local-repos/rocksdb/db/write_controller.h`
+  - `local-repos/rocksdb/db/write_controller.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_write.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_open.cc`
+  - `local-repos/rocksdb/db/db_impl/db_impl_compaction_flush.cc`
+  - `local-repos/rocksdb/include/rocksdb/rate_limiter.h`
+  - `local-repos/rocksdb/util/rate_limiter.cc`
+  - `local-repos/rocksdb/file/writable_file_writer.cc`
+  - `local-repos/rocksdb/db/flush_job.cc`
+  - `local-repos/rocksdb/db/compaction/compaction_job.cc`
+  - `local-repos/rocksdb/include/rocksdb/write_buffer_manager.h`
 - ready_for_next：`yes`
 - next_review_trigger：`后续做 benchmark 型实战调参时，回看默认值目标画像、L0/pending debt 指标、RateLimiter 与 dynamic level bytes 的边界`
 - review_status：`answered`
@@ -857,18 +857,18 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - `global seqno` 的文件级覆盖语义已建立：默认不随机写回 SST 文件，而是进入 `FileMetaData / VersionEdit` 语义；后续可结合 `TableReader` 读路径和 snapshot 再压实
   - `ingest_behind / allow_db_generated_files / multi-CF atomic group` 已建立入口，但 tombstone 保留、DB-generated 文件迁移和 atomic group 恢复细节还没完全展开
 - source_anchors：
-  - `D:\program\rocksdb\include\rocksdb\db.h`
-  - `D:\program\rocksdb\include\rocksdb\options.h`
-  - `D:\program\rocksdb\include\rocksdb\sst_file_writer.h`
-  - `D:\program\rocksdb\table\sst_file_writer.cc`
-  - `D:\program\rocksdb\table\sst_file_writer_collectors.h`
-  - `D:\program\rocksdb\db\db_impl\db_impl.cc`
-  - `D:\program\rocksdb\db\external_sst_file_ingestion_job.h`
-  - `D:\program\rocksdb\db\external_sst_file_ingestion_job.cc`
-  - `D:\program\rocksdb\db\version_edit.h`
-  - `D:\program\rocksdb\db\version_edit.cc`
-  - `D:\program\rocksdb\table\block_based\block_based_table_reader.cc`
-  - `D:\program\rocksdb\docs\_posts\2017-02-17-bulkoad-ingest-sst-file.markdown`
+  - `local-repos/rocksdb/include/rocksdb/db.h`
+  - `local-repos/rocksdb/include/rocksdb/options.h`
+  - `local-repos/rocksdb/include/rocksdb/sst_file_writer.h`
+  - `local-repos/rocksdb/table/sst_file_writer.cc`
+  - `local-repos/rocksdb/table/sst_file_writer_collectors.h`
+  - `local-repos/rocksdb/db/db_impl/db_impl.cc`
+  - `local-repos/rocksdb/db/external_sst_file_ingestion_job.h`
+  - `local-repos/rocksdb/db/external_sst_file_ingestion_job.cc`
+  - `local-repos/rocksdb/db/version_edit.h`
+  - `local-repos/rocksdb/db/version_edit.cc`
+  - `local-repos/rocksdb/table/block_based/block_based_table_reader.cc`
+  - `local-repos/rocksdb/docs/_posts/2017-02-17-bulkoad-ingest-sst-file.markdown`
 - ready_for_next：`no`
 - next_review_trigger：`完成 Day 021 复习题后，进入 Merge Operator / Compaction Filter；后续学习 Backup / Checkpoint 或 DeleteRange 时回看 ingestion 的文件生命周期、MANIFEST 和 tombstone 语义`
 - review_status：
@@ -955,7 +955,7 @@ summary: RocksDB 长期学习索引与轻量状态文件，用于恢复学习进
   - 知乎
   - linux.do
   - 高质量个人技术博客
-- 最终结论必须回到 `D:\program\rocksdb` 中的当前本地源码验证。
+- 最终结论必须回到 `local-repos/rocksdb` 中的当前本地源码验证。
 
 ## 文章写作提醒
 

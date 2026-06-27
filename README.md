@@ -19,6 +19,7 @@
 │   ├── series/                   # 系列入口
 │   └── tags/                     # 标签入口
 ├── layouts/                      # 本站覆盖的 Hugo 模板
+├── local-repos/                  # 本地参考源码仓库，内容被 Git 忽略
 ├── static/
 │   ├── img/                      # 文章与站点静态图片
 │   ├── js/                       # 站点增强脚本与工具页脚本
@@ -49,6 +50,19 @@ hugo --gc --minify
 
 - Hugo `0.145.0` extended。
 - 修改 Rust 工具或 WASM 工具时需要 Rust + Cargo。
+
+## 本地参考源码仓库
+
+一些学习线会用本地 clone 的开源项目做源码级验证。统一把这些仓库放在 `local-repos/` 下，例如：
+
+```bash
+git clone https://github.com/facebook/rocksdb.git local-repos/rocksdb
+git clone https://github.com/mysql/mysql-server.git local-repos/mysql-server
+```
+
+`local-repos/*` 已加入 `.gitignore`，仓库内容不会提交到本站仓库；只有 `local-repos/README.md` 这类说明文件会被跟踪。
+
+在文章、提示词或工作流里引用外部源码时，优先使用 `local-repos/<repo-name>/...` 这种仓库相对路径。若对应源码仓库不存在，应先 clone；如果因为网络、权限或仓库不可用无法 clone，需要记录阻塞原因，不要把未验证内容写成源码级结论。
 
 ## 内容写作
 
@@ -144,3 +158,4 @@ hugo --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
 - 图片处理优先使用 `tools/postimg`，避免临时脚本绕过已有工具。
 - 修改站点后运行 `hugo --gc --minify`；修改 Rust 工具后运行对应 `cargo test --manifest-path ...`。
 - 开始实现前先看 `AGENTS.md` 和 `.trellis/spec/` 中的项目约定。
+- 外部开源项目源码统一放在 `local-repos/<repo-name>/`，不要在新规则或新文章中写死本机绝对路径。
